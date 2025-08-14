@@ -1,0 +1,54 @@
+import regexp
+import system.io
+
+Object RegexpDebug {
+    @external method testExtract(): Text {
+        io.print("=== Regexp Extract Debug ===")
+        
+        # Test the problematic pattern
+        text: Text = "test123abc456def"
+        pattern: Text = "\\w+(\\d+)"
+        
+        io.print("Text: %s", text)
+        io.print("Pattern: %s", pattern)
+        
+        # Test findAll first to see what matches
+        matches: List = regexp.findAll(text, pattern)
+        io.print("FindAll matches:")
+        
+        iterator: ListIterator = matches.iterator()
+        while (iterator.hasNext()) {
+            match: Text = iterator.next()
+            io.print("  Match: '%s'", match)
+        }
+        
+        # Test groups to see capture groups
+        groups: List = regexp.groups(text, pattern)
+        io.print("Groups:")
+        
+        groups_iter: ListIterator = groups.iterator()
+        while (groups_iter.hasNext()) {
+            group: Text = groups_iter.next()
+            io.print("  Group: '%s'", group)
+        }
+        
+        # Test extract
+        extracted: List = regexp.extract(text, pattern)
+        io.print("Extract result:")
+        
+        extract_iter: ListIterator = extracted.iterator()
+        while (extract_iter.hasNext()) {
+            item: Text = extract_iter.next()
+            io.print("  Extracted: '%s'", item)
+        }
+        
+        return "Debug completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        debug: RegexpDebug = new RegexpDebug()
+        return debug.testExtract()
+    }
+}

@@ -1,0 +1,34 @@
+Object Calculator {
+    property value: Int
+    
+    constructor(initial: Int) {
+        this.value = initial
+    }
+    
+    method protectedAdd(amount: Int): Void {
+        this.value = this.value + amount
+    }
+    
+    @external method externalAdd(amount: Int): Void {
+        this.value = this.value + amount
+    }
+    
+    @external method getValue(): Int {
+        return this.value
+    }
+}
+
+Object Main {
+    property calc: Calculator
+    
+    constructor() {
+        this.calc = new Calculator(10)
+    }
+    
+    method main(): Void {
+        print("Initial: %d", this.calc.getValue())
+        this.calc.externalAdd(5)
+        print("After external add: %d", this.calc.getValue())
+        # this.calc.protectedAdd(3)  # This should fail if uncommented
+    }
+}

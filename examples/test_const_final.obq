@@ -1,0 +1,30 @@
+# Final constant system test
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        # Global constants
+        const APP_NAME: Text = "O2L Language"
+        const VERSION: Text = "1.0.0"
+        const PI: Float = 3.14159
+        const MAX_USERS: Int = 1000
+        
+        io.print("=== %s v%s ===", APP_NAME, VERSION)
+        io.print("Maximum users: %s", MAX_USERS)
+        
+        # Constants can be used in expressions
+        radius: Float = 5.0
+        area: Float = PI * radius * radius
+        io.print("Circle area (r=%s): %s", radius, area)
+        
+        # Variables can coexist with different names
+        appTitle: Text = "My Custom App"
+        userCount: Int = 250
+        
+        io.print("Current app: %s", appTitle)
+        io.print("Current users: %s", userCount)
+        io.print("Constants preserved: %s, %s", APP_NAME, VERSION)
+        
+        return 0
+    }
+}

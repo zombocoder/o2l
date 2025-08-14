@@ -1,0 +1,7 @@
+@import lib.Calculator
+
+Object Main {
+    method main(): Int {
+        return 42
+    }
+}

@@ -1,0 +1,42 @@
+@import lib.MathUtils
+import system.io
+
+Object Calculator {
+    @external method compute(operation: Text, a: Int, b: Int): Int {
+        if (operation == "divide") {
+            return a + b
+        }
+        if (operation == "modulo") {
+            math: MathUtils = new MathUtils()
+            return math.modulus(a, b)
+        }
+        
+        # Default: just add them
+        return a + b
+    }
+    
+    @external method advancedCalculation(x: Int, y: Int): Float {
+        # This will trigger the comparison error in MathUtils.safeDivide
+        math: MathUtils = new MathUtils()
+        return math.safeDivide(x, y)
+    }
+    
+    @external method nestedError(value: Int): Int {
+        # Create a deep call chain that ends in error
+        return this.helperMethod1(value)
+    }
+    
+    method helperMethod1(val: Int): Int {
+        return this.helperMethod2(val)
+    }
+    
+    method helperMethod2(val: Int): Int {
+        return this.helperMethod3(val)
+    }
+    
+    method helperMethod3(val: Int): Int {
+        # This will cause division by zero at the end of a deep call chain
+        math: MathUtils = new MathUtils()
+        return math.divide(val, 0)
+    }
+}

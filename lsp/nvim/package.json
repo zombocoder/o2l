@@ -1,0 +1,41 @@
+{
+  "name": "o2l-nvim",
+  "version": "1.0.0",
+  "description": "Neovim plugin for O²L programming language with LSP support",
+  "main": "plugin/o2l.lua",
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [
+    "o2l",
+    "neovim",
+    "nvim",
+    "lsp",
+    "language-server",
+    "syntax-highlighting"
+  ],
+  "author": "O²L Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zombocoder/o2l.git",
+    "directory": "lsp/nvim"
+  },
+  "bugs": {
+    "url": "https://github.com/zombocoder/o2l/issues"
+  },
+  "homepage": "https://github.com/zombocoder/o2l#readme",
+  "engines": {
+    "nvim": ">=0.8.0"
+  },
+  "dependencies": {
+    "nvim-lspconfig": ">=0.1.0"
+  },
+  "files": [
+    "ftdetect/",
+    "syntax/",
+    "plugin/",
+    "lua/",
+    "README.md"
+  ]
+}

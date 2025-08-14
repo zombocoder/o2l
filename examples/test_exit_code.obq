@@ -1,0 +1,6 @@
+Object Main {
+    method main(): Int {
+        print("Hello from main!")
+        return 42
+    }
+}

@@ -1,0 +1,40 @@
+import system.io
+
+record UserInfo {
+    name: Text
+    age: Int
+}
+
+Object TestObject {
+    property user: UserInfo
+    
+    constructor() {
+        this.user = UserInfo(name="Alice", age=30)
+    }
+    
+    @external method getUser(): UserInfo {
+        return this.user
+    }
+}
+
+Object Main {
+    property testObj: TestObject
+    
+    constructor() {
+        this.testObj = new TestObject()
+    }
+    
+    method main(): Int {
+        io.print("Testing chained access...")
+        
+        # Test property access
+        userName: Text = this.testObj.user.name
+        io.print("User name: %s", userName)
+        
+        # Test method call chaining
+        userData: UserInfo = this.testObj.getUser()
+        io.print("User from method: %s", userData.name)
+        
+        return 0
+    }
+}

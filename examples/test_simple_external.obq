@@ -1,0 +1,5 @@
+Object Test {
+    @external method test(): Int {
+        return 42
+    }
+}

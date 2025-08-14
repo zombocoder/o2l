@@ -1,0 +1,30 @@
+# Protocol test based on user example
+import system.io
+
+Record PersonalInfoDTO {
+    name: Text,
+    age: Int
+}
+
+Protocol SomeProtocol {
+    method greet(data: PersonalInfoDTO): Text
+    method farewell(data: PersonalInfoDTO, text: Text): PersonalInfoDTO
+}
+
+Object PersonalInfoProtocol: SomeProtocol {
+    @external method greet(data: PersonalInfoDTO): Text {
+        return "Hello " + data.name
+    }
+    
+    @external method farewell(data: PersonalInfoDTO, text: Text): PersonalInfoDTO {
+        io.print("Goodbye " + data.name + ": " + text)
+        return data
+    }
+}
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing protocol implementation")
+        return 0
+    }
+}

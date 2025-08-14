@@ -1,0 +1,73 @@
+# Comprehensive test of all implemented advanced features
+
+### 
+Multi-line comments work perfectly
+This demonstrates most implemented features
+###
+
+enum Status {
+    PENDING,
+    RUNNING = 10,
+    COMPLETED
+}
+
+record Point {
+    x: Int
+    y: Int
+}
+
+Object TestObject {
+    property value: Int
+    property status: Status
+    property location: Point
+    
+    constructor(initial: Int) {
+        const MAX_VALUE: Int = 100
+        this.value = initial
+        this.status = Status.PENDING
+        this.location = Point(x=0, y=0)
+    }
+    
+    # Protected method - not externally accessible
+    method internalIncrement(): Void {
+        this.value = this.value + 1
+        if (this.value >= 100) {
+            this.status = Status.COMPLETED
+        } else {
+            this.status = Status.RUNNING
+        }
+    }
+    
+    # External method - publicly accessible
+    @external method increment(): Void {
+        this.internalIncrement()
+    }
+    
+    @external method getValue(): Int {
+        return this.value
+    }
+    
+    @external method getStatus(): Status {
+        return this.status
+    }
+}
+
+Object Main {
+    method main(): Int {
+        obj: TestObject = new TestObject(95)
+        
+        obj.increment()
+        obj.increment()
+        obj.increment()
+        obj.increment()
+        obj.increment()
+        
+        final_value: Int = obj.getValue()
+        
+        if (final_value >= 100) {
+            return 0
+        } else {
+            return 1
+        }
+    }
+}

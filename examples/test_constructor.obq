@@ -1,0 +1,15 @@
+Object Person {
+    constructor(name: Text) {
+        name
+    }
+    
+    @external method getName(): Text {
+        "Default Name"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        new Person("Alice").getName()
+    }
+}

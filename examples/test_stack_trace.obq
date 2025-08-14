@@ -1,0 +1,24 @@
+import system.io
+
+Object Calculator {
+    @external method divide(a: Int, b: Int): Int {
+        if (b == 0) {
+            # This should trigger an error with stack trace
+            c: Int = a / b
+            return c
+        }
+        return a / b
+    }
+    
+    @external method compute(): Int {
+        return this.divide(10, 0)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        calc: Calculator = new Calculator()
+        result: Int = calc.compute()
+        return result
+    }
+}

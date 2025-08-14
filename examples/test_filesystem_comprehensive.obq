@@ -1,0 +1,328 @@
+import system.io
+import system.fs
+
+Object FilesystemComprehensiveTester {
+    @external method testFileOperations(): Int {
+        io.print("=== Comprehensive File Operations Test ===")
+        
+        # Test various file types and paths
+        test_files: List = [
+            "test_simple.txt",
+            "test_with_spaces in name.txt", 
+            "test.with.dots.txt",
+            "test-with-dashes.txt",
+            "test_123_numbers.txt"
+        ]
+        
+        iterator: ListIterator = test_files.iterator()
+        success_count: Int = 0
+        
+        while (iterator.hasNext()) {
+            filename: Text = iterator.next()
+            io.print("1. Testing file: %s", filename)
+            
+            # Test file creation with different content types
+            content: Text = "Test content for file: " + filename + "\nLine 2\nLine 3 with special chars: !@#$%"
+            
+            # Write file
+            write_success: Bool = fs.writeText(filename, content)
+            io.print("   Write success: %o", write_success)
+            
+            if (write_success) {
+                # Test existence
+                exists: Bool = fs.exists(filename)
+                io.print("   File exists: %o", exists)
+                
+                # Test file type check
+                is_file: Bool = fs.isFile(filename)
+                is_dir: Bool = fs.isDirectory(filename)
+                io.print("   Is file: %o, Is directory: %o", is_file, is_dir)
+                
+                # Test reading
+                read_content: Text = fs.readText(filename)
+                content_matches: Bool = read_content == content
+                io.print("   Content matches: %o", content_matches)
+                
+                # Test cleanup
+                delete_success: Bool = fs.deleteFile(filename)
+                io.print("   Delete success: %o", delete_success)
+                
+                # Verify deletion
+                still_exists: Bool = fs.exists(filename)
+                io.print("   Still exists after delete: %o", still_exists)
+                
+                basic_checks: Bool = write_success && exists && is_file && !is_dir
+                advanced_checks: Bool = content_matches && delete_success && !still_exists
+                all_checks_passed: Bool = basic_checks && advanced_checks
+                
+                if (all_checks_passed) {
+                    success_count = success_count + 1
+                }
+            }
+            
+            io.print("")
+        }
+        
+        total_files: Int = test_files.size()
+        io.print("Successfully processed %d out of %d files", success_count, total_files)
+        
+        if (success_count == total_files) {
+            return 1
+        } else {
+            return 0
+        }
+    }
+    
+    @external method testDirectoryOperations(): Int {
+        io.print("=== Comprehensive Directory Operations Test ===")
+        
+        # Test various directory structures
+        base_dir: Text = "test_directories"
+        nested_dir: Text = "test_directories/level1/level2/level3"
+        sibling_dir: Text = "test_directories/sibling"
+        
+        io.print("1. Creating nested directory structure...")
+        
+        # Create nested directories
+        create_base: Bool = fs.createDirectory(base_dir)
+        create_nested: Bool = fs.createDirectory(nested_dir)
+        create_sibling: Bool = fs.createDirectory(sibling_dir)
+        
+        io.print("   Base directory created: %o", create_base)
+        io.print("   Nested directory created: %o", create_nested)
+        io.print("   Sibling directory created: %o", create_sibling)
+        
+        # Test directory existence and type
+        io.print("2. Verifying directory properties...")
+        
+        base_exists: Bool = fs.exists(base_dir)
+        base_is_dir: Bool = fs.isDirectory(base_dir)
+        base_is_file: Bool = fs.isFile(base_dir)
+        
+        io.print("   Base exists: %o, is directory: %o, is file: %o", base_exists, base_is_dir, base_is_file)
+        
+        nested_exists: Bool = fs.exists(nested_dir)
+        nested_is_dir: Bool = fs.isDirectory(nested_dir)
+        
+        io.print("   Nested exists: %o, is directory: %o", nested_exists, nested_is_dir)
+        
+        # Test directory listing
+        io.print("3. Testing directory listing...")
+        
+        base_files: List = fs.listFiles(base_dir)
+        base_file_count: Int = base_files.size()
+        io.print("   Files in base directory: %d", base_file_count)
+        
+        file_iterator: ListIterator = base_files.iterator()
+        while (file_iterator.hasNext()) {
+            file_name: Text = file_iterator.next()
+            io.print("   - %s", file_name)
+        }
+        
+        # Create files in directories to test mixed content
+        io.print("4. Creating files in directories...")
+        
+        file_in_base: Text = base_dir + "/file_in_base.txt"
+        file_in_nested: Text = nested_dir + "/file_in_nested.txt"
+        file_in_sibling: Text = sibling_dir + "/file_in_sibling.txt"
+        
+        create_file1: Bool = fs.writeText(file_in_base, "Content in base directory")
+        create_file2: Bool = fs.writeText(file_in_nested, "Content in nested directory")
+        create_file3: Bool = fs.writeText(file_in_sibling, "Content in sibling directory")
+        
+        io.print("   Files created: base=%o, nested=%o, sibling=%o", create_file1, create_file2, create_file3)
+        
+        # Test listing after adding files
+        updated_base_files: List = fs.listFiles(base_dir)
+        updated_count: Int = updated_base_files.size()
+        io.print("   Updated files in base directory: %d", updated_count)
+        
+        updated_iterator: ListIterator = updated_base_files.iterator()
+        while (updated_iterator.hasNext()) {
+            file_name: Text = updated_iterator.next()
+            full_path: Text = base_dir + "/" + file_name
+            is_file_check: Bool = fs.isFile(full_path)
+            is_dir_check: Bool = fs.isDirectory(full_path)
+            io.print("   - %s (file: %o, dir: %o)", file_name, is_file_check, is_dir_check)
+        }
+        
+        # Cleanup - delete files first, then directories
+        io.print("5. Cleaning up test directories...")
+        
+        del_file1: Bool = fs.deleteFile(file_in_base)
+        del_file2: Bool = fs.deleteFile(file_in_nested)
+        del_file3: Bool = fs.deleteFile(file_in_sibling)
+        
+        io.print("   Files deleted: base=%o, nested=%o, sibling=%o", del_file1, del_file2, del_file3)
+        
+        # Delete directories (must be empty)
+        del_nested: Bool = fs.deleteFile(nested_dir)
+        del_sibling: Bool = fs.deleteFile(sibling_dir)
+        del_level2: Bool = fs.deleteFile("test_directories/level1/level2")
+        del_level1: Bool = fs.deleteFile("test_directories/level1")
+        del_base: Bool = fs.deleteFile(base_dir)
+        
+        io.print("   Directories deleted: nested=%o, sibling=%o, level2=%o, level1=%o, base=%o", 
+                del_nested, del_sibling, del_level2, del_level1, del_base)
+        
+        # Verify cleanup
+        final_check: Bool = !fs.exists(base_dir)
+        io.print("   Final cleanup verified: %o", final_check)
+        
+        return 0
+    }
+    
+    @external method testFileContentOperations(): Int {
+        io.print("=== File Content Operations Test ===")
+        
+        test_file: Text = "content_test.txt"
+        
+        # Test various content types
+        io.print("1. Testing different content types...")
+        
+        # Empty content
+        empty_success: Bool = fs.writeText(test_file, "")
+        empty_content: Text = fs.readText(test_file)
+        io.print("   Empty file - write: %o, content length: %d", empty_success, 0)
+        
+        # Single line
+        single_line: Text = "Single line of text"
+        single_success: Bool = fs.writeText(test_file, single_line)
+        single_content: Text = fs.readText(test_file)
+        single_match: Bool = single_content == single_line
+        io.print("   Single line - write: %o, content matches: %o", single_success, single_match)
+        
+        # Multiple lines
+        multi_line: Text = "Line 1\nLine 2\nLine 3\n"
+        multi_success: Bool = fs.writeText(test_file, multi_line)
+        multi_content: Text = fs.readText(test_file)
+        multi_match: Bool = multi_content == multi_line
+        io.print("   Multi-line - write: %o, content matches: %o", multi_success, multi_match)
+        
+        # Special characters
+        special_chars: Text = "Special chars: !@#$%^&*()[]{}|\\:;\"'<>,.?/~`"
+        special_success: Bool = fs.writeText(test_file, special_chars)
+        special_content: Text = fs.readText(test_file)
+        special_match: Bool = special_content == special_chars
+        io.print("   Special chars - write: %o, content matches: %o", special_success, special_match)
+        
+        # Unicode and extended characters (if supported)
+        unicode_text: Text = "Unicode test: áéíóú ñü ¡¿ €£¥"
+        unicode_success: Bool = fs.writeText(test_file, unicode_text)
+        unicode_content: Text = fs.readText(test_file)
+        unicode_match: Bool = unicode_content == unicode_text
+        io.print("   Unicode - write: %o, content matches: %o", unicode_success, unicode_match)
+        
+        # Large content (stress test)
+        io.print("2. Testing large content...")
+        large_content: Text = ""
+        
+        # Build large content string (simulated - limited by no string concatenation in loop)
+        base_text: Text = "This is a line of text for stress testing the filesystem operations. "
+        large_content = base_text + base_text + base_text + base_text + base_text
+        large_content = large_content + large_content + large_content  # Make it even larger
+        
+        large_success: Bool = fs.writeText(test_file, large_content)
+        large_read: Text = fs.readText(test_file)
+        large_match: Bool = large_read == large_content
+        io.print("   Large content - write: %o, content matches: %o", large_success, large_match)
+        
+        # File overwrite test
+        io.print("3. Testing file overwrite...")
+        original: Text = "Original content"
+        overwrite: Text = "Overwritten content"
+        
+        original_write: Bool = fs.writeText(test_file, original)
+        original_read: Text = fs.readText(test_file)
+        
+        overwrite_write: Bool = fs.writeText(test_file, overwrite)
+        overwrite_read: Text = fs.readText(test_file)
+        
+        overwrite_correct: Bool = overwrite_read == overwrite && overwrite_read != original
+        io.print("   Overwrite test - original: %o, overwrite: %o, correctly replaced: %o", 
+                original_write, overwrite_write, overwrite_correct)
+        
+        # Cleanup
+        cleanup: Bool = fs.deleteFile(test_file)
+        io.print("   Cleanup: %o", cleanup)
+        
+        return 0
+    }
+    
+    @external method testPathEdgeCases(): Int {
+        io.print("=== Path Edge Cases Test ===")
+        
+        # Test various path formats
+        io.print("1. Testing different path formats...")
+        
+        # Relative paths
+        rel_file: Text = "./relative_test.txt"
+        rel_success: Bool = fs.writeText(rel_file, "Relative path test")
+        rel_exists: Bool = fs.exists(rel_file)
+        rel_cleanup: Bool = fs.deleteFile(rel_file)
+        io.print("   Relative path (./) - write: %o, exists: %o, delete: %o", rel_success, rel_exists, rel_cleanup)
+        
+        # Parent directory references (if supported)
+        parent_dir: Text = "../parent_test_dir"
+        parent_create: Bool = fs.createDirectory(parent_dir)
+        parent_exists: Bool = fs.exists(parent_dir)
+        parent_cleanup: Bool = fs.deleteFile(parent_dir)
+        io.print("   Parent reference (../) - create: %o, exists: %o, delete: %o", parent_create, parent_exists, parent_cleanup)
+        
+        # Paths with mixed separators (test robustness)
+        mixed_path: Text = "test_dir/sub_dir"
+        mixed_create: Bool = fs.createDirectory(mixed_path)
+        mixed_exists: Bool = fs.exists(mixed_path)
+        mixed_sub_cleanup: Bool = fs.deleteFile(mixed_path)
+        mixed_main_cleanup: Bool = fs.deleteFile("test_dir")
+        io.print("   Mixed separators - create: %o, exists: %o, cleanup: %o", mixed_create, mixed_exists, mixed_sub_cleanup && mixed_main_cleanup)
+        
+        # Test current directory listing
+        io.print("2. Testing current directory operations...")
+        current_files: List = fs.listFiles(".")
+        current_count: Int = current_files.size()
+        io.print("   Files in current directory: %d", current_count)
+        
+        # Show first few files as sample
+        sample_iterator: ListIterator = current_files.iterator()
+        sample_count: Int = 0
+        while (sample_iterator.hasNext() && sample_count < 5) {
+            filename: Text = sample_iterator.next()
+            io.print("   - %s", filename)
+            sample_count = sample_count + 1
+        }
+        
+        if (current_count > 5) {
+            io.print("   ... and %d more files", current_count - 5)
+        }
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: FilesystemComprehensiveTester = new FilesystemComprehensiveTester()
+        
+        result1: Int = tester.testFileOperations()
+        io.print("")
+        
+        result2: Int = tester.testDirectoryOperations()
+        io.print("")
+        
+        result3: Int = tester.testFileContentOperations()
+        io.print("")
+        
+        result4: Int = tester.testPathEdgeCases()
+        
+        success_condition: Bool = (result1 == 1) && (result2 == 0) && (result3 == 0) && (result4 == 0)
+        
+        if (success_condition) {
+            io.print("=== All comprehensive filesystem tests completed! ===")
+            return 0
+        } else {
+            io.print("=== Some filesystem tests encountered issues ===")
+            return 1
+        }
+    }
+}

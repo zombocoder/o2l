@@ -1,0 +1,94 @@
+import system.io
+
+Object MapIteratorTest {
+    @external method testMapIterator(): Int {
+        io.print("=== Map Iterator Test ===")
+        
+        # Create a map with some data
+        my_map: Map<Text, Int> = {
+            "apple": 5,
+            "banana": 3,
+            "cherry": 8,
+            "date": 2
+        }
+        
+        io.print("Original map size: %d", my_map.size())
+        
+        # Test iterator creation
+        map_iter: MapIterator = my_map.iterator()
+        io.print("Created map iterator")
+        
+        # Test iterating through keys
+        io.print("=== Iterating through keys ===")
+        keys_found: List<Text> = []
+        while (map_iter.hasNext()) {
+            key: Text = map_iter.nextKey()
+            io.print("Key: %s", key)
+            keys_found.add(key)
+        }
+        io.print("Total keys processed: %d", keys_found.size())
+        
+        # Reset iterator and iterate through values
+        map_iter.reset()
+        io.print("=== Iterating through values ===")
+        values_found: List<Int> = []
+        while (map_iter.hasNext()) {
+            value: Int = map_iter.nextValue()
+            io.print("Value: %d", value)
+            values_found.add(value)
+        }
+        io.print("Total values processed: %d", values_found.size())
+        
+        # Reset and iterate through entries
+        map_iter.reset()
+        io.print("=== Iterating through entries ===")
+        entries_found: List<Text> = []
+        while (map_iter.hasNext()) {
+            entry: Text = map_iter.nextEntry()
+            io.print("Entry: %s", entry)
+            entries_found.add(entry)
+        }
+        io.print("Total entries processed: %d", entries_found.size())
+        
+        return 0
+    }
+    
+    @external method testMapIteratorWithWhileLoop(): Int {
+        io.print("=== Map Iterator with While Loop Processing ===")
+        
+        # Create a map of product prices
+        prices: Map<Text, Int> = {
+            "apple": 150,
+            "banana": 80,
+            "cherry": 200,
+            "date": 120
+        }
+        
+        # Find expensive items (> 100)
+        expensive_items: List<Text> = []
+        price_iter: MapIterator = prices.iterator()
+        
+        while (price_iter.hasNext()) {
+            item: Text = price_iter.nextKey()
+            price: Int = prices.get(item)
+            
+            if (price > 100) {
+                expensive_items.add(item)
+                io.print("Expensive item: %s costs %d", item, price)
+            }
+        }
+        
+        io.print("Found %d expensive items", expensive_items.size())
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: MapIteratorTest = new MapIteratorTest()
+        test.testMapIterator()
+        io.print("")
+        test.testMapIteratorWithWhileLoop()
+        return 0
+    }
+}

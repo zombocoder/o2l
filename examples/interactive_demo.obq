@@ -1,0 +1,36 @@
+import system.io.*
+
+Object PersonalInfo {
+    property name: Text
+    property age: Text
+    
+    constructor(userName: Text, userAge: Text) {
+        this.name = userName
+        this.age = userAge
+    }
+    
+    method greet(): Text {
+        const m: Text = "Pls provide your age"
+        if (this.age != "") {
+            io.print("Hello, %s! You are %s years old.", this.name, this.age)
+        } else {
+            io.print(m)
+        }
+        return this.name
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("=== Interactive Demo ===")
+        
+        name: Text = io.input("What is your name? ")
+        age: Text = io.input("What is your age? ")
+        
+        person: Any = new PersonalInfo(name, age)
+        person.greet()
+        
+        io.print("Thanks for using the O2L interactive demo!")
+        return "Demo completed"
+    }
+}

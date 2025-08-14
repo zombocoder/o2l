@@ -1,0 +1,51 @@
+import system.io
+
+Enum Status {
+    PENDING,
+    ACTIVE = 10,
+    COMPLETED
+}
+
+Record UserData {
+    name: Text
+    status: Status
+    id: Int
+}
+
+Object TestObject {
+    property userData: UserData
+    
+    constructor() {
+        this.userData = UserData(
+            name="Alice",
+            status=Status.ACTIVE,
+            id=123
+        )
+    }
+    
+    @external method showInfo(): Void {
+        io.print("User: %s", this.userData.name)
+        io.print("Status: %o", this.userData.status)
+        io.print("ID: %d", this.userData.id)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        io.print("=== Advanced O2L Features Demo ===")
+        
+        test: TestObject = new TestObject()
+        test.showInfo()
+        
+        # Test enum comparison
+        currentStatus: Status = Status.COMPLETED
+        if (currentStatus == Status.COMPLETED) {
+            io.print("Status is completed!")
+        } else {
+            io.print("Status is not completed")
+        }
+        
+        io.print("All features working with new syntax!")
+        return 0
+    }
+}

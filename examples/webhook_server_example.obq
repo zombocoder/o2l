@@ -1,0 +1,415 @@
+// Webhook Processing Example
+// Demonstrates using HTTP client to process webhooks and make external API calls
+
+import http.client
+import system.io
+import json
+
+Object WebhookProcessor {
+    
+    property webhook_secret: Text
+    property notification_url: Text
+    
+    constructor(webhook_secret: Text, notification_url: Text) {
+        this.webhook_secret = webhook_secret
+        this.notification_url = notification_url
+    }
+    
+    @external method verifyWebhookSignature(payload: Text, signature: Text): Bool {
+        // In a real implementation, you'd verify HMAC signature
+        // For demo purposes, just check if signature exists
+        return !signature.empty()
+    }
+    
+    @external method processGitHubWebhook(event_type: Text, payload: Text): Map<Text, Value> {
+        io.print("🔗 Processing GitHub webhook: %s", event_type)
+        
+        result: Map<Text, Value> = {}
+        result.put("event_type", event_type)
+        result.put("processed", true)
+        
+        if (event_type.equals("push")) {
+            push_result: Map<Text, Value> = this.handlePushEvent(payload)
+            result.put("action", "push_processed")
+            result.put("details", push_result)
+        } else if (event_type.equals("pull_request")) {
+            pr_result: Map<Text, Value> = this.handlePullRequestEvent(payload)
+            result.put("action", "pr_processed")
+            result.put("details", pr_result)
+        } else if (event_type.equals("issues")) {
+            issue_result: Map<Text, Value> = this.handleIssueEvent(payload)
+            result.put("action", "issue_processed")
+            result.put("details", issue_result)
+        } else {
+            io.print("⚠️ Unhandled event type: %s", event_type)
+            result.put("action", "ignored")
+        }
+        
+        return result
+    }
+    
+    @external method handlePushEvent(payload: Text): Map<Text, Value> {
+        io.print("📤 Handling push event...")
+        
+        # Parse the webhook payload
+        webhook_data: Map<Text, Value> = json.parseToMap(payload)
+        
+        # Extract key information
+        repository: Text = json.get(payload, "repository.name")
+        pusher: Text = json.get(payload, "pusher.name")
+        ref: Text = json.get(payload, "ref")
+        
+        io.print("Repository: %s", repository)
+        io.print("Pusher: %s", pusher)
+        io.print("Ref: %s", ref)
+        
+        # Trigger CI/CD pipeline
+        pipeline_result: Map<Text, Value> = this.triggerPipeline(repository, ref)
+        
+        # Send notifications
+        notification_result: Map<Text, Value> = this.sendSlackNotification(
+            "Push to " + repository + " by " + pusher
+        )
+        
+        result: Map<Text, Value> = {}
+        result.put("repository", repository)
+        result.put("pusher", pusher)
+        result.put("pipeline_triggered", pipeline_result.get("success"))
+        result.put("notification_sent", notification_result.get("success"))
+        
+        return result
+    }
+    
+    @external method handlePullRequestEvent(payload: Text): Map<Text, Value> {
+        io.print("🔀 Handling pull request event...")
+        
+        action: Text = json.get(payload, "action")
+        pr_number: Int = json.get(payload, "pull_request.number")
+        title: Text = json.get(payload, "pull_request.title")
+        author: Text = json.get(payload, "pull_request.user.login")
+        
+        io.print("PR #%d: %s by %s (%s)", pr_number, title, author, action)
+        
+        result: Map<Text, Value> = {}
+        result.put("pr_number", pr_number)
+        result.put("action", action)
+        result.put("author", author)
+        
+        if (action.equals("opened")) {
+            # Run automated checks
+            checks_result: Map<Text, Value> = this.runAutomatedChecks(pr_number)
+            result.put("checks_triggered", checks_result.get("success"))
+            
+            # Assign reviewers
+            assignment_result: Map<Text, Value> = this.assignReviewers(pr_number)
+            result.put("reviewers_assigned", assignment_result.get("success"))
+        } else if (action.equals("closed")) {
+            # Clean up resources
+            cleanup_result: Map<Text, Value> = this.cleanupPRResources(pr_number)
+            result.put("cleanup_done", cleanup_result.get("success"))
+        }
+        
+        return result
+    }
+    
+    @external method handleIssueEvent(payload: Text): Map<Text, Value> {
+        io.print("🐛 Handling issue event...")
+        
+        action: Text = json.get(payload, "action")
+        issue_number: Int = json.get(payload, "issue.number")
+        title: Text = json.get(payload, "issue.title")
+        
+        io.print("Issue #%d: %s (%s)", issue_number, title, action)
+        
+        result: Map<Text, Value> = {}
+        result.put("issue_number", issue_number)
+        result.put("action", action)
+        
+        if (action.equals("opened")) {
+            # Auto-label based on content
+            labeling_result: Map<Text, Value> = this.autoLabelIssue(issue_number, title)
+            result.put("auto_labeled", labeling_result.get("success"))
+            
+            # Create tracking ticket in external system
+            tracking_result: Map<Text, Value> = this.createTrackingTicket(issue_number, title)
+            result.put("tracking_created", tracking_result.get("success"))
+        }
+        
+        return result
+    }
+    
+    @external method triggerPipeline(repository: Text, ref: Text): Map<Text, Value> {
+        io.print("🚀 Triggering CI/CD pipeline for %s:%s", repository, ref)
+        
+        # Call CI/CD API to trigger pipeline
+        pipeline_data: Text = json.createObject(
+            "repository", repository,
+            "ref", ref,
+            "triggered_by", "webhook",
+            "timestamp", "2024-01-01T12:00:00Z"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer ci-cd-token",
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.post("https://ci-cd.example.com/api/pipelines", pipeline_data, headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("status", client.getStatus(response))
+        
+        if (client.isSuccess(response)) {
+            io.print("✅ Pipeline triggered successfully")
+        } else {
+            io.print("❌ Failed to trigger pipeline")
+        }
+        
+        return result
+    }
+    
+    @external method runAutomatedChecks(pr_number: Int): Map<Text, Value> {
+        io.print("🔍 Running automated checks for PR #%d", pr_number)
+        
+        # Call code quality service
+        checks_data: Text = json.createObject(
+            "pr_number", pr_number,
+            "checks", json.createArray("lint", "test", "security")
+        )
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer quality-token",
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.post("https://quality.example.com/api/checks", checks_data, headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("status", client.getStatus(response))
+        
+        return result
+    }
+    
+    @external method assignReviewers(pr_number: Int): Map<Text, Value> {
+        io.print("👥 Auto-assigning reviewers for PR #%d", pr_number)
+        
+        # Call GitHub API to assign reviewers
+        reviewers_data: Text = json.createObject(
+            "reviewers", json.createArray("senior-dev", "tech-lead"),
+            "team_reviewers", json.createArray("core-team")
+        )
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer github-token",
+            "Content-Type": "application/json"
+        }
+        
+        url: Text = "https://api.github.com/repos/owner/repo/pulls/" + pr_number.toString() + "/requested_reviewers"
+        response: HttpResponse = client.post(url, reviewers_data, headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("assigned_reviewers", 2)
+        
+        return result
+    }
+    
+    @external method sendSlackNotification(message: Text): Map<Text, Value> {
+        io.print("💬 Sending Slack notification: %s", message)
+        
+        slack_payload: Text = json.createObject(
+            "text", message,
+            "channel", "#dev-notifications",
+            "username", "WebhookBot",
+            "icon_emoji", ":robot_face:"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.post(this.notification_url, slack_payload, headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("status", client.getStatus(response))
+        
+        if (client.isSuccess(response)) {
+            io.print("✅ Slack notification sent")
+        } else {
+            io.print("❌ Failed to send Slack notification")
+        }
+        
+        return result
+    }
+    
+    @external method autoLabelIssue(issue_number: Int, title: Text): Map<Text, Value> {
+        io.print("🏷️ Auto-labeling issue #%d", issue_number)
+        
+        labels: List<Text> = []
+        
+        # Analyze title for keywords
+        if (title.toLowerCase().contains("bug")) {
+            labels.add("bug")
+        }
+        if (title.toLowerCase().contains("feature")) {
+            labels.add("enhancement")
+        }
+        if (title.toLowerCase().contains("doc")) {
+            labels.add("documentation")
+        }
+        
+        if (labels.size() > 0) {
+            labels_data: Text = json.createObject("labels", labels)
+            
+            headers: Map<Text, Text> = {
+                "Authorization": "Bearer github-token",
+                "Content-Type": "application/json"
+            }
+            
+            url: Text = "https://api.github.com/repos/owner/repo/issues/" + issue_number.toString() + "/labels"
+            response: HttpResponse = client.post(url, labels_data, headers)
+            
+            result: Map<Text, Value> = {}
+            result.put("success", client.isSuccess(response))
+            result.put("labels_added", labels.size())
+            
+            return result
+        }
+        
+        result: Map<Text, Value> = {}
+        result.put("success", true)
+        result.put("labels_added", 0)
+        
+        return result
+    }
+    
+    @external method createTrackingTicket(issue_number: Int, title: Text): Map<Text, Value> {
+        io.print("📋 Creating tracking ticket for issue #%d", issue_number)
+        
+        ticket_data: Text = json.createObject(
+            "summary", "GitHub Issue #" + issue_number.toString() + ": " + title,
+            "description", "Automatically created from GitHub issue",
+            "priority", "Medium",
+            "type", "Task"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer jira-token",
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.post("https://jira.example.com/api/tickets", ticket_data, headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("status", client.getStatus(response))
+        
+        return result
+    }
+    
+    @external method cleanupPRResources(pr_number: Int): Map<Text, Value> {
+        io.print("🧹 Cleaning up resources for PR #%d", pr_number)
+        
+        # Delete preview environment
+        cleanup_data: Text = json.createObject(
+            "pr_number", pr_number,
+            "action", "cleanup"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer deploy-token",
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.delete("https://deploy.example.com/api/environments/pr-" + pr_number.toString(), headers)
+        
+        result: Map<Text, Value> = {}
+        result.put("success", client.isSuccess(response))
+        result.put("environment_cleaned", true)
+        
+        return result
+    }
+    
+    @external method processWebhook(event_type: Text, payload: Text, signature: Text): Map<Text, Value> {
+        io.print("🎯 Processing incoming webhook...")
+        
+        # Verify signature
+        if (!this.verifyWebhookSignature(payload, signature)) {
+            io.print("❌ Invalid webhook signature")
+            result: Map<Text, Value> = {}
+            result.put("success", false)
+            result.put("error", "Invalid signature")
+            return result
+        }
+        
+        # Process based on event type
+        webhook_result: Map<Text, Value> = this.processGitHubWebhook(event_type, payload)
+        
+        # Log processing result
+        if (webhook_result.get("processed")) {
+            io.print("✅ Webhook processed successfully")
+        } else {
+            io.print("⚠️ Webhook processing incomplete")
+        }
+        
+        return webhook_result
+    }
+}
+
+Object WebhookDemo {
+    
+    @external method simulateGitHubWebhooks(): Text {
+        io.print("🌟 GitHub Webhook Simulation Demo")
+        
+        processor: WebhookProcessor = WebhookProcessor("webhook-secret-123", "https://hooks.slack.com/webhook-url")
+        
+        # Simulate push webhook
+        push_payload: Text = json.createObject(
+            "ref", "refs/heads/main",
+            "repository", json.createObject("name", "awesome-project"),
+            "pusher", json.createObject("name", "developer123")
+        )
+        
+        push_result: Map<Text, Value> = processor.processWebhook("push", push_payload, "valid-signature")
+        io.print("Push webhook result: %s", push_result.get("action"))
+        
+        # Simulate pull request webhook
+        pr_payload: Text = json.createObject(
+            "action", "opened",
+            "pull_request", json.createObject(
+                "number", 42,
+                "title", "Add new feature",
+                "user", json.createObject("login", "contributor")
+            )
+        )
+        
+        pr_result: Map<Text, Value> = processor.processWebhook("pull_request", pr_payload, "valid-signature")
+        io.print("PR webhook result: %s", pr_result.get("action"))
+        
+        # Simulate issue webhook
+        issue_payload: Text = json.createObject(
+            "action", "opened",
+            "issue", json.createObject(
+                "number", 123,
+                "title", "Bug: Application crashes on startup"
+            )
+        )
+        
+        issue_result: Map<Text, Value> = processor.processWebhook("issues", issue_payload, "valid-signature")
+        io.print("Issue webhook result: %s", issue_result.get("action"))
+        
+        return "Webhook simulation completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("🎣 Webhook Processing Example")
+        
+        demo: WebhookDemo = WebhookDemo()
+        return demo.simulateGitHubWebhooks()
+    }
+}

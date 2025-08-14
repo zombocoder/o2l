@@ -1,0 +1,35 @@
+import system.io
+import system.os
+
+Object SimpleSystemTest {
+    @external method testMemoryAndCPU(): Text {
+        io.print("=== Testing Memory and CPU Values ===")
+        
+        # Test memory information
+        memory_usage: Double = os.getMemoryUsage()
+        cpu_usage: Double = os.getCPUUsage()
+        
+        io.print("Memory usage raw value: %f", memory_usage)
+        io.print("CPU usage raw value: %f", cpu_usage)
+        io.print("Memory usage with one decimal: %.1f", memory_usage)  
+        io.print("CPU usage with one decimal: %.1f", cpu_usage)
+        
+        # Test individual memory values
+        total: Long = os.getTotalMemory()
+        available: Long = os.getAvailableMemory()
+        used: Long = os.getUsedMemory()
+        
+        io.print("Total memory: %d KB", total)
+        io.print("Available memory: %d KB", available)
+        io.print("Used memory: %d KB", used)
+        
+        return "Memory and CPU test completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        test: SimpleSystemTest = new SimpleSystemTest()
+        return test.testMemoryAndCPU()
+    }
+}

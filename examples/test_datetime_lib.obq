@@ -1,0 +1,267 @@
+import datetime
+import system.io
+import testing
+
+Object DateTimeDemo {
+    @external method runBasicDemo(): Text {
+        io.print("🕐 O2L DateTime Library Demo")
+        io.print("==============================")
+        
+        # Current date and time
+        now: Text = datetime.now()
+        today: Text = datetime.today()
+        
+        io.print("Current datetime: %s", datetime.toString(now))
+        io.print("Today (midnight): %s", datetime.toString(today))
+        io.print("Current year: %d", datetime.getYear(now))
+        io.print("Current month: %d", datetime.getMonth(now))
+        io.print("Current day: %d", datetime.getDay(now))
+        
+        # Create specific dates
+        birthday: Text = datetime.create(1995, 6, 15, 14, 30, 0)
+        io.print("Birthday: %s", datetime.toString(birthday))
+        io.print("Birthday ISO: %s", datetime.formatISO(birthday))
+        
+        # Date arithmetic
+        future_date: Text = datetime.addDays(now, 30)
+        past_date: Text = datetime.addDays(now, -7)
+        
+        io.print("30 days from now: %s", datetime.toDateString(future_date))
+        io.print("7 days ago: %s", datetime.toDateString(past_date))
+        
+        "Basic demo completed"
+    }
+    
+    @external method runCalendarDemo(): Text {
+        io.print("")
+        io.print("📅 Calendar Functions Demo")
+        io.print("===========================")
+        
+        # Create a test date in the middle of June 2024
+        test_date: Text = datetime.create(2024, 6, 15, 14, 30, 45)
+        io.print("Test date: %s", datetime.toString(test_date))
+        
+        # Calendar boundaries
+        start_day: Text = datetime.startOfDay(test_date)
+        end_day: Text = datetime.endOfDay(test_date)
+        start_month: Text = datetime.startOfMonth(test_date)
+        end_month: Text = datetime.endOfMonth(test_date)
+        start_year: Text = datetime.startOfYear(test_date)
+        end_year: Text = datetime.endOfYear(test_date)
+        
+        io.print("Start of day: %s", datetime.toString(start_day))
+        io.print("End of day: %s", datetime.toString(end_day))
+        io.print("Start of month: %s", datetime.toString(start_month))
+        io.print("End of month: %s", datetime.toString(end_month))
+        io.print("Start of year: %s", datetime.toString(start_year))
+        io.print("End of year: %s", datetime.toString(end_year))
+        
+        "Calendar demo completed"
+    }
+    
+    @external method runComparisonDemo(): Text {
+        io.print("")
+        io.print("⚖️  Date Comparison Demo")
+        io.print("========================")
+        
+        date1: Text = datetime.create(2024, 1, 15, 12, 0, 0)
+        date2: Text = datetime.create(2024, 1, 16, 12, 0, 0)
+        date3: Text = datetime.create(2024, 1, 15, 12, 0, 0)
+        
+        io.print("Date 1: %s", datetime.toString(date1))
+        io.print("Date 2: %s", datetime.toString(date2))
+        io.print("Date 3: %s", datetime.toString(date3))
+        
+        is_equal: Bool = datetime.isEqual(date1, date3)
+        is_before: Bool = datetime.isBefore(date1, date2)
+        is_after: Bool = datetime.isAfter(date2, date1)
+        
+        io.print("Date1 equals Date3: %s", is_equal)
+        io.print("Date1 before Date2: %s", is_before)
+        io.print("Date2 after Date1: %s", is_after)
+        
+        "Comparison demo completed"
+    }
+    
+    @external method runUtilityDemo(): Text {
+        io.print("")
+        io.print("🔧 Utility Functions Demo")
+        io.print("===========================")
+        
+        # Leap year testing
+        leap2024: Bool = datetime.isLeapYear(2024)
+        leap2023: Bool = datetime.isLeapYear(2023)
+        
+        io.print("2024 is leap year: %s", leap2024)
+        io.print("2023 is leap year: %s", leap2023)
+        
+        # Days in month
+        days_feb_2024: Int = datetime.daysInMonth(2024, 2)
+        days_feb_2023: Int = datetime.daysInMonth(2023, 2)
+        days_jan: Int = datetime.daysInMonth(2024, 1)
+        
+        io.print("Days in Feb 2024: %d", days_feb_2024)
+        io.print("Days in Feb 2023: %d", days_feb_2023)
+        io.print("Days in Jan 2024: %d", days_jan)
+        
+        # Weekend/weekday testing
+        sunday: Text = datetime.create(2024, 1, 14)  # A Sunday
+        monday: Text = datetime.create(2024, 1, 15)  # A Monday
+        
+        sunday_weekend: Bool = datetime.isWeekend(sunday)
+        monday_weekday: Bool = datetime.isWeekday(monday)
+        
+        io.print("Sunday is weekend: %s", sunday_weekend)
+        io.print("Monday is weekday: %s", monday_weekday)
+        
+        # Timestamp conversion
+        test_dt: Text = datetime.create(2024, 1, 15, 12, 0, 0)
+        timestamp: Int = datetime.getTimestamp(test_dt)
+        from_timestamp: Text = datetime.fromTimestamp(timestamp)
+        
+        io.print("Original: %s", datetime.toString(test_dt))
+        io.print("Timestamp: %d", timestamp)
+        io.print("From timestamp: %s", datetime.toString(from_timestamp))
+        
+        "Utility demo completed"
+    }
+    
+    @external method runParsingDemo(): Text {
+        io.print("")
+        io.print("📄 Parsing and Formatting Demo")
+        io.print("================================")
+        
+        # ISO string parsing
+        iso_date: Text = datetime.fromISOString("2024-06-15T14:30:45.123Z")
+        simple_date: Text = datetime.fromISOString("2024-06-15")
+        
+        io.print("From ISO string: %s", datetime.toString(iso_date))
+        io.print("From simple ISO: %s", datetime.toString(simple_date))
+        
+        # Formatting demonstrations
+        test_dt: Text = datetime.create(2024, 6, 15, 14, 30, 45)
+        
+        iso_format: Text = datetime.formatISO(test_dt)
+        date_str: Text = datetime.toDateString(test_dt)
+        time_str: Text = datetime.toTimeString(test_dt)
+        full_str: Text = datetime.toString(test_dt)
+        
+        io.print("ISO format: %s", iso_format)
+        io.print("Date only: %s", date_str)
+        io.print("Time only: %s", time_str)
+        io.print("Full string: %s", full_str)
+        
+        "Parsing demo completed"
+    }
+}
+
+Object DateTimeTests {
+    @external method runTests(): Int {
+        io.print("")
+        io.print("🧪 DateTime Library Tests")
+        io.print("==========================")
+        
+        testing.createSuite("DateTimeTests")
+        
+        # Test basic creation
+        testing.runTest("testDateCreation")
+        test_date: Text = datetime.create(2024, 6, 15, 14, 30, 45)
+        year: Int = datetime.getYear(test_date)
+        testing.assertEqual(2024, year, "Year should be 2024")
+        
+        month: Int = datetime.getMonth(test_date)
+        testing.assertEqual(6, month, "Month should be 6")
+        
+        day: Int = datetime.getDay(test_date)
+        testing.assertEqual(15, day, "Day should be 15")
+        
+        # Test date arithmetic
+        testing.runTest("testDateArithmetic")
+        future: Text = datetime.addDays(test_date, 5)
+        future_day: Int = datetime.getDay(future)
+        testing.assertEqual(20, future_day, "Adding 5 days should give day 20")
+        
+        # Test comparisons
+        testing.runTest("testDateComparisons")
+        same_date: Text = datetime.create(2024, 6, 15, 14, 30, 45)
+        later_date: Text = datetime.create(2024, 6, 16, 14, 30, 45)
+        
+        is_equal: Bool = datetime.isEqual(test_date, same_date)
+        testing.assertTrue(is_equal, "Same dates should be equal")
+        
+        is_before: Bool = datetime.isBefore(test_date, later_date)
+        testing.assertTrue(is_before, "Earlier date should be before later date")
+        
+        # Test utility functions
+        testing.runTest("testUtilities")
+        leap_year: Bool = datetime.isLeapYear(2024)
+        testing.assertTrue(leap_year, "2024 should be a leap year")
+        
+        days_feb: Int = datetime.daysInMonth(2024, 2)
+        testing.assertEqual(29, days_feb, "February 2024 should have 29 days")
+        
+        # Test formatting
+        testing.runTest("testFormatting")
+        date_string: Text = datetime.toDateString(test_date)
+        testing.assertEqual("2024-06-15", date_string, "Date string should match")
+        
+        time_string: Text = datetime.toTimeString(test_date)
+        testing.assertEqual("14:30:45", time_string, "Time string should match")
+        
+        # Test ISO parsing
+        testing.runTest("testISOParsing")
+        iso_dt: Text = datetime.fromISOString("2024-06-15T14:30:45Z")
+        iso_year: Int = datetime.getYear(iso_dt)
+        testing.assertEqual(2024, iso_year, "ISO parsed year should be 2024")
+        
+        # Test calendar functions
+        testing.runTest("testCalendarFunctions")
+        start_day: Text = datetime.startOfDay(test_date)
+        start_hour: Int = datetime.getHour(start_day)
+        testing.assertEqual(0, start_hour, "Start of day should be hour 0")
+        
+        end_day: Text = datetime.endOfDay(test_date)
+        end_hour: Int = datetime.getHour(end_day)
+        testing.assertEqual(23, end_hour, "End of day should be hour 23")
+        
+        testing.printResults()
+        
+        failed: Int = testing.getFailedCount()
+        if (failed == 0) {
+            io.print("✅ All datetime tests passed!")
+            return 0
+        } else {
+            io.print("❌ %d datetime tests failed", failed)
+            return 1
+        }
+    }
+}
+
+Object Main {
+    method main(): Int {
+        io.print("🚀 Starting O2L DateTime Library Demonstration")
+        io.print("==============================================")
+        
+        demo: DateTimeDemo = new DateTimeDemo()
+        tester: DateTimeTests = new DateTimeTests()
+        
+        # Run demonstrations
+        demo.runBasicDemo()
+        demo.runCalendarDemo()
+        demo.runComparisonDemo()
+        demo.runUtilityDemo()
+        demo.runParsingDemo()
+        
+        # Run tests
+        test_result: Int = tester.runTests()
+        
+        io.print("")
+        if (test_result == 0) {
+            io.print("🎉 DateTime library demonstration completed successfully!")
+        } else {
+            io.print("⚠️  Some tests failed. Check the output above.")
+        }
+        
+        return test_result
+    }
+}

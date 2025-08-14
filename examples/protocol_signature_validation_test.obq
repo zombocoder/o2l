@@ -1,0 +1,135 @@
+import system.io
+
+# =============================================================================
+# PROTOCOL WITH METHOD SIGNATURES
+# =============================================================================
+
+Protocol Drawable {
+    method draw(): Text
+    method getSize(): Int
+    method resize(width: Int, height: Int): Bool
+}
+
+# =============================================================================
+# CORRECT IMPLEMENTATION
+# =============================================================================
+
+Object Rectangle: Drawable {
+    property width: Int
+    property height: Int
+    
+    constructor() {
+        this.width = 10
+        this.height = 5
+    }
+    
+    @external method draw(): Text {
+        return "Drawing rectangle " + this.width.toString() + "x" + this.height.toString()
+    }
+    
+    @external method getSize(): Int {
+        return this.width * this.height
+    }
+    
+    @external method resize(width: Int, height: Int): Bool {
+        this.width = width
+        this.height = height
+        return true
+    }
+}
+
+# =============================================================================
+# INCORRECT IMPLEMENTATION (for testing validation)
+# =============================================================================
+
+Object Circle: Drawable {
+    property radius: Int
+    
+    constructor() {
+        this.radius = 5
+    }
+    
+    @external method draw(): Text {
+        return "Drawing circle with radius " + this.radius.toString()
+    }
+    
+    @external method getSize(): Int {
+        return this.radius * this.radius * 3  # Approximate area
+    }
+    
+    # WRONG SIGNATURE: Should be resize(width: Int, height: Int): Bool
+    # But this has different parameter types - should cause validation error
+    @external method resize(radius: Float): Text {
+        return "Cannot resize circle with rectangle parameters"
+    }
+}
+
+# =============================================================================
+# SHAPE RENDERER - USES PROTOCOL POLYMORPHISM
+# =============================================================================
+
+Object ShapeRenderer {
+    @external method renderShape(shape: Drawable): Text {
+        io.print("🎨 Rendering shape...")
+        
+        description: Text = shape.draw()
+        size: Int = shape.getSize()
+        resized: Bool = shape.resize(20, 15)
+        
+        io.print("  Description: %s", description)
+        io.print("  Size: %d", size)
+        io.print("  Resize successful: %s", resized.toString())
+        
+        return "Shape rendered successfully"
+    }
+}
+
+# =============================================================================
+# MAIN DEMONSTRATION
+# =============================================================================
+
+Object Main {
+    method main(): Text {
+        io.print("🔍 PROTOCOL SIGNATURE VALIDATION TEST")
+        io.print("=====================================")
+        io.print("")
+        
+        # Create instances
+        rectangle: Rectangle = new Rectangle()
+        circle: Circle = new Circle()
+        renderer: ShapeRenderer = new ShapeRenderer()
+        
+        io.print("📋 Test 1: Rectangle (should work correctly)")
+        io.print("-------------------------------------------")
+        
+        # This should work - Rectangle implements Drawable correctly
+        rect_result: Text = renderer.renderShape(rectangle)
+        io.print("✅ Result: %s", rect_result)
+        io.print("")
+        
+        io.print("📋 Test 2: Circle (signature validation should catch issues)")
+        io.print("------------------------------------------------------------")
+        
+        # This might work at runtime but signature validation should catch the issue
+        # Circle's resize method has wrong signature: resize(radius: Float): Text
+        # Protocol expects: resize(width: Int, height: Int): Bool
+        try {
+            circle_result: Text = renderer.renderShape(circle)
+            io.print("⚠️  Result: %s", circle_result)
+            io.print("⚠️  Warning: Runtime succeeded despite signature mismatch!")
+        } catch (error) {
+            io.print("❌ Error caught: Protocol signature validation working!")
+            io.print("   (Error object caught but details not shown)")
+        }
+        
+        io.print("")
+        io.print("🎓 Protocol Signature Validation Features:")
+        io.print("  • Parameter count validation")
+        io.print("  • Parameter type matching")
+        io.print("  • Return type verification")
+        io.print("  • Detailed error reporting")
+        io.print("  • Backward compatibility with untyped methods")
+        
+        return "Protocol signature validation test completed"
+    }
+}

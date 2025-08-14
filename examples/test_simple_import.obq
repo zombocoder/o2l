@@ -1,0 +1,9 @@
+import lib.Calculator
+
+Object Main {
+    method main(): Int {
+        calc: Calculator = new Calculator()
+        result: Int = calc.compute("add", 5, 3)
+        return result
+    }
+}

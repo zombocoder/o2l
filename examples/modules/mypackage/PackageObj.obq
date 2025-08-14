@@ -1,0 +1,1 @@
+Object PackageObj { method packageMethod(): Text { "Hello from package!" } }

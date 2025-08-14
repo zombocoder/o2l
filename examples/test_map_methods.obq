@@ -1,0 +1,39 @@
+import system.io
+
+Object MapMethodTest {
+    @external method testMapMethods(): Int {
+        io.print("=== Map Methods Test ===")
+        
+        # Create a map
+        my_map: Map<Text, Int> = {
+            "a": 1,
+            "b": 2
+        }
+        
+        # Test size method
+        size: Int = my_map.size()
+        io.print("Map size: %d", size)
+        
+        # Test get method
+        value_a: Int = my_map.get("a")
+        io.print("Value for 'a': %d", value_a)
+        
+        # Test contains method
+        has_b: Bool = my_map.contains("b")
+        io.print("Contains 'b': %o", has_b)
+        
+        # Test put method
+        my_map.put("c", 3)
+        new_size: Int = my_map.size()
+        io.print("Size after adding 'c': %d", new_size)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: MapMethodTest = new MapMethodTest()
+        return test.testMapMethods()
+    }
+}

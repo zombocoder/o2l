@@ -1,0 +1,19 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        io.print("Testing negative numbers...")
+        
+        # Test negative number parsing
+        negative: Int = 0 - 1
+        io.print("0 - 1 = %d", negative)
+        
+        # Test in return statement
+        if (negative < 0) {
+            io.print("Negative number detected!")
+            return 0
+        }
+        
+        return 1
+    }
+}

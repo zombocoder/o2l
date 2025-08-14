@@ -1,0 +1,33 @@
+import system.io
+
+Enum TestStatus {
+    ACTIVE = 1,
+    INACTIVE = 2
+}
+
+Record TestData {
+    name: Text
+    status: TestStatus
+}
+
+Object TestObject {
+    property data: TestData
+    
+    constructor() {
+        this.data = TestData(name="Test", status=TestStatus.ACTIVE)
+    }
+    
+    @external method showInfo(): Text {
+        io.print("Name: %s", this.data.name)
+        io.print("Status: %o", this.data.status)
+        return this.data.name
+    }
+}
+
+Object Main {
+    method main(): Int {
+        const obj: TestObject = new TestObject()
+        obj.showInfo()
+        return 0
+    }
+}

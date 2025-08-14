@@ -1,0 +1,48 @@
+import system.io
+
+# Define an enum for age info
+Enum PersonalInfoAge {
+    YOUNG = 1,
+    MIDDLE = 2,
+    OLD = 3
+}
+
+# Define a Record for PersonalInfoDTO
+Record PersonalInfoDTO {
+    personalName: Text
+    PersonalAge: Text
+    ageInfo: PersonalInfoAge
+}
+
+Object ListDTODemo {
+    @external method testPersonalInfoList(): Int {
+        # Create a list of PersonalInfoDTO objects
+        someList: List<PersonalInfoDTO> = [
+            PersonalInfoDTO(personalName="Alice", PersonalAge="30", ageInfo=PersonalInfoAge.YOUNG),
+            PersonalInfoDTO(personalName="Bob", PersonalAge="25", ageInfo=PersonalInfoAge.OLD)
+        ]
+        
+        io.print("List size: %d", someList.size())
+        io.print("Full list: %s", someList)
+        
+        # Access individual elements
+        first: PersonalInfoDTO = someList.get(0)
+        io.print("First person: %s, age %s, category %o", first.personalName, first.PersonalAge, first.ageInfo)
+        
+        second: PersonalInfoDTO = someList.get(1)
+        io.print("Second person: %s, age %s, category %o", second.personalName, second.PersonalAge, second.ageInfo)
+        
+        # Add another person
+        someList.add(PersonalInfoDTO(personalName="Charlie", PersonalAge="35", ageInfo=PersonalInfoAge.MIDDLE))
+        io.print("After adding Charlie - List size: %d", someList.size())
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: ListDTODemo = new ListDTODemo()
+        return demo.testPersonalInfoList()
+    }
+}

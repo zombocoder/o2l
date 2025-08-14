@@ -1,0 +1,92 @@
+import system.io
+import system.fs
+
+Object CombinedTester {
+    @external method testLogicalAndFilesystem(): Int {
+        io.print("=== Combined Logical Operators & Filesystem Test ===")
+        
+        # Test file paths
+        config_file: Text = "config.txt"
+        backup_file: Text = "backup.txt"
+        
+        # Test logical operators with filesystem operations
+        io.print("1. Testing file creation with logical conditions...")
+        
+        # Create files for testing
+        create_config: Bool = fs.writeText(config_file, "debug=true\nport=8080")
+        create_backup: Bool = fs.writeText(backup_file, "backup_data")
+        
+        io.print("   Config file created: %o", create_config)
+        io.print("   Backup file created: %o", create_backup)
+        
+        # Test logical conditions with file checks
+        io.print("2. Testing complex file validation...")
+        
+        config_exists: Bool = fs.exists(config_file)
+        backup_exists: Bool = fs.exists(backup_file)
+        config_is_file: Bool = fs.isFile(config_file)
+        backup_is_file: Bool = fs.isFile(backup_file)
+        
+        # Validate both files exist and are regular files
+        both_files_valid: Bool = (config_exists && config_is_file) && (backup_exists && backup_is_file)
+        io.print("   Both files are valid: %o", both_files_valid)
+        
+        # Test OR conditions - at least one file exists
+        at_least_one_exists: Bool = config_exists || backup_exists
+        io.print("   At least one file exists: %o", at_least_one_exists)
+        
+        # Test complex nested conditions
+        io.print("3. Testing nested logical conditions...")
+        
+        # Check if we should perform backup: config exists AND (backup doesn't exist OR backup is older)
+        should_backup: Bool = config_exists && (!backup_exists || config_is_file)
+        io.print("   Should perform backup: %o", should_backup)
+        
+        # Perform conditional operations based on logical results
+        if (both_files_valid) {
+            io.print("4. Reading file contents...")
+            config_content: Text = fs.readText(config_file)
+            backup_content: Text = fs.readText(backup_file)
+            
+            io.print("   Config content: %s", config_content)
+            io.print("   Backup content: %s", backup_content)
+        }
+        
+        # Test parentheses with filesystem operations
+        io.print("5. Testing parentheses with file operations...")
+        
+        # Complex condition: (file1 exists OR file2 exists) AND both are files
+        complex_condition: Bool = (fs.exists(config_file) || fs.exists(backup_file)) && (fs.isFile(config_file) && fs.isFile(backup_file))
+        io.print("   Complex parentheses condition: %o", complex_condition)
+        
+        # Cleanup with logical conditions
+        io.print("6. Conditional cleanup...")
+        
+        cleanup_config: Bool = fs.exists(config_file) && fs.deleteFile(config_file)
+        cleanup_backup: Bool = fs.exists(backup_file) && fs.deleteFile(backup_file)
+        
+        io.print("   Config cleanup: %o", cleanup_config)
+        io.print("   Backup cleanup: %o", cleanup_backup)
+        
+        # Final validation
+        config_still_exists: Bool = fs.exists(config_file)
+        backup_still_exists: Bool = fs.exists(backup_file)
+        io.print("   Config still exists: %o", config_still_exists)
+        io.print("   Backup still exists: %o", backup_still_exists)
+        
+        config_not_exists: Bool = !config_still_exists
+        backup_not_exists: Bool = !backup_still_exists
+        all_cleaned: Bool = config_not_exists && backup_not_exists
+        io.print("   All files cleaned up: %o", all_cleaned)
+        
+        io.print("=== Combined test completed successfully ===")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: CombinedTester = new CombinedTester()
+        return tester.testLogicalAndFilesystem()
+    }
+}

@@ -1,0 +1,17 @@
+Object TestAccess {
+    @external method publicMethod(): Int {
+        return 42
+    }
+    
+    method privateMethod(): Int {
+        return 24
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: TestAccess = new TestAccess()
+        test.privateMethod()
+        return 0
+    }
+}

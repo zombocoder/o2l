@@ -1,0 +1,31 @@
+import system.io
+import system.os
+
+Object Main {
+    method main(): Text {
+        # Get command line arguments
+        args: List = os.args()
+        argc: Int = os.argc()
+        
+        io.print("Program received %d arguments:", argc)
+        
+        # Print all arguments
+        iterator: ListIterator = args.iterator()
+        
+        while (iterator.hasNext()) {
+            arg: Text = iterator.next()
+            io.print("args[%d] = '%s'", iterator.index(), arg)
+        }
+        
+        # Test with specific argument access
+        if (argc > 0) {
+            io.print("First argument: %s", args.get(0))
+        }
+        
+        if (argc > 1) {
+            io.print("Second argument: %s", args.get(1))
+        }
+        
+        "Command line arguments processed successfully"
+    }
+}

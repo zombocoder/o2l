@@ -1,0 +1,27 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        # Create a Set with integer elements (simplified example)
+        my_set: Set<Int> = (
+            1,
+            2,
+            3,
+            2  # This duplicate should be automatically removed
+        )
+
+        set_iter: SetIterator = my_set.iterator()
+        io.print("Created set iterator")
+
+        while (set_iter.hasNext()) {
+            item: Int = set_iter.next()
+            io.print("item: %d", item)
+        }
+        
+        io.print("Set size: %d", my_set.size())
+        io.print("Contains 2: %o", my_set.contains(2))
+        io.print("Contains 5: %o", my_set.contains(5))
+        
+        return 0
+    }
+}

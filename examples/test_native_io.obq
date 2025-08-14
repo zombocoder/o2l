@@ -1,0 +1,10 @@
+import system.io.*
+
+Object Main {
+    method main(): Text {
+        io.print("Hello from native print!")
+        io.print("Number test: %s", 42)
+        io.print("String test: %s", "World")
+        return "Done"
+    }
+}

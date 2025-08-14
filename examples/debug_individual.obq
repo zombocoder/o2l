@@ -1,0 +1,50 @@
+import system.io
+
+Object Test {
+    @external method classifyText(text: Text): Text {
+        len: Int = text.length()
+        
+        if (len == 0) {
+            return "empty"
+        } else if (len <= 3) {
+            return "tiny"
+        } else if (len <= 11) {
+            return "small"
+        } else if (len <= 50) {
+            return "medium"
+        } else if (len <= 100) {
+            return "large"
+        } else {
+            return "huge"
+        }
+    }
+}
+
+Object Main {
+    method main(): Text {
+        test: Test = new Test()
+        
+        result1: Text = test.classifyText("")
+        result2: Text = test.classifyText("Hi")
+        result3: Text = test.classifyText("Hello World")
+        result4: Text = test.classifyText("This is a medium sized text")
+        
+        io.print("result1: %s (expected: empty)", result1)
+        io.print("result2: %s (expected: tiny)", result2)
+        io.print("result3: %s (expected: small)", result3)
+        io.print("result4: %s (expected: medium)", result4)
+        
+        # Check each individually  
+        if (result1 != "empty") {
+            return "result1 wrong"
+        } else if (result2 != "tiny") {
+            return "result2 wrong"
+        } else if (result3 != "small") {
+            return "result3 wrong"
+        } else if (result4 != "medium") {
+            return "result4 wrong"
+        } else {
+            return "all correct"
+        }
+    }
+}

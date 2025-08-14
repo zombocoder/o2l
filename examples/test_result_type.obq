@@ -1,0 +1,63 @@
+import system.io
+
+# Example demonstrating Result<T,E> type for functional error handling
+Object Calculator {
+
+    @external method safeDivide(a: Int, b: Int): Int {
+        if (b == 0) {
+            throw("Division by zero error")
+        }
+        
+        result: Int = a / b
+        return result
+    }
+    
+    @external method safeOperation(a: Int, b: Int, operation: Text): Int {
+        try {
+            if (operation == "divide") {
+                return this.safeDivide(a, b)
+            }
+            if (operation == "add") {
+                result: Int = a + b
+                return result
+            }
+            throw("Unknown operation")
+            return 0
+        } catch (error) {
+            return -1
+        }
+    }
+}
+
+Object ResultDemo {
+    @external method demonstrateErrorHandling(): Int {
+        calc: Calculator = new Calculator()
+        
+        io.print("=== Testing Safe Operations ===")
+        
+        # Test successful operation
+        result1: Int = calc.safeOperation(10, 2, "divide")
+        io.print("10 / 2 = %d", result1)
+        
+        # Test division by zero (should be caught)
+        result2: Int = calc.safeOperation(10, 0, "divide")
+        io.print("10 / 0 = %d", result2)
+        
+        # Test addition
+        result3: Int = calc.safeOperation(5, 3, "add")
+        io.print("5 + 3 = %d", result3)
+        
+        # Test unknown operation
+        result4: Int = calc.safeOperation(1, 2, "multiply")
+        io.print("1 * 2 (unknown) = %d", result4)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: ResultDemo = new ResultDemo()
+        return demo.demonstrateErrorHandling()
+    }
+}

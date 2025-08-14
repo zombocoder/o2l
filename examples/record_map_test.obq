@@ -1,0 +1,39 @@
+import system.io
+
+###
+This example demonstrates how to create a map with custom objects
+and iterate through it using a MapIterator.
+###
+
+Record PersonalInfoDTO {
+    personalName: Text
+    PersonalAge: Int
+}
+
+Object Main {
+    method main(): Int {
+        # Create a map with some data
+
+        my_map: Map<Text, PersonalInfoDTO> = {
+            "John": PersonalInfoDTO(
+                personalName="Jonn",
+                PersonalAge=43,
+            ),
+            "Canni": PersonalInfoDTO(
+                personalName="Canni",
+                PersonalAge=21,
+            ),
+        }
+
+        map_iter: MapIterator = my_map.iterator()
+        io.print("Created map iterator")
+
+        while (map_iter.hasNext()) {
+            item: MapObject = map_iter.MapItem()
+            info: PersonalInfoDTO = item.getVal()
+            io.print("key: %s, value: %o", item.getKey(), info)
+            io.print("key: %s, value: %o", item.getKey(), info.PersonalAge)
+        }
+        return 0
+    }
+}

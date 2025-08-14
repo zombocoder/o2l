@@ -1,0 +1,129 @@
+# HTTP Server All Methods Test
+# Tests all HTTP method route registration (GET, POST, PUT, DELETE, PATCH)
+
+import http.server
+import system.io
+
+Object HttpServerMethodsTest {
+    @external method testAllHttpMethods(): Text {
+        io.print("=== Testing All HTTP Methods ===")
+        
+        # Create and configure server
+        server_instance: HttpServerInstance = server.create()
+        server.setHost(server_instance, "127.0.0.1")
+        server.setPort(server_instance, 8083)
+        server.setWorkerThreads(server_instance, 2)
+        
+        io.print("✅ Server created and configured")
+        
+        # Register routes for all HTTP methods
+        io.print("\n📍 Registering routes for all HTTP methods:")
+        
+        # GET routes
+        get_result: Text = server.get(server_instance, "/", "handler")
+        io.print("   GET  /: %s", get_result)
+        
+        get_api_result: Text = server.get(server_instance, "/api/users", "handler")
+        io.print("   GET  /api/users: %s", get_api_result)
+        
+        get_param_result: Text = server.get(server_instance, "/users/:id", "handler")
+        io.print("   GET  /users/:id: %s", get_param_result)
+        
+        # POST routes
+        post_result: Text = server.post(server_instance, "/api/users", "handler")
+        io.print("   POST /api/users: %s", post_result)
+        
+        post_data_result: Text = server.post(server_instance, "/api/data", "handler")
+        io.print("   POST /api/data: %s", post_data_result)
+        
+        # PUT routes  
+        put_result: Text = server.put(server_instance, "/users/:id", "handler")
+        io.print("   PUT  /users/:id: %s", put_result)
+        
+        put_api_result: Text = server.put(server_instance, "/api/users/:id", "handler")
+        io.print("   PUT  /api/users/:id: %s", put_api_result)
+        
+        # DELETE routes
+        delete_result: Text = server.delete(server_instance, "/users/:id", "handler")
+        io.print("   DELETE /users/:id: %s", delete_result)
+        
+        delete_api_result: Text = server.delete(server_instance, "/api/users/:id", "handler")
+        io.print("   DELETE /api/users/:id: %s", delete_api_result)
+        
+        # PATCH routes
+        patch_result: Text = server.patch(server_instance, "/users/:id", "handler")
+        io.print("   PATCH /users/:id: %s", patch_result)
+        
+        patch_api_result: Text = server.patch(server_instance, "/api/users/:id/profile", "handler")
+        io.print("   PATCH /api/users/:id/profile: %s", patch_api_result)
+        
+        # Start the server
+        io.print("\n🚀 Starting HTTP server with all methods on 127.0.0.1:8083...")
+        listen_result: Bool = server.listen(server_instance)
+        
+        if (listen_result) {
+            io.print("✅ Server started successfully!")
+            io.print("📡 Server is now accepting HTTP requests")
+            io.print("")
+            io.print("🧪 Test Commands (try in another terminal):")
+            io.print("   # GET requests")
+            io.print("   curl http://127.0.0.1:8083/")
+            io.print("   curl http://127.0.0.1:8083/api/users")
+            io.print("   curl http://127.0.0.1:8083/users/123")
+            io.print("")
+            io.print("   # POST requests")  
+            io.print("   curl -X POST http://127.0.0.1:8083/api/users -d '{\"name\":\"Alice\"}'")
+            io.print("   curl -X POST http://127.0.0.1:8083/api/data -d '{\"value\":42}'")
+            io.print("")
+            io.print("   # PUT requests")
+            io.print("   curl -X PUT http://127.0.0.1:8083/users/123 -d '{\"name\":\"Updated Alice\"}'")
+            io.print("   curl -X PUT http://127.0.0.1:8083/api/users/123 -d '{\"email\":\"alice@example.com\"}'")
+            io.print("")
+            io.print("   # DELETE requests")
+            io.print("   curl -X DELETE http://127.0.0.1:8083/users/123")
+            io.print("   curl -X DELETE http://127.0.0.1:8083/api/users/123")
+            io.print("")
+            io.print("   # PATCH requests")
+            io.print("   curl -X PATCH http://127.0.0.1:8083/users/123 -d '{\"name\":\"Patched Alice\"}'")
+            io.print("   curl -X PATCH http://127.0.0.1:8083/api/users/123/profile -d '{\"bio\":\"Updated bio\"}'")
+            io.print("")
+            io.print("💡 All routes return JSON with request details")
+            io.print("📊 Each request will be logged with method, path, and status")
+            
+            # Server statistics
+            stats: Map = server.getStats(server_instance)
+            total_requests: Int = stats.get("total_requests")
+            io.print("\n📊 Initial server statistics - Total requests: %d", total_requests)
+            
+            # Stop the server after brief delay
+            io.print("\n🛑 Stopping server after demonstration...")
+            stop_result: Text = server.stop(server_instance)
+            io.print("Stop result: %s", stop_result)
+            
+            return "All HTTP methods test completed - server was functional"
+        } else {
+            io.print("❌ Failed to start server (port might be in use)")
+            return "Server startup failed"
+        }
+    }
+}
+
+Object Main {
+    method main(): Text {
+        tester: HttpServerMethodsTest = new HttpServerMethodsTest()
+        result: Text = tester.testAllHttpMethods()
+        
+        io.print("\n🎉 HTTP Server All Methods Test Completed!")
+        io.print("The O2L HTTP server now supports:")
+        io.print("  ✅ GET routes")
+        io.print("  ✅ POST routes") 
+        io.print("  ✅ PUT routes")
+        io.print("  ✅ DELETE routes")
+        io.print("  ✅ PATCH routes")
+        io.print("  ✅ Route patterns with parameters")
+        io.print("  ✅ Multithreaded request handling")
+        io.print("  ✅ Server lifecycle management")
+        
+        return result
+    }
+}

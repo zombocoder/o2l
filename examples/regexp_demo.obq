@@ -1,0 +1,314 @@
+import regexp
+import system.io
+
+Object RegexpDemo {
+    @external method demonstrateBasicMatching(): Text {
+        io.print("=== Basic Pattern Matching ===")
+        io.print("")
+        
+        # Test basic matching
+        text: Text = "Hello World 123"
+        
+        # Simple text matching
+        has_hello: Bool = regexp.match(text, "Hello")
+        has_goodbye: Bool = regexp.match(text, "Goodbye")
+        
+        io.print("Text: '%s'", text)
+        io.print("Contains 'Hello': %o", has_hello)
+        io.print("Contains 'Goodbye': %o", has_goodbye)
+        
+        # Pattern matching with regex
+        has_numbers: Bool = regexp.match(text, "\\d+")
+        has_letters: Bool = regexp.match(text, "[A-Za-z]+")
+        
+        io.print("Contains numbers: %o", has_numbers)
+        io.print("Contains letters: %o", has_letters)
+        
+        # Case-insensitive matching
+        case_sensitive: Bool = regexp.match("Hello World", "hello")
+        case_insensitive: Bool = regexp.match("Hello World", "hello", "i")
+        
+        io.print("Case sensitive 'hello' match: %o", case_sensitive)
+        io.print("Case insensitive 'hello' match: %o", case_insensitive)
+        
+        return "Basic matching completed"
+    }
+    
+    @external method demonstrateFindingText(): Text {
+        io.print("")
+        io.print("=== Finding and Extracting Text ===")
+        io.print("")
+        
+        # Find first occurrence
+        email_text: Text = "Contact me at john@example.com or jane@test.org"
+        first_email: Text = regexp.find(email_text, "\\w+@\\w+\\.\\w+")
+        
+        io.print("Text: %s", email_text)
+        io.print("First email found: %s", first_email)
+        
+        # Find all occurrences
+        all_emails: List = regexp.findAll(email_text, "\\w+@\\w+\\.\\w+")
+        io.print("All emails found:")
+        
+        email_iter: ListIterator = all_emails.iterator()
+        while (email_iter.hasNext()) {
+            email: Text = email_iter.next()
+            io.print("  - %s", email)
+        }
+        
+        # Extract numbers from text
+        numbers_text: Text = "I bought 3 apples, 7 bananas, and 12 oranges for $25.50"
+        numbers: List = regexp.findAll(numbers_text, "\\d+")
+        prices: List = regexp.findAll(numbers_text, "\\$\\d+\\.\\d+")
+        
+        io.print("")
+        io.print("Text: %s", numbers_text)
+        io.print("Numbers found: %s", numbers)
+        io.print("Prices found: %s", prices)
+        
+        return "Finding text completed"
+    }
+    
+    @external method demonstrateReplacement(): Text {
+        io.print("")
+        io.print("=== Text Replacement and Transformation ===")
+        io.print("")
+        
+        # Basic replacement
+        greeting: Text = "Hello World, Hello Everyone"
+        single_replace: Text = regexp.replace(greeting, "Hello", "Hi")
+        all_replace: Text = regexp.replaceAll(greeting, "Hello", "Hi")
+        
+        io.print("Original: %s", greeting)
+        io.print("Single replace: %s", single_replace)
+        io.print("Replace all: %s", all_replace)
+        
+        # Pattern replacement
+        phone_text: Text = "Call me at 555-123-4567 or 555-987-6543"
+        hidden_phones: Text = regexp.replaceAll(phone_text, "\\d{3}-\\d{3}-\\d{4}", "XXX-XXX-XXXX")
+        
+        io.print("")
+        io.print("Original: %s", phone_text)
+        io.print("Hidden phones: %s", hidden_phones)
+        
+        # Transformation with capture groups
+        names: Text = "John Doe, Jane Smith, Bob Johnson"
+        formal_names: Text = regexp.replaceAll(names, "(\\w+) (\\w+)", "$2, $1")
+        
+        io.print("")
+        io.print("Original names: %s", names)
+        io.print("Formal format: %s", formal_names)
+        
+        # Remove unwanted characters
+        messy_text: Text = "Hello!!!   World???   How   are   you???"
+        clean_text: Text = regexp.replaceAll(messy_text, "[!?]+", "")
+        clean_spaces: Text = regexp.replaceAll(clean_text, "\\s+", " ")
+        
+        io.print("")
+        io.print("Messy text: %s", messy_text)
+        io.print("Clean text: %s", clean_spaces)
+        
+        return "Replacement completed"
+    }
+    
+    @external method demonstrateSplittingText(): Text {
+        io.print("")
+        io.print("=== Text Splitting and Parsing ===")
+        io.print("")
+        
+        # Split by delimiter
+        csv_data: Text = "apple,banana,cherry,date"
+        fruits: List = regexp.split(csv_data, ",")
+        
+        io.print("CSV data: %s", csv_data)
+        io.print("Fruits:")
+        
+        fruit_iter: ListIterator = fruits.iterator()
+        while (fruit_iter.hasNext()) {
+            fruit: Text = fruit_iter.next()
+            io.print("  - %s", fruit)
+        }
+        
+        # Split by complex pattern
+        mixed_data: Text = "word1;word2|word3,word4:word5"
+        words: List = regexp.split(mixed_data, "[;|,:]+")
+        
+        io.print("")
+        io.print("Mixed data: %s", mixed_data)
+        io.print("Words: %s", words)
+        
+        # Split sentences
+        paragraph: Text = "This is sentence one. This is sentence two! Is this sentence three?"
+        sentences: List = regexp.split(paragraph, "[.!?]\\s*")
+        
+        io.print("")
+        io.print("Paragraph: %s", paragraph)
+        io.print("Sentences:")
+        
+        sent_iter: ListIterator = sentences.iterator()
+        while (sent_iter.hasNext()) {
+            sentence: Text = sent_iter.next()
+            if (sentence.length() > 0) {
+                io.print("  - %s", sentence)
+            }
+        }
+        
+        return "Splitting completed"
+    }
+    
+    @external method demonstrateCaptureGroups(): Text {
+        io.print("")
+        io.print("=== Capture Groups and Advanced Extraction ===")
+        io.print("")
+        
+        # Extract parts of structured data
+        url_text: Text = "Visit https://www.example.com:8080/path/to/page"
+        url_parts: List = regexp.groups(url_text, "(https?)://([^:]+)(?::(\\d+))?(/.*)?")
+        
+        io.print("URL: %s", url_text)
+        io.print("URL parts:")
+        
+        parts_iter: ListIterator = url_parts.iterator()
+        index: Int = 0
+        while (parts_iter.hasNext()) {
+            part: Text = parts_iter.next()
+            if (index == 0) {
+                io.print("  Full match: %s", part)
+            } else if (index == 1) {
+                io.print("  Protocol: %s", part)
+            } else if (index == 2) {
+                io.print("  Domain: %s", part)
+            } else if (index == 3) {
+                io.print("  Port: %s", part)
+            } else if (index == 4) {
+                io.print("  Path: %s", part)
+            }
+            index = index + 1
+        }
+        
+        # Extract multiple structured items
+        log_text: Text = "[2024-08-08 14:30:25] ERROR: Connection failed\n[2024-08-08 14:31:10] INFO: Retrying connection"
+        timestamps: List = regexp.extract(log_text, "\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\]")
+        levels: List = regexp.extract(log_text, "\\] (\\w+):")
+        
+        io.print("")
+        io.print("Log text: %s", log_text)
+        io.print("Timestamps: %s", timestamps)
+        io.print("Log levels: %s", levels)
+        
+        return "Capture groups completed"
+    }
+    
+    @external method demonstrateUtilities(): Text {
+        io.print("")
+        io.print("=== Utility Functions ===")
+        io.print("")
+        
+        # Escape special characters
+        special_text: Text = "Price: $42.50 (with 10% discount)"
+        escaped: Text = regexp.escape(special_text)
+        
+        io.print("Original: %s", special_text)
+        io.print("Escaped: %s", escaped)
+        
+        # Validate patterns
+        valid_pattern: Text = "\\d{3}-\\d{2}-\\d{4}"
+        invalid_pattern: Text = "[unclosed"
+        
+        valid_check: Bool = regexp.isValid(valid_pattern)
+        invalid_check: Bool = regexp.isValid(invalid_pattern)
+        
+        io.print("")
+        io.print("Pattern '%s' is valid: %o", valid_pattern, valid_check)
+        io.print("Pattern '%s' is valid: %o", invalid_pattern, invalid_check)
+        
+        # Count occurrences
+        count_text: Text = "The quick brown fox jumps over the lazy dog"
+        word_count: Int = regexp.count(count_text, "\\b\\w+\\b")
+        the_count: Int = regexp.count(count_text, "\\bthe\\b", "i")
+        
+        io.print("")
+        io.print("Text: %s", count_text)
+        io.print("Total words: %d", word_count)
+        io.print("Occurrences of 'the' (case-insensitive): %d", the_count)
+        
+        return "Utilities completed"
+    }
+    
+    @external method demonstrateRealWorldExamples(): Text {
+        io.print("")
+        io.print("=== Real World Examples ===")
+        io.print("")
+        
+        # Email validation and extraction
+        io.print("--- Email Processing ---")
+        user_input: Text = "Please contact john.doe@company.com or jane_smith@example.org for more info"
+        
+        # Extract all valid-looking emails
+        emails: List = regexp.findAll(user_input, "\\b[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}\\b")
+        io.print("Found emails: %s", emails)
+        
+        # Validate email format
+        test_email: Text = "user@example.com"
+        is_valid_email: Bool = regexp.match(test_email, "^[\\w\\.-]+@[\\w\\.-]+\\.[a-zA-Z]{2,}$")
+        io.print("'%s' is valid email: %o", test_email, is_valid_email)
+        
+        # Phone number formatting
+        io.print("")
+        io.print("--- Phone Number Formatting ---")
+        raw_phone: Text = "5551234567"
+        formatted_phone: Text = regexp.replace(raw_phone, "(\\d{3})(\\d{3})(\\d{4})", "($1) $2-$3")
+        io.print("Raw: %s -> Formatted: %s", raw_phone, formatted_phone)
+        
+        # Log file processing
+        io.print("")
+        io.print("--- Log File Processing ---")
+        log_line: Text = "192.168.1.1 - - [08/Aug/2024:14:30:25 +0000] \"GET /index.html HTTP/1.1\" 200 2341"
+        
+        # Extract IP, timestamp, method, path, status, size
+        ip: Text = regexp.find(log_line, "^\\d+\\.\\d+\\.\\d+\\.\\d+")
+        timestamp: Text = regexp.find(log_line, "\\[([^\\]]+)\\]")
+        http_method: Text = regexp.find(log_line, "\"(GET|POST|PUT|DELETE)")
+        status: Text = regexp.find(log_line, "\" (\\d{3}) ")
+        
+        io.print("IP: %s", ip)
+        io.print("Timestamp: %s", timestamp)
+        io.print("HTTP Method: %s", http_method)
+        io.print("Status: %s", status)
+        
+        # Data cleaning
+        io.print("")
+        io.print("--- Data Cleaning ---")
+        messy_data: Text = "  Product:  Widget-X    Price: $29.99   Qty:5  "
+        
+        # Remove extra whitespace
+        clean_step1: Text = regexp.replaceAll(messy_data, "\\s+", " ")
+        clean_step2: Text = regexp.replaceAll(clean_step1, "^\\s+|\\s+$", "")
+        
+        io.print("Original: '%s'", messy_data)
+        io.print("Cleaned: '%s'", clean_step2)
+        
+        return "Real world examples completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        demo: RegexpDemo = new RegexpDemo()
+        
+        # Run all demonstrations
+        demo.demonstrateBasicMatching()
+        demo.demonstrateFindingText()
+        demo.demonstrateReplacement()
+        demo.demonstrateSplittingText()
+        demo.demonstrateCaptureGroups()
+        demo.demonstrateUtilities()
+        demo.demonstrateRealWorldExamples()
+        
+        io.print("")
+        io.print("=== Regular Expression Library Demo Complete ===")
+        io.print("All regexp features demonstrated successfully!")
+        
+        return "Regexp demo completed"
+    }
+}

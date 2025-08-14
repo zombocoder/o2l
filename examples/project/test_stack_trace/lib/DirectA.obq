@@ -1,0 +1,10 @@
+# This file directly depends on DirectB
+@import lib.DirectB
+
+Object DirectA {
+    @external method getValueFromB(): Int {
+        # This will force DirectB to be loaded during DirectA's execution
+        b: DirectB = new DirectB()
+        return b.getValue()
+    }
+}

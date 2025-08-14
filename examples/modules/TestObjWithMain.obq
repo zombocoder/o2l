@@ -1,0 +1,10 @@
+Object TestObj {
+    method sayHello(): Text {
+        "Hello from TestObj module!"
+    }
+}
+Object Main {
+    method main(): Text {
+        TestObj.sayHello()
+    } 
+}

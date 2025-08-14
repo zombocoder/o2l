@@ -1,0 +1,18 @@
+Object Counter {
+    property count: Int
+
+    constructor(initial: Int) {
+        this.count = initial
+    }
+    
+    method getCount(): Int {
+        return this.count
+    }
+}
+
+Object Main {
+    method main(): Int {
+        counter: Any = new Counter(5)
+        return counter.getCount()
+    }
+}

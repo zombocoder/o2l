@@ -1,0 +1,230 @@
+import system.io
+
+Object NotOperatorEdgeTester {
+    @external method testMultipleNots(): Int {
+        io.print("=== Multiple NOT Operators Edge Cases ===")
+        
+        val: Bool = true
+        
+        # Test chains of NOT operators
+        io.print("1. Chained NOT operators:")
+        io.print("   !true = %o", !val)
+        io.print("   !!true = %o", !!val)
+        io.print("   !!!true = %o", !!!val)
+        io.print("   !!!!true = %o", !!!!val)
+        io.print("   !!!!!true = %o", !!!!!val)
+        
+        # Test with false
+        val_false: Bool = false
+        io.print("2. Chained NOT with false:")
+        io.print("   !false = %o", !val_false)
+        io.print("   !!false = %o", !!val_false)
+        io.print("   !!!false = %o", !!!val_false)
+        io.print("   !!!!false = %o", !!!!val_false)
+        
+        # Test pattern: even number of NOTs = original, odd = negated
+        io.print("3. Even/Odd NOT pattern verification:")
+        original_true: Bool = true
+        original_false: Bool = false
+        
+        # Even NOTs (should equal original)
+        even2_true: Bool = !!original_true
+        even4_true: Bool = !!!!original_true
+        even2_false: Bool = !!original_false
+        even4_false: Bool = !!!!original_false
+        
+        io.print("   Even NOTs preserve value:")
+        io.print("   !!true == true: %o", even2_true == original_true)
+        io.print("   !!!!true == true: %o", even4_true == original_true)
+        io.print("   !!false == false: %o", even2_false == original_false)
+        io.print("   !!!!false == false: %o", even4_false == original_false)
+        
+        # Odd NOTs (should negate original)
+        odd1_true: Bool = !original_true
+        odd3_true: Bool = !!!original_true
+        odd1_false: Bool = !original_false
+        odd3_false: Bool = !!!original_false
+        
+        io.print("   Odd NOTs negate value:")
+        io.print("   !true == false: %o", odd1_true == !original_true)
+        io.print("   !!!true == false: %o", odd3_true == !original_true)
+        io.print("   !false == true: %o", odd1_false == !original_false)
+        io.print("   !!!false == true: %o", odd3_false == !original_false)
+        
+        return 0
+    }
+    
+    @external method testNotWithComplexExpressions(): Int {
+        io.print("=== NOT with Complex Expressions ===")
+        
+        a: Bool = true
+        b: Bool = false
+        c: Bool = true
+        
+        # Test NOT with parenthesized expressions
+        io.print("1. NOT with parentheses:")
+        result1: Bool = !(a && b)
+        result2: Bool = !(a || b)
+        result3: Bool = !(a && b && c)
+        result4: Bool = !(a || b || c)
+        
+        io.print("   !(true && false) = %o", result1)
+        io.print("   !(true || false) = %o", result2)
+        io.print("   !(true && false && true) = %o", result3)
+        io.print("   !(true || false || true) = %o", result4)
+        
+        # Test NOT with nested parentheses
+        io.print("2. NOT with nested expressions:")
+        nested1: Bool = !((a && b) || c)
+        nested2: Bool = !(a && (b || c))
+        nested3: Bool = !((a || b) && (b || c))
+        
+        io.print("   !((true && false) || true) = %o", nested1)
+        io.print("   !(true && (false || true)) = %o", nested2)
+        io.print("   !((true || false) && (false || true)) = %o", nested3)
+        
+        # Test NOT with comparison results
+        io.print("3. NOT with comparisons:")
+        x: Int = 5
+        y: Int = 10
+        
+        comp_not1: Bool = !(x < y)
+        comp_not2: Bool = !(x == y)
+        comp_not3: Bool = !(x >= y)
+        comp_not4: Bool = !((x < y) && (x != y))
+        
+        io.print("   !(5 < 10) = %o", comp_not1)
+        io.print("   !(5 == 10) = %o", comp_not2)
+        io.print("   !(5 >= 10) = %o", comp_not3)
+        io.print("   !((5 < 10) && (5 != 10)) = %o", comp_not4)
+        
+        return 0
+    }
+    
+    @external method testNotPrecedenceEdgeCases(): Int {
+        io.print("=== NOT Operator Precedence Edge Cases ===")
+        
+        a: Bool = true
+        b: Bool = false
+        c: Bool = true
+        
+        # Test NOT precedence with AND
+        io.print("1. NOT precedence with AND:")
+        # !a && b should be (!a) && b
+        prec1: Bool = !a && b
+        explicit1: Bool = (!a) && b
+        wrong1: Bool = !(a && b)
+        
+        io.print("   !true && false = %o", prec1)
+        io.print("   (!true) && false = %o", explicit1)
+        io.print("   !(true && false) = %o", wrong1)
+        io.print("   Precedence correct: %o", prec1 == explicit1)
+        io.print("   Different from wrong: %o", prec1 != wrong1)
+        
+        # Test NOT precedence with OR
+        io.print("2. NOT precedence with OR:")
+        # !a || b should be (!a) || b
+        prec2: Bool = !a || b
+        explicit2: Bool = (!a) || b
+        wrong2: Bool = !(a || b)
+        
+        io.print("   !true || false = %o", prec2)
+        io.print("   (!true) || false = %o", explicit2)
+        io.print("   !(true || false) = %o", wrong2)
+        io.print("   Precedence correct: %o", prec2 == explicit2)
+        
+        # Test multiple NOTs with other operators
+        io.print("3. Multiple NOTs with mixed operators:")
+        multi1: Bool = !!a && !b
+        multi2: Bool = !a || !!b
+        multi3: Bool = !(!!a && !b)
+        
+        io.print("   !!true && !false = %o", multi1)
+        io.print("   !true || !!false = %o", multi2)
+        io.print("   !(!!true && !false) = %o", multi3)
+        
+        # Complex precedence test
+        io.print("4. Complex precedence combinations:")
+        complex1: Bool = !a && b || c
+        complex2: Bool = (!a && b) || c
+        complex3: Bool = !a && (b || c)
+        
+        io.print("   !true && false || true = %o", complex1)
+        io.print("   (!true && false) || true = %o", complex2)
+        io.print("   !true && (false || true) = %o", complex3)
+        io.print("   Complex precedence test: %o", complex1 == complex2)
+        
+        return 0
+    }
+    
+    @external method testNotIdempotencyAndInvolution(): Int {
+        io.print("=== NOT Idempotency and Involution Properties ===")
+        
+        # Test involution property: !(!x) = x
+        io.print("1. Involution property (!(!x) = x):")
+        
+        vals: List = [true, false]
+        iterator: ListIterator = vals.iterator()
+        
+        while (iterator.hasNext()) {
+            val: Bool = iterator.next()
+            double_not: Bool = !!val
+            involution_holds: Bool = double_not == val
+            
+            io.print("   !!%o = %o, equals original: %o", val, double_not, involution_holds)
+        }
+        
+        # Test with expressions
+        io.print("2. Involution with complex expressions:")
+        a: Bool = true
+        b: Bool = false
+        
+        expr1: Bool = a && b
+        double_not_expr1: Bool = !!(a && b)
+        io.print("   !!(true && false) = %o, original: %o, equal: %o", double_not_expr1, expr1, double_not_expr1 == expr1)
+        
+        expr2: Bool = a || b
+        double_not_expr2: Bool = !!(a || b)
+        io.print("   !!(true || false) = %o, original: %o, equal: %o", double_not_expr2, expr2, double_not_expr2 == expr2)
+        
+        # Test triple and quadruple negation patterns
+        io.print("3. Higher-order negation patterns:")
+        original: Bool = true
+        
+        # Triple negation should equal single negation
+        single_not: Bool = !original
+        triple_not: Bool = !!!original
+        io.print("   !true = %o, !!!true = %o, equal: %o", single_not, triple_not, single_not == triple_not)
+        
+        # Quadruple negation should equal original
+        quad_not: Bool = !!!!original
+        io.print("   !!!!true = %o, original: %o, equal: %o", quad_not, original, quad_not == original)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: NotOperatorEdgeTester = new NotOperatorEdgeTester()
+        
+        result1: Int = tester.testMultipleNots()
+        io.print("")
+        
+        result2: Int = tester.testNotWithComplexExpressions()
+        io.print("")
+        
+        result3: Int = tester.testNotPrecedenceEdgeCases()
+        io.print("")
+        
+        result4: Int = tester.testNotIdempotencyAndInvolution()
+        
+        if (result1 == 0 && result2 == 0 && result3 == 0 && result4 == 0) {
+            io.print("=== All NOT operator edge case tests passed! ===")
+            return 0
+        } else {
+            io.print("=== Some NOT operator edge case tests failed! ===")
+            return 1
+        }
+    }
+}

@@ -1,0 +1,9 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        name: Text = io.input("What is your name? ")
+        io.print("Hello, %s!", name)
+        return 0
+    }
+}

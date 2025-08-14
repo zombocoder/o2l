@@ -1,0 +1,19 @@
+Object Person {
+    constructor(name: Text) {
+        this.name = name
+    }
+    
+    method getName(): Text {
+        this.name
+    }
+    
+    method setName(newName: Text): Text {
+        this.name = newName
+    }
+}
+
+Object Main {
+    method main(): Text {
+        new Person("Alice").getName()
+    }
+}

@@ -1,0 +1,25 @@
+import system.io
+
+# Note: Record syntax is not yet implemented, so using Text for now
+Object Main {
+    method main(): Int {
+        # Create a Set with Text elements (since PersonalInfoDTO is not available yet)
+        my_set: Set<Text> = (
+            "John",
+            "Canni",
+            "Alice",
+            "John"  # This duplicate will be automatically removed
+        )
+
+        set_iter: SetIterator = my_set.iterator()
+        io.print("Created set iterator")
+
+        while (set_iter.hasNext()) {
+            item: Text = set_iter.next()
+            io.print("item: %s", item)
+        }
+        
+        io.print("Set size: %d", my_set.size())
+        return 0
+    }
+}

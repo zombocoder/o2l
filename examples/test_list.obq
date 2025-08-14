@@ -1,0 +1,42 @@
+import system.io
+
+Object ListDemo {
+    @external method testLists(): Int {
+        # Create a list with literals
+        numbers: List<Int> = [1, 2, 3]
+        io.print("Initial list: %s", numbers)
+        
+        # Test empty list
+        empty: List<Int> = []
+        io.print("Empty list: %s", empty)
+        
+        # Test list methods
+        numbers.add(4)
+        io.print("After add(4): %s", numbers)
+        
+        first: Int = numbers.get(0)
+        io.print("First element: %d", first)
+        
+        numbers.reverse()
+        io.print("After reverse(): %s", numbers)
+        
+        popped: Int = numbers.pop()
+        io.print("Popped element: %d", popped)
+        io.print("After pop(): %s", numbers)
+        
+        numbers.remove(1)
+        io.print("After remove(1): %s", numbers)
+        
+        size: Int = numbers.size()
+        io.print("Final size: %d", size)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: ListDemo = new ListDemo()
+        return demo.testLists()
+    }
+}

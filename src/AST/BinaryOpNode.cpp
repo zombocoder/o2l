@@ -1,0 +1,281 @@
+#include "BinaryOpNode.hpp"
+
+#include <cmath>
+
+#include "../Common/Exceptions.hpp"
+#include "../Common/StackFrameGuard.hpp"
+#include "../Runtime/Context.hpp"
+
+namespace o2l {
+
+BinaryOpNode::BinaryOpNode(ASTNodePtr left, BinaryOperator op, ASTNodePtr right,
+                           const SourceLocation& location)
+    : ASTNode(location), left_(std::move(left)), operator_(op), right_(std::move(right)) {}
+
+Value BinaryOpNode::evaluate(Context& context) {
+    // Add stack frame for this binary operation
+    STACK_FRAME_GUARD(context, "binary_operation", "expression", *this);
+
+    Value left_val = left_->evaluate(context);
+    Value right_val = right_->evaluate(context);
+
+    // Handle integer operations
+    if (std::holds_alternative<Int>(left_val) && std::holds_alternative<Int>(right_val)) {
+        Int left_int = std::get<Int>(left_val);
+        Int right_int = std::get<Int>(right_val);
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Int(left_int + right_int);
+            case BinaryOperator::MINUS:
+                return Int(left_int - right_int);
+            case BinaryOperator::MULTIPLY:
+                return Int(left_int * right_int);
+            case BinaryOperator::DIVIDE:
+                if (right_int == 0) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Int(left_int / right_int);
+            case BinaryOperator::MODULO:
+                if (right_int == 0) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Int(left_int % right_int);
+        }
+    }
+
+    // Handle long operations
+    if (std::holds_alternative<Long>(left_val) && std::holds_alternative<Long>(right_val)) {
+        Long left_long = std::get<Long>(left_val);
+        Long right_long = std::get<Long>(right_val);
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Long(left_long + right_long);
+            case BinaryOperator::MINUS:
+                return Long(left_long - right_long);
+            case BinaryOperator::MULTIPLY:
+                return Long(left_long * right_long);
+            case BinaryOperator::DIVIDE:
+                if (right_long == 0) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Long(left_long / right_long);
+            case BinaryOperator::MODULO:
+                if (right_long == 0) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Long(left_long % right_long);
+        }
+    }
+
+    // Handle float operations
+    if (std::holds_alternative<Float>(left_val) && std::holds_alternative<Float>(right_val)) {
+        Float left_float = std::get<Float>(left_val);
+        Float right_float = std::get<Float>(right_val);
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Float(left_float + right_float);
+            case BinaryOperator::MINUS:
+                return Float(left_float - right_float);
+            case BinaryOperator::MULTIPLY:
+                return Float(left_float * right_float);
+            case BinaryOperator::DIVIDE:
+                if (right_float == 0.0f) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Float(left_float / right_float);
+            case BinaryOperator::MODULO:
+                if (right_float == 0.0f) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Float(std::fmod(left_float, right_float));
+        }
+    }
+
+    // Handle double operations
+    if (std::holds_alternative<Double>(left_val) && std::holds_alternative<Double>(right_val)) {
+        Double left_double = std::get<Double>(left_val);
+        Double right_double = std::get<Double>(right_val);
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Double(left_double + right_double);
+            case BinaryOperator::MINUS:
+                return Double(left_double - right_double);
+            case BinaryOperator::MULTIPLY:
+                return Double(left_double * right_double);
+            case BinaryOperator::DIVIDE:
+                if (right_double == 0.0) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Double(left_double / right_double);
+            case BinaryOperator::MODULO:
+                if (right_double == 0.0) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Double(std::fmod(left_double, right_double));
+        }
+    }
+
+    // Handle mixed integer operations - Int + Long = Long
+    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Long>(right_val)) ||
+        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Int>(right_val))) {
+        Long left_val_l = std::holds_alternative<Long>(left_val)
+                              ? std::get<Long>(left_val)
+                              : static_cast<Long>(std::get<Int>(left_val));
+        Long right_val_l = std::holds_alternative<Long>(right_val)
+                               ? std::get<Long>(right_val)
+                               : static_cast<Long>(std::get<Int>(right_val));
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Long(left_val_l + right_val_l);
+            case BinaryOperator::MINUS:
+                return Long(left_val_l - right_val_l);
+            case BinaryOperator::MULTIPLY:
+                return Long(left_val_l * right_val_l);
+            case BinaryOperator::DIVIDE:
+                if (right_val_l == 0) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Long(left_val_l / right_val_l);
+            case BinaryOperator::MODULO:
+                if (right_val_l == 0) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Long(left_val_l % right_val_l);
+        }
+    }
+
+    // Handle mixed numeric operations - promote to highest precision
+    // Int + Float = Float, Long + Float = Float
+    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Float>(right_val)) ||
+        (std::holds_alternative<Float>(left_val) && std::holds_alternative<Int>(right_val)) ||
+        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Float>(right_val)) ||
+        (std::holds_alternative<Float>(left_val) && std::holds_alternative<Long>(right_val))) {
+        Float left_val_f;
+        Float right_val_f;
+
+        if (std::holds_alternative<Float>(left_val)) {
+            left_val_f = std::get<Float>(left_val);
+        } else if (std::holds_alternative<Long>(left_val)) {
+            left_val_f = static_cast<Float>(std::get<Long>(left_val));
+        } else {
+            left_val_f = static_cast<Float>(std::get<Int>(left_val));
+        }
+
+        if (std::holds_alternative<Float>(right_val)) {
+            right_val_f = std::get<Float>(right_val);
+        } else if (std::holds_alternative<Long>(right_val)) {
+            right_val_f = static_cast<Float>(std::get<Long>(right_val));
+        } else {
+            right_val_f = static_cast<Float>(std::get<Int>(right_val));
+        }
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Float(left_val_f + right_val_f);
+            case BinaryOperator::MINUS:
+                return Float(left_val_f - right_val_f);
+            case BinaryOperator::MULTIPLY:
+                return Float(left_val_f * right_val_f);
+            case BinaryOperator::DIVIDE:
+                if (right_val_f == 0.0f) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Float(left_val_f / right_val_f);
+            case BinaryOperator::MODULO:
+                if (right_val_f == 0.0f) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Float(std::fmod(left_val_f, right_val_f));
+        }
+    }
+
+    // Int + Double = Double, Long + Double = Double, Float + Double = Double
+    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Double>(right_val)) ||
+        (std::holds_alternative<Double>(left_val) && std::holds_alternative<Int>(right_val)) ||
+        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Double>(right_val)) ||
+        (std::holds_alternative<Double>(left_val) && std::holds_alternative<Long>(right_val)) ||
+        (std::holds_alternative<Float>(left_val) && std::holds_alternative<Double>(right_val)) ||
+        (std::holds_alternative<Double>(left_val) && std::holds_alternative<Float>(right_val))) {
+        Double left_val_d;
+        Double right_val_d;
+
+        if (std::holds_alternative<Double>(left_val)) {
+            left_val_d = std::get<Double>(left_val);
+        } else if (std::holds_alternative<Float>(left_val)) {
+            left_val_d = static_cast<Double>(std::get<Float>(left_val));
+        } else if (std::holds_alternative<Long>(left_val)) {
+            left_val_d = static_cast<Double>(std::get<Long>(left_val));
+        } else {
+            left_val_d = static_cast<Double>(std::get<Int>(left_val));
+        }
+
+        if (std::holds_alternative<Double>(right_val)) {
+            right_val_d = std::get<Double>(right_val);
+        } else if (std::holds_alternative<Float>(right_val)) {
+            right_val_d = static_cast<Double>(std::get<Float>(right_val));
+        } else if (std::holds_alternative<Long>(right_val)) {
+            right_val_d = static_cast<Double>(std::get<Long>(right_val));
+        } else {
+            right_val_d = static_cast<Double>(std::get<Int>(right_val));
+        }
+
+        switch (operator_) {
+            case BinaryOperator::PLUS:
+                return Double(left_val_d + right_val_d);
+            case BinaryOperator::MINUS:
+                return Double(left_val_d - right_val_d);
+            case BinaryOperator::MULTIPLY:
+                return Double(left_val_d * right_val_d);
+            case BinaryOperator::DIVIDE:
+                if (right_val_d == 0.0) {
+                    throw EvaluationError("Division by zero", context);
+                }
+                return Double(left_val_d / right_val_d);
+            case BinaryOperator::MODULO:
+                if (right_val_d == 0.0) {
+                    throw EvaluationError("Modulo by zero", context);
+                }
+                return Double(std::fmod(left_val_d, right_val_d));
+        }
+    }
+
+    // Handle string concatenation
+    if (std::holds_alternative<Text>(left_val) && std::holds_alternative<Text>(right_val) &&
+        operator_ == BinaryOperator::PLUS) {
+        Text left_text = std::get<Text>(left_val);
+        Text right_text = std::get<Text>(right_val);
+        return Text(left_text + right_text);
+    }
+
+    throw EvaluationError("Unsupported binary operation for these types", context);
+}
+
+std::string BinaryOpNode::toString() const {
+    std::string op_str;
+    switch (operator_) {
+        case BinaryOperator::PLUS:
+            op_str = "+";
+            break;
+        case BinaryOperator::MINUS:
+            op_str = "-";
+            break;
+        case BinaryOperator::MULTIPLY:
+            op_str = "*";
+            break;
+        case BinaryOperator::DIVIDE:
+            op_str = "/";
+            break;
+        case BinaryOperator::MODULO:
+            op_str = "%";
+            break;
+    }
+
+    return "BinaryOp(" + left_->toString() + " " + op_str + " " + right_->toString() + ")";
+}
+
+}  // namespace o2l

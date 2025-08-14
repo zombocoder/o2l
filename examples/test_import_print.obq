@@ -1,0 +1,7 @@
+import system.io.print
+
+Object Main {
+    method main(): Text {
+        print("Hello", 42)
+    }
+}

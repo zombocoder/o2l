@@ -1,0 +1,25 @@
+# Testing constant declarations
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        # Define constants with different types
+        const PI: Float = 3.14159
+        const APP_NAME: Text = "O2L Language"
+        const MAX_USERS: Int = 100
+        const IS_DEBUG: Bool = true
+        
+        # Use constants in expressions
+        io.print("Welcome to %s!", APP_NAME)
+        io.print("PI value: %s", PI)
+        io.print("Max users allowed: %s", MAX_USERS)
+        io.print("Debug mode: %s", IS_DEBUG)
+        
+        # Use constants in calculations
+        radius: Float = 2.0
+        area: Float = PI * radius * radius
+        io.print("Circle area with radius %s: %s", radius, area)
+        
+        return 0
+    }
+}

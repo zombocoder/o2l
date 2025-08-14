@@ -1,0 +1,117 @@
+import system.io
+
+Protocol UserHandler {
+    method handleRequest(): Text
+}
+
+
+
+Object AdminHandler: UserHandler {
+    @external method handleRequest(): Text {
+        return "Admin access granted"
+    }
+}
+
+Object RegularHandler: UserHandler {
+    @external method handleRequest(): Text {
+        return "Regular access granted"
+    }
+}
+
+Object HandlerExecutor {
+    property executor: UserHandler
+
+    constructor(executor: UserHandler) {
+        this.executor = executor
+    }
+
+    @external method run(): Text {
+        return this.executor.handleRequest()
+    }
+}
+
+
+Object Main {
+    method main(): Text {
+        io.print("🎯 PROTOCOL DEMONSTRATION")
+        io.print("==============================")
+        io.print("")
+        
+        # Create instances of different classes implementing UserHandler protocol
+        admin_handler: AdminHandler = new AdminHandler()
+        regular_handler: RegularHandler = new RegularHandler()
+        
+        io.print("🏗️ Created handler instances:")
+        io.print("  • AdminHandler created")
+        io.print("  • RegularHandler created")
+        io.print("")
+        
+        # =============================================================================
+        # DEMONSTRATION 1: Protocol as Constructor Parameter
+        # =============================================================================
+        
+        io.print("📋 DEMO 1: Protocol as Constructor Parameter")
+        io.print("-------------------------")
+        
+        # AdminHandler can be passed as UserHandler protocol type
+        admin_executor: HandlerExecutor = new HandlerExecutor(admin_handler)
+        admin_result: Text = admin_executor.run()
+        io.print("Admin result: %s", admin_result)
+        io.print("")
+        
+        # RegularHandler can also be passed as UserHandler protocol type
+        regular_executor: HandlerExecutor = new HandlerExecutor(regular_handler)
+        regular_result: Text = regular_executor.run()
+        io.print("Regular result: %s", regular_result)
+        io.print("")
+        
+        # =============================================================================
+        # DEMONSTRATION 2: Protocol Variables and Polymorphism
+        # =============================================================================
+        
+        io.print("📋 DEMO 2: Protocol Variables and Polymorphism")
+        io.print("-------------------------")
+        
+        # Variables can be declared as protocol types
+        current_handler: UserHandler = admin_handler
+        io.print("Handler 1 (Admin): %s", current_handler.handleRequest())
+        
+        # Same variable can hold different implementations
+        current_handler = regular_handler
+        io.print("Handler 2 (Regular): %s", current_handler.handleRequest())
+        io.print("")
+        
+        # =============================================================================
+        # DEMONSTRATION 3: Protocol with Collections
+        # =============================================================================
+        
+        io.print("📋 DEMO 3: Protocol with Collections")
+        io.print("-------------------------")
+        
+        # List can contain different implementations of the same protocol
+        handlers: List = [admin_handler, regular_handler]
+        
+        io.print("Processing %d handlers:", handlers.size())
+        handlers_iter: ListIterator = handlers.iterator()
+        counter: Int = 1
+        while (handlers_iter.hasNext()) {
+            handler: UserHandler = handlers_iter.next()
+            result: Text = handler.handleRequest()
+            io.print("  %d. %s", counter, result)
+            counter = counter + 1
+        }
+        
+        io.print("")
+        io.print("==============================")
+        io.print("✅ PROTOCOL DEMONSTRATION COMPLETE!")
+        io.print("")
+        io.print("🎓 Key Points Demonstrated:")
+        io.print("  • Protocol defines interface contract")
+        io.print("  • Multiple classes can implement same protocol")  
+        io.print("  • Protocol types enable polymorphism")
+        io.print("  • Protocol objects work in constructors/methods")
+        io.print("  • Collections can store protocol-typed objects")
+        
+        return "Protocol demonstration completed successfully"
+    }
+}

@@ -1,0 +1,1 @@
+Object Calculator { method add(): Int { 42 } method getName(): Text { "Calculator" } } Object Greeter { method welcome(): Text { "Welcome to O2L!" } } Object Main { method main(): Text { Greeter.welcome() } }

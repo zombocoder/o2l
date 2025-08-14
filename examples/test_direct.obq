@@ -1,0 +1,1 @@
+Object TestObj { method sayHello(): Text { "Hello direct!" } } Object Main { method main(): Text { TestObj.sayHello() } }

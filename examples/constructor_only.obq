@@ -1,0 +1,1 @@
+Object Person { constructor(name: Text) { name } } Object Main { method main(): Text { "test" } }

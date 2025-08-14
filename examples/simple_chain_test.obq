@@ -1,0 +1,18 @@
+import system.io
+
+record Point {
+    x: Int
+    y: Int
+}
+
+Object Main {
+    method main(): Int {
+        point: Point = Point(x=10, y=20)
+        
+        # Test chained member access
+        xValue: Int = point.x
+        io.print("Point X: %d", xValue)
+        
+        return 0
+    }
+}

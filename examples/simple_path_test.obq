@@ -1,0 +1,52 @@
+import system.io
+import system.fs
+
+Object SimplePathTest {
+    @external method testPathMethods(): Text {
+        io.print("=== Simple Path Method Tests ===")
+        
+        # Test isAbsolute
+        absolute_path: Text = "/usr/local/bin"
+        relative_path: Text = "documents/file.txt"
+        
+        abs_result: Bool = fs.isAbsolute(absolute_path)
+        rel_result: Bool = fs.isAbsolute(relative_path)
+        
+        if (abs_result) {
+            io.print("✓ %s is absolute", absolute_path)
+        }
+        
+        if (!rel_result) {
+            io.print("✓ %s is relative", relative_path)
+        }
+        
+        # Test basic operations
+        test_file: Text = "/home/user/document.txt"
+        name: Text = fs.basename(test_file)
+        dir: Text = fs.dirname(test_file)
+        ext: Text = fs.extname(test_file)
+        
+        io.print("File: %s", test_file)
+        io.print("  Name: %s", name)
+        io.print("  Directory: %s", dir)
+        io.print("  Extension: %s", ext)
+        
+        # Test join
+        joined: Text = fs.join("usr", "local", "bin")
+        io.print("Joined path: %s", joined)
+        
+        # Test normalize
+        messy_path: Text = "./docs/../src/./file.cpp"
+        clean_path: Text = fs.normalize(messy_path)
+        io.print("Messy: %s -> Clean: %s", messy_path, clean_path)
+        
+        return "Simple path tests completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        tester: SimplePathTest = new SimplePathTest()
+        return tester.testPathMethods()
+    }
+}

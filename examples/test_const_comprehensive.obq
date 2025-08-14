@@ -1,0 +1,33 @@
+# Comprehensive constant system test
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        # Global constants
+        const APP_NAME: Text = "O2L Language"
+        const VERSION: Text = "1.0.0"
+        const PI: Float = 3.14159
+        const DEBUG: Bool = true
+        
+        io.print("=== %s v%s ===", APP_NAME, VERSION)
+        
+        # Constants can be used in expressions
+        radius: Float = 5.0
+        area: Float = PI * radius * radius
+        io.print("Circle area (r=%s): %s", radius, area)
+        
+        # Constants can be used in conditionals (when we implement if/else)
+        if (DEBUG) {
+            io.print("Debug mode enabled")
+        }
+        
+        # Variables can coexist with different names
+        appTitle: Text = "My App"
+        version: Text = "2.0.0"  # Different from VERSION constant
+        
+        io.print("App: %s, Version: %s", appTitle, version)
+        io.print("Constants still work: %s, %s", APP_NAME, VERSION)
+        
+        return 0
+    }
+}

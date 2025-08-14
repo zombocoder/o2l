@@ -1,0 +1,20 @@
+import system.io
+
+Protocol TestProtocol {
+    method requiredMethod(): Text
+    method anotherRequired(): Text
+}
+
+Object IncompleteObject: TestProtocol {
+    @external method requiredMethod(): Text {
+        return "I only implement one method"
+    }
+    ### Missing anotherRequired method ###
+}
+
+Object Main {
+    @external method main(): Int {
+        io.print("This should fail due to incomplete protocol implementation")
+        return 0
+    }
+}

@@ -1,0 +1,53 @@
+import system.io
+
+Object CombinedDebug {
+    @external method classifyText(text: Text): Text {
+        len: Int = text.length()
+        
+        io.print("Text: '%s', Length: %d", text, len)
+        
+        if (len == 0) {
+            io.print("Classified as: empty")
+            return "empty"
+        } else if (len <= 3) {
+            io.print("Classified as: tiny")
+            return "tiny"
+        } else if (len <= 11) {
+            io.print("Classified as: small")
+            return "small"
+        } else if (len <= 50) {
+            io.print("Classified as: medium")
+            return "medium"
+        } else if (len <= 100) {
+            io.print("Classified as: large")
+            return "large"
+        } else {
+            io.print("Classified as: huge")
+            return "huge"
+        }
+    }
+    
+    @external method testCombined(): Text {
+        result1: Text = this.classifyText("")
+        result2: Text = this.classifyText("Hi")
+        result3: Text = this.classifyText("Hello World")
+        result4: Text = this.classifyText("This is a much longer text that should be classified as medium size")
+        
+        io.print("")
+        io.print("Results: %s, %s, %s, %s", result1, result2, result3, result4)
+        
+        # Check expectations
+        if (result1 == "empty" && result2 == "tiny" && result3 == "small" && result4 == "medium") {
+            return "all correct"
+        } else {
+            return "some incorrect"
+        }
+    }
+}
+
+Object Main {
+    method main(): Text {
+        debug: CombinedDebug = new CombinedDebug()
+        return debug.testCombined()
+    }
+}

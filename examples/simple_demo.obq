@@ -1,0 +1,40 @@
+import system.io
+import system.os
+
+enum Status {
+    PENDING,
+    ACTIVE = 10,
+    COMPLETED
+}
+
+record UserInfo {
+    name: Text
+    status: Status
+}
+
+Object Demo {
+    property info: UserInfo
+    
+    constructor() {
+        this.info = UserInfo(name="Test User", status=Status.ACTIVE)
+    }
+    
+    @external method showInfo(): Void {
+        io.print("User: %s", this.info.name)
+        io.print("Status: %o", this.info.status)
+    }
+    
+    @external method getEnvInfo(): Void {
+        pwd: Text = os.getEnv("PWD")
+        io.print("Running from: %s", pwd)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: Demo = new Demo()
+        demo.showInfo()
+        demo.getEnvInfo()
+        return 0
+    }
+}

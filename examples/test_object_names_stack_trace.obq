@@ -1,0 +1,25 @@
+Object Calculator {
+    @external method divide(a: Int, b: Int): Int {
+        a / b
+    }
+    
+    @external method processNumbers(x: Int, y: Int): Int {
+        calc: Calculator = new Calculator()
+        calc.divide(x, y)
+    }
+}
+
+Object MathUtils {
+    @external method safeDivide(numerator: Int, denominator: Int): Int {
+        calc: Calculator = new Calculator()
+        calc.processNumbers(numerator, denominator)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        utils: MathUtils = new MathUtils()
+        result: Int = utils.safeDivide(10, 0)
+        result
+    }
+}

@@ -1,0 +1,9 @@
+@import lib.DirectA
+
+Object Main {
+    method main(): Int {
+        a: DirectA = new DirectA()
+        a.getValueFromB()
+        return 0
+    }
+}

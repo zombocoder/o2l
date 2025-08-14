@@ -1,0 +1,17 @@
+Object Calculator {
+    @external method getValue(): Int {
+        return 42
+    }
+}
+
+Object Main {
+    property calc: Calculator
+    
+    constructor() {
+        this.calc = new Calculator()
+    }
+    
+    method main(): Void {
+        print("Value: %d", this.calc.getValue())
+    }
+}

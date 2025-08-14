@@ -1,0 +1,66 @@
+import system.io
+import system.os
+
+enum Status {
+    PENDING,
+    ACTIVE = 10,
+    COMPLETED
+}
+
+record UserData {
+    name: Text
+    id: Int
+}
+
+Object TestObject {
+    property userName: Text
+    property userStatus: Status
+    
+    constructor(name: Text) {
+        this.userName = name
+        this.userStatus = Status.ACTIVE
+    }
+    
+    @external method showStatus(): Void {
+        io.print("User: %s", this.userName)
+        io.print("Status ID: %o", this.userStatus)
+    }
+    
+    method protectedMethod(): Void {
+        io.print("This is a protected method")
+    }
+}
+
+Object Main {
+    property testObj: TestObject
+    
+    constructor() {
+        this.testObj = new TestObject("Alice")
+    }
+    
+    method main(): Int {
+        io.print("=== O2L Advanced Features Demo ===")
+        
+        # Test system.os
+        pwd: Text = os.getEnv("PWD")
+        io.print("Working Directory: %s", pwd)
+        
+        # Test @external method access
+        this.testObj.showStatus()
+        
+        # Test record creation
+        userData: UserData = UserData(name="Bob", id=123)
+        io.print("Record user: %s with ID: %d", userData.name, userData.id)
+        
+        # Test constants
+        const MAX_USERS: Int = 100
+        io.print("Max users allowed: %d", MAX_USERS)
+        
+        # Test enum values  
+        currentStatus: Status = Status.COMPLETED
+        io.print("Current status: %o", currentStatus)
+        
+        io.print("All advanced features demonstrated!")
+        return 0
+    }
+}

@@ -1,0 +1,1 @@
+Object Counter { constructor(initial: Int) { this.count = initial } method getCount(): Int { this.count } } Object Main { method main(): Int { new Counter(42).getCount() } }

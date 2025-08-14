@@ -1,0 +1,194 @@
+import system.io
+import system.utils
+
+Object ModuloTest {
+    @external method testIntegerModulo(): Int {
+        io.print("=== Integer Modulo Tests ===")
+        
+        # Basic integer modulo
+        result1: Int = 10 % 3
+        io.print("10 % 3 = %d", result1)  # Expected: 1
+        
+        result2: Int = 15 % 4
+        io.print("15 % 4 = %d", result2)  # Expected: 3
+        
+        result3: Int = 20 % 5
+        io.print("20 % 5 = %d", result3)  # Expected: 0
+        
+        result4: Int = 7 % 2
+        io.print("7 % 2 = %d", result4)   # Expected: 1
+        
+        return 0
+    }
+    
+    @external method testLongModulo(): Int {
+        io.print("=== Long Modulo Tests ===")
+        
+        # Long modulo operations
+        result1: Long = 1000000l % 7l
+        io.print("1000000l % 7l = %d", result1)  # Expected: 6
+        
+        result2: Long = 123456789l % 10000l
+        io.print("123456789l % 10000l = %d", result2)  # Expected: 6789
+        
+        return 0
+    }
+    
+    @external method testFloatModulo(): Int {
+        io.print("=== Float Modulo Tests ===")
+        
+        # Float modulo operations
+        result1: Float = 10.5f % 3.0f
+        io.print("10.5f % 3.0f = %f", result1)  # Expected: 1.5
+        
+        result2: Float = 7.25f % 2.5f
+        io.print("7.25f % 2.5f = %f", result2)  # Expected: 2.25
+        
+        return 0
+    }
+    
+    @external method testDoubleModulo(): Int {
+        io.print("=== Double Modulo Tests ===")
+        
+        # Double modulo operations
+        result1: Double = 15.75d % 4.0d
+        io.print("15.75d % 4.0d = %f", result1)  # Expected: 3.75
+        
+        result2: Double = 100.5d % 7.5d
+        io.print("100.5d % 7.5d = %f", result2)  # Expected: 3.0
+        
+        return 0
+    }
+    
+    @external method testMixedTypeModulo(): Int {
+        io.print("=== Mixed Type Modulo Tests ===")
+        
+        # Int + Long
+        result1: Long = 25 % 7l
+        io.print("25 % 7l = %d", result1)  # Expected: 4
+        
+        result2: Long = 100l % 13
+        io.print("100l % 13 = %d", result2)  # Expected: 9
+        
+        # Int + Float
+        result3: Float = 17 % 5.0f
+        io.print("17 % 5.0f = %f", result3)  # Expected: 2.0
+        
+        result4: Float = 12.5f % 3
+        io.print("12.5f % 3 = %f", result4)  # Expected: 0.5
+        
+        # Long + Float
+        result5: Float = 25l % 4.5f
+        io.print("25l % 4.5f = %f", result5)  # Expected: 2.5
+        
+        result6: Float = 8.25f % 3l
+        io.print("8.25f % 3l = %f", result6)  # Expected: 2.25
+        
+        # Int + Double
+        result7: Double = 30 % 7.0d
+        io.print("30 % 7.0d = %f", result7)  # Expected: 2.0
+        
+        result8: Double = 15.75d % 4
+        io.print("15.75d % 4 = %f", result8)  # Expected: 3.75
+        
+        # Long + Double
+        result9: Double = 50l % 9.5d
+        io.print("50l % 9.5d = %f", result9)  # Expected: 2.5
+        
+        result10: Double = 22.5d % 5l
+        io.print("22.5d % 5l = %f", result10)  # Expected: 2.5
+        
+        # Float + Double
+        result11: Double = 18.75f % 5.5d
+        io.print("18.75f % 5.5d = %f", result11)  # Expected: 2.25
+        
+        result12: Double = 14.0d % 3.5f
+        io.print("14.0d % 3.5f = %f", result12)  # Expected: 0.0
+        
+        return 0
+    }
+    
+    @external method testModuloWithRepeatIterator(): Int {
+        io.print("=== Modulo with RepeatIterator ===")
+        
+        # Use modulo to check for even/odd numbers with RepeatIterator
+        repeat_iter: RepeatIterator = utils.repeat(10)
+        even_numbers: List<Int> = []
+        odd_numbers: List<Int> = []
+        
+        while (repeat_iter.hasNext()) {
+            current: Int = repeat_iter.next()
+            remainder: Int = current % 2
+            
+            if (remainder == 0) {
+                even_numbers.add(current)
+                io.print("%d is even", current)
+            } else {
+                odd_numbers.add(current)
+                io.print("%d is odd", current)
+            }
+        }
+        
+        io.print("Even numbers found: %d, Odd numbers found: %d", even_numbers.size(), odd_numbers.size())
+        return 0
+    }
+    
+    @external method testModuloWithWhileLoop(): Int {
+        io.print("=== Modulo in While Loop (Finding Multiples) ===")
+        
+        numbers: List<Int> = [12, 15, 18, 21, 24, 27, 30, 33, 36, 39]
+        multiples_of_3: List<Int> = []
+        
+        iter: ListIterator = numbers.iterator()
+        
+        while (iter.hasNext()) {
+            num: Int = iter.next()
+            remainder: Int = num % 3
+            
+            if (remainder == 0) {
+                multiples_of_3.add(num)
+                io.print("%d is divisible by 3", num)
+            }
+        }
+        
+        io.print("Multiples of 3 found: %s", multiples_of_3)
+        return 0
+    }
+    
+    @external method runAllTests(): Int {
+        io.print("Starting Modulo Operator Tests")
+        io.print("==============================")
+        
+        this.testIntegerModulo()
+        io.print("")
+        
+        this.testLongModulo()
+        io.print("")
+        
+        this.testFloatModulo()
+        io.print("")
+        
+        this.testDoubleModulo()
+        io.print("")
+        
+        this.testMixedTypeModulo()
+        io.print("")
+        
+        this.testModuloWithRepeatIterator()
+        io.print("")
+        
+        this.testModuloWithWhileLoop()
+        
+        io.print("==============================")
+        io.print("All modulo operator tests completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: ModuloTest = new ModuloTest()
+        return test.runAllTests()
+    }
+}

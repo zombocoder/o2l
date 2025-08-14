@@ -1,0 +1,301 @@
+# HTTP Client Library Demo
+# Demonstrates various HTTP client features in O2L
+
+import http.client
+import system.io
+import json
+
+Object HttpClientDemo {
+    
+    @external method basicGetRequest(): Text {
+        io.print("=== Basic GET Request ===")
+        
+        # Simple GET request
+        response: HttpResponse = client.get("https://httpbin.org/get")
+        
+        status: Int = client.getStatus(response)
+        body: Text = client.getBody(response)
+        success: Bool = client.isSuccess(response)
+        
+        io.print("Status: %d", status)
+        if (success) {
+            io.print("Success: true")
+        } else {
+            io.print("Success: false")
+        }
+        io.print("Response body: %s", body)
+        
+        return "Basic GET completed"
+    }
+    
+    @external method getWithHeaders(): Text {
+        io.print("\n=== GET Request with Headers ===")
+        
+        # Create headers map
+        headers: Map<Text, Text> = {
+            "User-Agent": "O2L-HTTP-Client/1.0",
+            "Accept": "application/json",
+            "Authorization": "Bearer demo-token"
+        }
+        
+        response: HttpResponse = client.get("https://httpbin.org/get", headers)
+        
+        status: Int = client.getStatus(response)
+        response_headers: Map<Text, Text> = client.getHeaders(response)
+        content_type: Text = client.getHeader(response, "Content-Type")
+        
+        io.print("Status: %d", status)
+        io.print("Content-Type: %s", content_type)
+        
+        return "GET with headers completed"
+    }
+    
+    @external method postJsonData(): Text {
+        io.print("\n=== POST JSON Data ===")
+        
+        # Create JSON data
+        user_data: Text = json.createObject(
+            "name", "Alice",
+            "age", 30,
+            "email", "alice@example.com"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.post("https://httpbin.org/post", user_data, headers)
+        
+        status: Int = client.getStatus(response)
+        body: Text = client.getBody(response)
+        
+        io.print("Status: %d", status)
+        io.print("Posted data successfully")
+        
+        return "POST JSON completed"
+    }
+    
+    @external method putUpdateData(): Text {
+        io.print("\n=== PUT Update Data ===")
+        
+        update_data: Text = json.createObject(
+            "id", 123,
+            "name", "Updated Name",
+            "status", "active"
+        )
+        
+        headers: Map<Text, Text> = {
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.put("https://httpbin.org/put", update_data, headers)
+        
+        status: Int = client.getStatus(response)
+        success: Bool = client.isSuccess(response)
+        
+        io.print("Status: %d", status)
+        if (success) {
+            io.print("Update success: true")
+        } else {
+            io.print("Update success: false")
+        }
+        
+        return "PUT update completed"
+    }
+    
+    @external method deleteResource(): Text {
+        io.print("\n=== DELETE Resource ===")
+        
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer delete-token"
+        }
+        
+        response: HttpResponse = client.delete("https://httpbin.org/delete", headers)
+        
+        status: Int = client.getStatus(response)
+        status_message: Text = client.getStatusMessage(response)
+        
+        io.print("Status: %d %s", status, status_message)
+        
+        return "DELETE completed"
+    }
+    
+    @external method genericRequestMethod(): Text {
+        io.print("\n=== Generic Request Method ===")
+        
+        # Using the generic request method
+        patch_data: Text = json.createObject("status", "patched")
+        
+        headers: Map<Text, Text> = {
+            "Content-Type": "application/json"
+        }
+        
+        response: HttpResponse = client.request("PATCH", "https://httpbin.org/patch", patch_data, headers)
+        
+        status: Int = client.getStatus(response)
+        io.print("PATCH Status: %d", status)
+        
+        return "Generic request completed"
+    }
+    
+    @external method urlUtilities(): Text {
+        io.print("\n=== URL Utilities ===")
+        
+        # URL encoding/decoding
+        original: Text = "hello world & test"
+        encoded: Text = client.urlEncode(original)
+        decoded: Text = client.urlDecode(encoded)
+        
+        io.print("Original: %s", original)
+        io.print("Encoded: %s", encoded)
+        io.print("Decoded: %s", decoded)
+        
+        # URL building
+        base_url: Text = "https://api.example.com/users"
+        params: Map<Text, Text> = {
+            "page": "1",
+            "limit": "10",
+            "sort": "name"
+        }
+        
+        full_url: Text = client.buildUrl(base_url, params)
+        io.print("Built URL: %s", full_url)
+        
+        # URL parsing
+        test_url: Text = "https://api.example.com/v1/data?page=2&limit=20"
+        url_parts: Map<Text, Text> = client.parseUrl(test_url)
+        
+        protocol: Text = url_parts.get("protocol")
+        host: Text = url_parts.get("host")
+        path: Text = url_parts.get("path")
+        query: Text = url_parts.get("query")
+        
+        io.print("Protocol: %s", protocol)
+        io.print("Host: %s", host)
+        io.print("Path: %s", path)
+        io.print("Query: %s", query)
+        
+        return "URL utilities completed"
+    }
+    
+    @external method authenticationDemo(): Text {
+        io.print("\n=== Authentication Demo ===")
+        
+        # Create request object
+        request: HttpRequest = client.createRequest("GET", "https://httpbin.org/bearer")
+        
+        # Set Bearer token authentication
+        client.setBearerToken(request, "demo-bearer-token")
+        
+        # Note: In a real implementation, we would execute the configured request
+        io.print("Bearer token authentication configured")
+        
+        # Basic Auth example
+        basic_request: HttpRequest = client.createRequest("GET", "https://httpbin.org/basic-auth/user/pass")
+        client.setBasicAuth(basic_request, "user", "pass")
+        
+        io.print("Basic authentication configured")
+        
+        # API Key example
+        api_request: HttpRequest = client.createRequest("GET", "https://api.example.com/data")
+        client.setApiKey(api_request, "X-API-Key", "secret-api-key")
+        
+        io.print("API key authentication configured")
+        
+        return "Authentication demo completed"
+    }
+    
+    @external method jsonIntegration(): Text {
+        io.print("\n=== JSON Integration Demo ===")
+        
+        # Make request that returns JSON
+        response: HttpResponse = client.get("https://httpbin.org/json")
+        
+        if (client.isSuccess(response)) {
+            # Get JSON response
+            json_data: Text = client.getJson(response)
+            io.print("JSON Response: %s", json_data)
+            
+            # Parse JSON using integrated JSON library
+            is_valid: Bool = json.isValid(json_data)
+            if (is_valid) {
+                io.print("JSON is valid: true")
+            } else {
+                io.print("JSON is valid: false")
+            }
+            
+            if (is_valid) {
+                # Parse to native Map for easier manipulation
+                parsed_data: Map<Text, Value> = json.parseToMap(json_data)
+                io.print("Parsed JSON to native Map successfully")
+            }
+        } else {
+            error: Text = client.getError(response)
+            io.print("Request failed: %s", error)
+        }
+        
+        return "JSON integration completed"
+    }
+    
+    @external method requestConfiguration(): Text {
+        io.print("\n=== Request Configuration ===")
+        
+        # Create and configure a request
+        request: HttpRequest = client.createRequest("POST", "https://httpbin.org/post")
+        
+        # Set various configurations
+        client.setTimeout(request, 30)
+        client.setHeader(request, "User-Agent", "O2L-Demo/1.0")
+        
+        custom_headers: Map<Text, Text> = {
+            "Accept": "application/json",
+            "Custom-Header": "custom-value"
+        }
+        client.setHeaders(request, custom_headers)
+        
+        client.setQueryParam(request, "version", "v1")
+        
+        query_params: Map<Text, Text> = {
+            "format": "json",
+            "pretty": "true"
+        }
+        client.setQueryParams(request, query_params)
+        
+        # Set JSON body
+        request_body: Text = json.createObject(
+            "message", "Hello from O2L",
+            "timestamp", "2024-01-01T00:00:00Z"
+        )
+        client.setJsonBody(request, request_body)
+        
+        io.print("Request fully configured")
+        
+        return "Request configuration completed"
+    }
+    
+    @external method runAllDemos(): Text {
+        io.print("🚀 Starting HTTP Client Library Demo")
+        
+        this.basicGetRequest()
+        this.getWithHeaders()
+        this.postJsonData()
+        this.putUpdateData()
+        this.deleteResource()
+        this.genericRequestMethod()
+        this.urlUtilities()
+        this.authenticationDemo()
+        this.jsonIntegration()
+        this.requestConfiguration()
+        
+        io.print("\n✅ All HTTP client demos completed successfully!")
+        
+        return "All demos completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        demo: HttpClientDemo = new HttpClientDemo()
+        return demo.runAllDemos()
+    }
+}

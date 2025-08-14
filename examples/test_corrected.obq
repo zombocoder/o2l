@@ -1,0 +1,26 @@
+import system.io.*
+
+Object Counter {
+    property count: Int
+
+    constructor(initial: Int) {
+        this.count = initial
+    }
+    
+    method getCount(): Int {
+        return this.count
+    }
+    
+    method increment(): Int {
+        this.count = this.count + 1
+        return this.count
+    }
+}
+
+Object Main {
+    method main(): Int {
+        counter: Any = new Counter(5)
+        io.print("My counter: %s", counter.getCount())
+        return 1
+    }
+}

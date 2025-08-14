@@ -1,0 +1,902 @@
+# JSON API Server Demo: RESTful API with Complete JSON Operations
+# This demonstrates the HTTP server with comprehensive JSON library integration
+
+import http.server
+import json
+import system.io
+import system.fs
+
+# =============================================================================
+# DATA STORAGE (In-memory database simulation)
+# =============================================================================
+
+Object DataStore {
+    property users_json: Text
+    property posts_json: Text
+    property next_user_id: Int
+    property next_post_id: Int
+    
+    constructor() {
+        # Initialize with sample data
+        this.users_json = json.createArray(
+            json.createObject("id", 1, "name", "Alice Johnson", "email", "alice@example.com", "role", "admin", "active", true),
+            json.createObject("id", 2, "name", "Bob Smith", "email", "bob@example.com", "role", "user", "active", true),
+            json.createObject("id", 3, "name", "Charlie Brown", "email", "charlie@example.com", "role", "user", "active", false)
+        )
+        
+        this.posts_json = json.createArray(
+            json.createObject("id", 1, "title", "Welcome to O2L", "content", "This is our first post!", "author_id", 1, "published", true),
+            json.createObject("id", 2, "title", "JSON API Guide", "content", "How to build APIs with JSON", "author_id", 1, "published", true),
+            json.createObject("id", 3, "title", "Draft Post", "content", "This is not published yet", "author_id", 2, "published", false)
+        )
+        
+        this.next_user_id = 4
+        this.next_post_id = 4
+    }
+    
+    @external method getUsersJson(): Text {
+        return this.users_json
+    }
+    
+    @external method getPostsJson(): Text {
+        return this.posts_json
+    }
+    
+    @external method addUser(user_json: Text): Text {
+        # Parse user data and add ID
+        user_with_id: Text = json.set(user_json, "id", this.next_user_id)
+        user_with_active: Text = json.set(user_with_id, "active", true)
+        
+        # Add to users array
+        this.users_json = json.push(this.users_json, user_with_id)
+        this.next_user_id = this.next_user_id + 1
+        
+        return user_with_active
+    }
+    
+    @external method addPost(post_json: Text): Text {
+        # Parse post data and add ID
+        post_with_id: Text = json.set(post_json, "id", this.next_post_id)
+        post_with_published: Text = json.set(post_with_id, "published", true)
+        
+        # Add to posts array
+        this.posts_json = json.push(this.posts_json, post_with_id)
+        this.next_post_id = this.next_post_id + 1
+        
+        return post_with_published
+    }
+    
+    @external method updateUser(user_id: Int, updates_json: Text): Text {
+        # Find and update user
+        users_list: List = json.parseToList(this.users_json)
+        updated_users: Text = json.createArray()
+        found_user: Text = ""
+        
+        users_iter: ListIterator = users_list.iterator()
+        while (users_iter.hasNext()) {
+            user_json: Text = users_iter.next()
+            current_id: Int = json.get(user_json, "id")
+            
+            if (current_id == user_id) {
+                # Merge updates with existing user
+                found_user = json.merge(user_json, updates_json)
+                updated_users = json.push(updated_users, found_user)
+            } else {
+                updated_users = json.push(updated_users, user_json)
+            }
+        }
+        
+        this.users_json = updated_users
+        return found_user
+    }
+    
+    @external method deleteUser(user_id: Int): Bool {
+        # Remove user from array
+        users_list: List = json.parseToList(this.users_json)
+        filtered_users: Text = json.createArray()
+        found: Bool = false
+        
+        users_iter: ListIterator = users_list.iterator()
+        while (users_iter.hasNext()) {
+            user_json: Text = users_iter.next()
+            current_id: Int = json.get(user_json, "id")
+            
+            if (current_id != user_id) {
+                filtered_users = json.push(filtered_users, user_json)
+            } else {
+                found = true
+            }
+        }
+        
+        this.users_json = filtered_users
+        return found
+    }
+    
+    @external method findUserById(user_id: Int): Text {
+        users_list: List = json.parseToList(this.users_json)
+        
+        users_iter: ListIterator = users_list.iterator()
+        while (users_iter.hasNext()) {
+            user_json: Text = users_iter.next()
+            current_id: Int = json.get(user_json, "id")
+            
+            if (current_id == user_id) {
+                return user_json
+            }
+        }
+        
+        return json.createObject("error", "User not found")
+    }
+    
+    @external method getStats(): Text {
+        users_list: List = json.parseToList(this.users_json)
+        posts_list: List = json.parseToList(this.posts_json)
+        
+        active_users: Int = 0
+        published_posts: Int = 0
+        
+        # Count active users
+        users_iter: ListIterator = users_list.iterator()
+        while (users_iter.hasNext()) {
+            user_json: Text = users_iter.next()
+            is_active: Bool = json.get(user_json, "active")
+            if (is_active) {
+                active_users = active_users + 1
+            }
+        }
+        
+        # Count published posts
+        posts_iter: ListIterator = posts_list.iterator()
+        while (posts_iter.hasNext()) {
+            post_json: Text = posts_iter.next()
+            is_published: Bool = json.get(post_json, "published")
+            if (is_published) {
+                published_posts = published_posts + 1
+            }
+        }
+        
+        return json.createObject(
+            "total_users", users_list.size(),
+            "active_users", active_users,
+            "total_posts", posts_list.size(),
+            "published_posts", published_posts,
+            "timestamp", "2024-01-01T12:00:00Z"
+        )
+    }
+}
+
+# =============================================================================
+# JSON VALIDATION MIDDLEWARE
+# =============================================================================
+
+Object JsonValidationMiddleware {
+    @external method handle($req: HttpRequest, $res: HttpResponse, $next: NextFunction): Text {
+        http_method: Text = $req.getMethod()
+        content_type: Text = $req.getHeader("Content-Type")
+        
+        # Only validate POST and PUT requests with JSON content
+        json_pos: Int = content_type.find("application/json")
+        has_json_content: Bool = json_pos >= 0
+        if ((http_method == "POST" || http_method == "PUT") && has_json_content) {
+            body: Text = $req.getBody()
+            
+            if (body.length() > 0) {
+                # Validate JSON syntax
+                is_valid: Bool = json.isValid(body)
+                
+                if (!is_valid) {
+                    io.print("❌ [JSON] Invalid JSON in request body")
+                    $res.setStatus(400)
+                    $res.json(json.createObject("error", "Invalid JSON format", "message", "Request body contains malformed JSON"))
+                    return "JSON validation failed"
+                }
+                
+                io.print("✅ [JSON] Valid JSON received")
+            }
+        }
+        
+        $next.call()
+        return "JSON validation passed"
+    }
+}
+
+# =============================================================================
+# API ROUTE HANDLERS WITH COMPREHENSIVE JSON OPERATIONS
+# =============================================================================
+
+Object UserController {
+    property data_store: DataStore
+    
+    constructor() {
+        this.data_store = new DataStore()
+    }
+    
+    @external method getAllUsers($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("📋 [API] GET /api/users - Retrieving all users")
+        
+        # Get query parameters for filtering
+        active_filter: Text = $req.getQueryParam("active")
+        role_filter: Text = $req.getQueryParam("role")
+        
+        users_json: Text = this.data_store.getUsersJson()
+        
+        # Apply filters if specified
+        if (active_filter.length() > 0) {
+            filtered_users: Text = json.createArray()
+            users_list: List = json.parseToList(users_json)
+            
+            users_iter: ListIterator = users_list.iterator()
+            while (users_iter.hasNext()) {
+                user_json: Text = users_iter.next()
+                is_active: Bool = json.get(user_json, "active")
+                
+                if ((active_filter == "true" && is_active) || (active_filter == "false" && !is_active)) {
+                    filtered_users = json.push(filtered_users, user_json)
+                }
+            }
+            
+            users_json = filtered_users
+        }
+        
+        # Create response with metadata
+        response_data: Text = json.createObject(
+            "users", users_json,
+            "total", json.size(users_json),
+            "filters", json.createObject("active", active_filter, "role", role_filter),
+            "timestamp", "2024-01-01T12:00:00Z"
+        )
+        
+        $res.setStatus(200)
+        $res.json(response_data)
+        return "Users retrieved successfully"
+    }
+    
+    @external method getUserById($req: HttpRequest, $res: HttpResponse): Text {
+        user_id_str: Text = $req.getParam("id")
+        # Convert string to integer using new type conversion method
+        user_id: Int = user_id_str.toInt()
+        
+        io.print("🔍 [API] GET /api/users/%d - Retrieving user by ID", user_id)
+        
+        user_data: Text = this.data_store.findUserById(user_id)
+        
+        # Check if user was found
+        has_error: Bool = json.hasKey(user_data, "error")
+        
+        if (has_error) {
+            $res.setStatus(404)
+            $res.json(json.createObject("error", "User not found", "id", user_id))
+        } else {
+            # Add additional computed fields
+            enhanced_user: Text = json.set(user_data, "profile_url", "/api/users/" + user_id_str + "/profile")
+            enhanced_user = json.set(enhanced_user, "posts_url", "/api/users/" + user_id_str + "/posts")
+            
+            $res.setStatus(200)
+            $res.json(enhanced_user)
+        }
+        
+        return "User retrieval completed"
+    }
+    
+    @external method createUser($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("🆕 [API] POST /api/users - Creating new user")
+        
+        body: Text = $req.getBody()
+        
+        # Validate required fields
+        has_name: Bool = json.hasKey(body, "name")
+        has_email: Bool = json.hasKey(body, "email")
+        
+        if (!has_name || !has_email) {
+            $res.setStatus(400)
+            $res.json(json.createObject(
+                "error", "Missing required fields",
+                "required", json.createArray("name", "email"),
+                "received", json.createObject("has_name", has_name, "has_email", has_email)
+            ))
+            return "User creation failed - missing fields"
+        }
+        
+        # Set default role if not provided
+        user_data: Text = body
+        if (!json.hasKey(user_data, "role")) {
+            user_data = json.set(user_data, "role", "user")
+        }
+        
+        # Add timestamps
+        user_data = json.set(user_data, "created_at", "2024-01-01T12:00:00Z")
+        user_data = json.set(user_data, "updated_at", "2024-01-01T12:00:00Z")
+        
+        # Create user in data store
+        created_user: Text = this.data_store.addUser(user_data)
+        
+        # Create response with success metadata
+        response_data: Text = json.createObject(
+            "message", "User created successfully",
+            "user", created_user,
+            "links", json.createObject(
+                "self", "/api/users/" + json.get(created_user, "id"),
+                "edit", "/api/users/" + json.get(created_user, "id"),
+                "delete", "/api/users/" + json.get(created_user, "id")
+            )
+        )
+        
+        $res.setStatus(201)
+        $res.json(response_data)
+        return "User created successfully"
+    }
+    
+    @external method updateUser($req: HttpRequest, $res: HttpResponse): Text {
+        user_id_str: Text = $req.getParam("id")
+        # Convert string to integer using new type conversion method
+        user_id: Int = user_id_str.toInt()
+        body: Text = $req.getBody()
+        
+        io.print("✏️ [API] PUT /api/users/%d - Updating user", user_id)
+        
+        # Add updated timestamp
+        updates_with_timestamp: Text = json.set(body, "updated_at", "2024-01-01T12:00:00Z")
+        
+        # Update user in data store
+        updated_user: Text = this.data_store.updateUser(user_id, updates_with_timestamp)
+        
+        # Check if user was found and updated
+        if (updated_user.length() == 0) {
+            $res.setStatus(404)
+            $res.json(json.createObject("error", "User not found", "id", user_id))
+        } else {
+            response_data: Text = json.createObject(
+                "message", "User updated successfully",
+                "user", updated_user,
+                "changes", body
+            )
+            
+            $res.setStatus(200)
+            $res.json(response_data)
+        }
+        
+        return "User update completed"
+    }
+    
+    @external method deleteUser($req: HttpRequest, $res: HttpResponse): Text {
+        user_id_str: Text = $req.getParam("id")
+        # Convert string to integer using new type conversion method
+        user_id: Int = user_id_str.toInt()
+        
+        io.print("🗑️ [API] DELETE /api/users/%d - Deleting user", user_id)
+        
+        deleted: Bool = this.data_store.deleteUser(user_id)
+        
+        if (deleted) {
+            response_data: Text = json.createObject(
+                "message", "User deleted successfully",
+                "id", user_id,
+                "deleted_at", "2024-01-01T12:00:00Z"
+            )
+            
+            $res.setStatus(200)
+            $res.json(response_data)
+        } else {
+            $res.setStatus(404)
+            $res.json(json.createObject("error", "User not found", "id", user_id))
+        }
+        
+        return "User deletion completed"
+    }
+}
+
+Object PostController {
+    property data_store: DataStore
+    
+    constructor() {
+        this.data_store = new DataStore()
+    }
+    
+    @external method getAllPosts($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("📄 [API] GET /api/posts - Retrieving all posts")
+        
+        # Get query parameters
+        published_filter: Text = $req.getQueryParam("published")
+        author_filter: Text = $req.getQueryParam("author_id")
+        
+        posts_json: Text = this.data_store.getPostsJson()
+        
+        # Apply published filter
+        if (published_filter.length() > 0) {
+            filtered_posts: Text = json.createArray()
+            posts_list: List = json.parseToList(posts_json)
+            
+            posts_iter: ListIterator = posts_list.iterator()
+            while (posts_iter.hasNext()) {
+                post_json: Text = posts_iter.next()
+                is_published: Bool = json.get(post_json, "published")
+                
+                if ((published_filter == "true" && is_published) || (published_filter == "false" && !is_published)) {
+                    filtered_posts = json.push(filtered_posts, post_json)
+                }
+            }
+            
+            posts_json = filtered_posts
+        }
+        
+        # Create enriched response
+        response_data: Text = json.createObject(
+            "posts", posts_json,
+            "total", json.size(posts_json),
+            "filters", json.createObject("published", published_filter, "author_id", author_filter),
+            "meta", json.createObject(
+                "page", 1,
+                "per_page", json.size(posts_json),
+                "has_more", false
+            )
+        )
+        
+        $res.setStatus(200)
+        $res.json(response_data)
+        return "Posts retrieved successfully"
+    }
+    
+    @external method createPost($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("📝 [API] POST /api/posts - Creating new post")
+        
+        body: Text = $req.getBody()
+        
+        # Validate required fields
+        has_title: Bool = json.hasKey(body, "title")
+        has_content: Bool = json.hasKey(body, "content")
+        has_author: Bool = json.hasKey(body, "author_id")
+        
+        if (!has_title || !has_content || !has_author) {
+            $res.setStatus(400)
+            $res.json(json.createObject(
+                "error", "Missing required fields",
+                "required", json.createArray("title", "content", "author_id"),
+                "validation", json.createObject(
+                    "has_title", has_title,
+                    "has_content", has_content, 
+                    "has_author_id", has_author
+                )
+            ))
+            return "Post creation failed - missing fields"
+        }
+        
+        # Add metadata
+        post_data: Text = json.set(body, "created_at", "2024-01-01T12:00:00Z")
+        post_data = json.set(post_data, "updated_at", "2024-01-01T12:00:00Z")
+        post_data = json.set(post_data, "views", 0)
+        post_data = json.set(post_data, "likes", 0)
+        
+        # Create post in data store
+        created_post: Text = this.data_store.addPost(post_data)
+        
+        # Create rich response (separate nested object creation)
+        author_info: Text = json.createObject("id", json.get(created_post, "author_id"))
+        links_obj: Text = json.createObject(
+            "self", "/api/posts/" + json.get(created_post, "id"),
+            "author", "/api/users/" + json.get(created_post, "author_id")
+        )
+        response_data: Text = json.createObject(
+            "message", "Post created successfully",
+            "post", created_post,
+            "author_info", author_info,
+            "links", links_obj
+        )
+        
+        $res.setStatus(201)
+        $res.json(response_data)
+        return "Post created successfully"
+    }
+}
+
+Object StatsController {
+    property data_store: DataStore
+    
+    constructor() {
+        this.data_store = new DataStore()
+    }
+    
+    @external method getSystemStats($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("📊 [API] GET /api/stats - Retrieving system statistics")
+        
+        # Get comprehensive stats from data store
+        basic_stats: Text = this.data_store.getStats()
+        
+        # Add server stats
+        enhanced_stats: Text = json.set(basic_stats, "server_info", json.createObject(
+            "version", "1.0.0",
+            "uptime", "2 hours 15 minutes",
+            "requests_today", 142,
+            "avg_response_time", "45ms"
+        ))
+        
+        # Add API endpoints info
+        api_info: Text = json.createObject(
+            "available_endpoints", json.createArray(
+                "/api/users",
+                "/api/users/{id}",
+                "/api/posts",
+                "/api/posts/{id}",
+                "/api/stats",
+                "/api/convert"
+            ),
+            "supported_methods", json.createArray("GET", "POST", "PUT", "DELETE"),
+            "content_types", json.createArray("application/json"),
+            "authentication", "Bearer token required for modifications"
+        )
+        
+        enhanced_stats = json.set(enhanced_stats, "api_info", api_info)
+        
+        # Add real-time metrics
+        metrics: Text = json.createObject(
+            "json_operations_count", 1247,
+            "validation_successes", 1189,
+            "validation_failures", 58,
+            "cache_hit_rate", 0.85,
+            "error_rate", 0.023
+        )
+        
+        enhanced_stats = json.set(enhanced_stats, "metrics", metrics)
+        
+        $res.setStatus(200)
+        $res.json(enhanced_stats)
+        return "System statistics retrieved"
+    }
+    
+    @external method getTypeConversion($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("🔄 [API] GET /api/convert - Type conversion demonstration")
+        
+        # Get query parameters for conversion
+        value_param: Text = $req.getQueryParam("value")
+        from_type: Text = $req.getQueryParam("from")
+        to_type: Text = $req.getQueryParam("to")
+        
+        if (value_param.length() == 0) {
+            $res.setStatus(400)
+            $res.json(json.createObject(
+                "error", "Missing required parameter",
+                "message", "Please provide 'value' parameter",
+                "example", "/api/convert?value=42&from=text&to=int"
+            ))
+            return "Missing value parameter"
+        }
+        
+        # Demonstrate type conversions based on parameters
+        conversion_result: Text = ""
+        original_value: Text = value_param
+        converted_successfully: Bool = true
+        error_message: Text = ""
+        
+        try {
+            if (from_type == "text" && to_type == "int") {
+                int_result: Int = original_value.toInt()
+                conversion_result = int_result.toString()
+            } else if (from_type == "text" && to_type == "float") {
+                float_result: Float = original_value.toDouble()
+                conversion_result = float_result.toString()
+            } else if (from_type == "text" && to_type == "bool") {
+                bool_result: Bool = original_value.toBool()
+                conversion_result = bool_result.toString()
+            } else if (from_type == "int" && to_type == "text") {
+                int_val: Int = original_value.toInt()
+                conversion_result = int_val.toString()
+            } else if (from_type == "int" && to_type == "float") {
+                int_val: Int = original_value.toInt()
+                float_result: Float = int_val.toDouble()
+                conversion_result = float_result.toString()
+            } else if (from_type == "int" && to_type == "bool") {
+                int_val: Int = original_value.toInt()
+                bool_result: Bool = int_val.toBool()
+                conversion_result = bool_result.toString()
+            } else if (from_type == "float" && to_type == "int") {
+                float_val: Float = original_value.toDouble()
+                int_result: Int = float_val.toInt()
+                conversion_result = int_result.toString()
+            } else if (from_type == "bool" && to_type == "int") {
+                bool_val: Bool = original_value.toBool()
+                int_result: Int = bool_val.toInt()
+                conversion_result = int_result.toString()
+            } else {
+                converted_successfully = false
+                error_message = "Unsupported conversion: " + from_type + " to " + to_type
+            }
+        } catch (error) {
+            converted_successfully = false
+            error_message = "Conversion failed: Invalid " + from_type + " value '" + original_value + "'"
+        }
+        
+        # Create response
+        if (converted_successfully) {
+            response_data: Text = json.createObject(
+                "success", true,
+                "original_value", original_value,
+                "original_type", from_type,
+                "converted_value", conversion_result,
+                "converted_type", to_type,
+                "conversion", from_type + " -> " + to_type,
+                "method_used", from_type + ".to" + to_type.capitalize()
+            )
+            $res.setStatus(200)
+        } else {
+            response_data: Text = json.createObject(
+                "success", false,
+                "error", error_message,
+                "original_value", original_value,
+                "requested_conversion", from_type + " -> " + to_type,
+                "supported_conversions", json.createArray(
+                    "text -> int, float, bool",
+                    "int -> text, float, bool, long",
+                    "float -> text, int, long, bool",
+                    "bool -> text, int, float, long"
+                )
+            )
+            $res.setStatus(400)
+        }
+        
+        $res.json(response_data)
+        return "Type conversion completed"
+    }
+    
+    @external method getJsonValidation($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("🔍 [API] GET /api/validate - JSON validation endpoint")
+        
+        # Get JSON from query parameter or body
+        json_input: Text = $req.getQueryParam("json")
+        if (json_input.length() == 0) {
+            json_input = $req.getBody()
+        }
+        
+        if (json_input.length() == 0) {
+            $res.setStatus(400)
+            $res.json(json.createObject(
+                "error", "No JSON provided",
+                "message", "Provide JSON via 'json' query parameter or request body"
+            ))
+            return "No JSON to validate"
+        }
+        
+        # Perform comprehensive validation
+        is_valid: Bool = json.isValid(json_input)
+        is_object: Bool = json.isObject(json_input)
+        is_array: Bool = json.isArray(json_input)
+        
+        validation_result: Text = json.createObject(
+            "input", json_input,
+            "valid", is_valid,
+            "type_analysis", json.createObject(
+                "is_object", is_object,
+                "is_array", is_array,
+                "is_string", json.isString(json_input),
+                "is_number", json.isNumber(json_input),
+                "is_boolean", json.isBoolean(json_input),
+                "is_null", json.isNull(json_input)
+            )
+        )
+        
+        if (is_valid) {
+            # Add size information
+            if (is_array || is_object) {
+                validation_result = json.set(validation_result, "size", json.size(json_input))
+            }
+            
+            # Add parsing test
+            if (is_object) {
+                parsed_map: Map = json.parseToMap(json_input)
+                validation_result = json.set(validation_result, "keys_count", parsed_map.size())
+            }
+        } else {
+            validation_result = json.set(validation_result, "error_info", json.createObject(
+                "message", "JSON syntax is invalid",
+                "suggestion", "Check for missing quotes, commas, or brackets"
+            ))
+        }
+        
+        $res.setStatus(200)
+        $res.json(validation_result)
+        return "JSON validation completed"
+    }
+}
+
+# =============================================================================
+# MAIN APPLICATION WITH JSON API SERVER
+# =============================================================================
+
+Object Main {
+    method main(): Text {
+        io.print("=============================================================================")
+        io.print("🔥 O2L JSON API SERVER DEMO - COMPREHENSIVE JSON OPERATIONS")
+        io.print("=============================================================================")
+        io.print("")
+        
+        # Create server instance
+        server_instance: HttpServerInstance = server.create()
+        server.setHost(server_instance, "127.0.0.1")
+        server.setPort(server_instance, 8080)
+        server.setWorkerThreads(server_instance, 4)
+        
+        io.print("📡 JSON API Server configured on http://127.0.0.1:8080")
+        io.print("")
+        
+        # =============================================================================
+        # REGISTER JSON VALIDATION MIDDLEWARE
+        # =============================================================================
+        
+        io.print("🔗 Setting up JSON middleware pipeline...")
+        
+        # JSON validation middleware
+        json_validator: JsonValidationMiddleware = new JsonValidationMiddleware()
+        result1: Text = server.use(server_instance, json_validator)
+        io.print("  ✅ JSON validation middleware: %s", result1)
+        
+        io.print("")
+        
+        # =============================================================================
+        # REGISTER JSON API ROUTES
+        # =============================================================================
+        
+        io.print("🛣️  Registering JSON API routes...")
+        
+        # Create controllers
+        user_controller: UserController = new UserController()
+        post_controller: PostController = new PostController()
+        stats_controller: StatsController = new StatsController()
+        
+        # User API routes
+        server.get(server_instance, "/api/users", user_controller, "getAllUsers")
+        io.print("  ✅ GET    /api/users - List all users with filtering")
+        
+        server.post(server_instance, "/api/users", user_controller, "createUser")
+        io.print("  ✅ POST   /api/users - Create new user (JSON required)")
+        
+        server.get(server_instance, "/api/users/:id", user_controller, "getUserById")
+        io.print("  ✅ GET    /api/users/:id - Get user by ID")
+        
+        server.put(server_instance, "/api/users/:id", user_controller, "updateUser")
+        io.print("  ✅ PUT    /api/users/:id - Update user (JSON required)")
+        
+        server.delete(server_instance, "/api/users/:id", user_controller, "deleteUser")
+        io.print("  ✅ DELETE /api/users/:id - Delete user")
+        
+        # Posts API routes
+        server.get(server_instance, "/api/posts", post_controller, "getAllPosts")
+        io.print("  ✅ GET    /api/posts - List all posts with filtering")
+        
+        server.post(server_instance, "/api/posts", post_controller, "createPost")
+        io.print("  ✅ POST   /api/posts - Create new post (JSON required)")
+        
+        # Statistics and utility routes
+        server.get(server_instance, "/api/stats", stats_controller, "getSystemStats")
+        io.print("  ✅ GET    /api/stats - System and JSON operation statistics")
+        
+        server.get(server_instance, "/api/validate", stats_controller, "getJsonValidation")
+        io.print("  ✅ GET    /api/validate - JSON validation utility")
+        
+        server.get(server_instance, "/api/convert", stats_controller, "getTypeConversion")
+        io.print("  ✅ GET    /api/convert - Type conversion demonstration")
+        
+        io.print("")
+        
+        # =============================================================================
+        # DEMONSTRATE JSON LIBRARY FEATURES
+        # =============================================================================
+        
+        io.print("🔧 JSON Library Features Demo:")
+        io.print("")
+        
+        # Create sample data using simple JSON string (more reliable)
+        sample_user: Text = "{\"name\": \"Demo User\", \"email\": \"demo@example.com\", \"preferences\": {\"theme\": \"dark\", \"notifications\": true, \"languages\": [\"English\", \"Spanish\"]}}"
+        
+        io.print("📝 Sample JSON created:")
+        io.print("   %s", sample_user)
+        io.print("")
+        
+        # Demonstrate JSON operations
+        io.print("🔍 JSON Analysis:")
+        io.print("   Valid: %s", json.isValid(sample_user))
+        io.print("   Is Object: %s", json.isObject(sample_user))
+        io.print("   Has 'name': %s", json.hasKey(sample_user, "name"))
+        io.print("   Name value: %s", json.get(sample_user, "name"))
+        io.print("   Nested theme: %s", json.get(sample_user, "preferences.theme"))
+        io.print("   First language: %s", json.get(sample_user, "preferences.languages.0"))
+        io.print("")
+        
+        # Get initial server stats
+        initial_stats: Map = server.getStats(server_instance)
+        io.print("📈 Server Statistics:")
+        io.print("   • Total Requests: %d", initial_stats.get("total_requests"))
+        io.print("   • Active Connections: %d", initial_stats.get("active_connections"))
+        io.print("   • Error Count: %d", initial_stats.get("error_count"))
+        io.print("")
+        
+        # =============================================================================
+        # START JSON API SERVER
+        # =============================================================================
+        
+        io.print("🚀 Starting JSON API server with full JSON operations...")
+        io.print("")
+        
+        listen_result: Bool = server.listen(server_instance)
+        
+        if (listen_result) {
+            io.print("=============================================================================")
+            io.print("🎉 JSON API SERVER STARTED SUCCESSFULLY!")
+            io.print("=============================================================================")
+            io.print("")
+            io.print("📡 Server URL: http://127.0.0.1:8080")
+            io.print("")
+            io.print("🔥 JSON API Endpoints Available:")
+            io.print("   GET    /api/users                 → List users (query: ?active=true&role=admin)")
+            io.print("   POST   /api/users                 → Create user (JSON body required)")
+            io.print("   GET    /api/users/1               → Get user by ID")
+            io.print("   PUT    /api/users/1               → Update user (JSON body required)")
+            io.print("   DELETE /api/users/1               → Delete user")
+            io.print("")
+            io.print("   GET    /api/posts                 → List posts (query: ?published=true)")
+            io.print("   POST   /api/posts                 → Create post (JSON body required)")
+            io.print("")
+            io.print("   GET    /api/stats                 → System statistics with JSON metrics")
+            io.print("   GET    /api/validate              → JSON validation (?json=... or body)")
+            io.print("   GET    /api/convert               → Type conversion demo (?value=...&from=...&to=...)")
+            io.print("")
+            io.print("🧪 Test Commands (JSON API):")
+            io.print("")
+            io.print("   # Get all users")
+            io.print("   curl http://127.0.0.1:8080/api/users")
+            io.print("")
+            io.print("   # Get active users only")
+            io.print("   curl 'http://127.0.0.1:8080/api/users?active=true'")
+            io.print("")
+            io.print("   # Create new user (JSON)")
+            io.print("   curl -X POST -H 'Content-Type: application/json' \\")
+            io.print("        -d '{\"name\":\"John Doe\",\"email\":\"john@example.com\",\"role\":\"user\"}' \\")
+            io.print("        http://127.0.0.1:8080/api/users")
+            io.print("")
+            io.print("   # Update user (JSON)")
+            io.print("   curl -X PUT -H 'Content-Type: application/json' \\")
+            io.print("        -d '{\"name\":\"Jane Doe\",\"active\":false}' \\")
+            io.print("        http://127.0.0.1:8080/api/users/1")
+            io.print("")
+            io.print("   # Create new post (JSON)")
+            io.print("   curl -X POST -H 'Content-Type: application/json' \\")
+            io.print("        -d '{\"title\":\"My Post\",\"content\":\"Great content!\",\"author_id\":1}' \\")
+            io.print("        http://127.0.0.1:8080/api/posts")
+            io.print("")
+            io.print("   # Get system stats")
+            io.print("   curl http://127.0.0.1:8080/api/stats")
+            io.print("")
+            io.print("   # Validate JSON")
+            io.print("   curl 'http://127.0.0.1:8080/api/validate?json={\"test\":123}'")
+            io.print("")
+            io.print("   # Test type conversions")
+            io.print("   curl 'http://127.0.0.1:8080/api/convert?value=42&from=text&to=int'")
+            io.print("   curl 'http://127.0.0.1:8080/api/convert?value=3.14&from=text&to=float'")
+            io.print("   curl 'http://127.0.0.1:8080/api/convert?value=true&from=text&to=bool'")
+            io.print("   curl 'http://127.0.0.1:8080/api/convert?value=100&from=int&to=float'")
+            io.print("")
+            io.print("   # Test invalid JSON")
+            io.print("   curl -X POST -H 'Content-Type: application/json' \\")
+            io.print("        -d '{invalid json}' \\")
+            io.print("        http://127.0.0.1:8080/api/users")
+            io.print("")
+            io.print("🎯 JSON Operations Demonstrated:")
+            io.print("   • JSON creation, parsing, and validation")
+            io.print("   • Nested object and array manipulation")
+            io.print("   • Type detection and path navigation")
+            io.print("   • CRUD operations with JSON persistence")
+            io.print("   • Comprehensive API responses")
+            io.print("   • Automatic JSON validation middleware")
+            io.print("   • Type conversion system (Text, Int, Float, Bool)")
+            io.print("   • Error handling for invalid conversions")
+            io.print("")
+            io.print("💡 Watch the console for detailed JSON operation logs!")
+            io.print("")
+            io.print("⏳ JSON API server running forever...")
+            
+            # Wait forever (blocking)
+            wait_result: Text = server.waitForever(server_instance)
+            return wait_result
+        } else {
+            io.print("❌ Failed to start JSON API server")
+            return "Server startup failed"
+        }
+    }
+}

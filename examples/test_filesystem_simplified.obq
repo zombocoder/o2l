@@ -1,0 +1,215 @@
+import system.io
+import system.fs
+
+Object FilesystemSimplifiedTester {
+    @external method testBasicFileOperations(): Int {
+        io.print("=== Basic File Operations Test ===")
+        
+        test_file: Text = "simple_test.txt"
+        test_content: Text = "Hello, filesystem!"
+        
+        # Test file creation
+        write_success: Bool = fs.writeText(test_file, test_content)
+        io.print("1. Write file: %o", write_success)
+        
+        if (write_success) {
+            # Test file existence
+            exists: Bool = fs.exists(test_file)
+            is_file: Bool = fs.isFile(test_file)
+            is_dir: Bool = fs.isDirectory(test_file)
+            
+            io.print("   File exists: %o", exists)
+            io.print("   Is file: %o", is_file)
+            io.print("   Is directory: %o", is_dir)
+            
+            # Test file reading
+            read_content: Text = fs.readText(test_file)
+            content_matches: Bool = read_content == test_content
+            io.print("   Content matches: %o", content_matches)
+            
+            # Create boolean conditions step by step
+            file_valid: Bool = exists && is_file
+            not_directory: Bool = !is_dir
+            all_checks: Bool = file_valid && not_directory && content_matches
+            
+            if (all_checks) {
+                io.print("   All file validation checks passed!")
+                
+                # Test cleanup
+                delete_success: Bool = fs.deleteFile(test_file)
+                still_exists: Bool = fs.exists(test_file)
+                cleanup_success: Bool = delete_success && !still_exists
+                
+                io.print("   Cleanup successful: %o", cleanup_success)
+                
+                if (cleanup_success) {
+                    return 1
+                }
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testDirectoryOperations(): Int {
+        io.print("=== Directory Operations Test ===")
+        
+        test_dir: Text = "simple_test_dir"
+        
+        # Test directory creation
+        create_success: Bool = fs.createDirectory(test_dir)
+        io.print("1. Create directory: %o", create_success)
+        
+        if (create_success) {
+            # Test directory properties
+            exists: Bool = fs.exists(test_dir)
+            is_dir: Bool = fs.isDirectory(test_dir)
+            is_file: Bool = fs.isFile(test_dir)
+            
+            io.print("   Directory exists: %o", exists)
+            io.print("   Is directory: %o", is_dir)
+            io.print("   Is file: %o", is_file)
+            
+            # Validate directory properties
+            dir_valid: Bool = exists && is_dir
+            not_file: Bool = !is_file
+            all_dir_checks: Bool = dir_valid && not_file
+            
+            if (all_dir_checks) {
+                io.print("   Directory validation passed!")
+                
+                # Test file in directory
+                file_in_dir: Text = test_dir + "/nested_file.txt"
+                file_content: Text = "Content in nested file"
+                
+                write_nested: Bool = fs.writeText(file_in_dir, file_content)
+                io.print("   Create nested file: %o", write_nested)
+                
+                if (write_nested) {
+                    # List directory contents
+                    dir_files: List = fs.listFiles(test_dir)
+                    file_count: Int = dir_files.size()
+                    has_files: Bool = file_count > 0
+                    
+                    io.print("   Files in directory: %d", file_count)
+                    io.print("   Directory has files: %o", has_files)
+                    
+                    if (has_files) {
+                        # Cleanup nested file first
+                        delete_nested: Bool = fs.deleteFile(file_in_dir)
+                        io.print("   Delete nested file: %o", delete_nested)
+                    }
+                }
+                
+                # Cleanup directory
+                delete_dir: Bool = fs.deleteFile(test_dir)
+                dir_still_exists: Bool = fs.exists(test_dir)
+                dir_cleanup: Bool = delete_dir && !dir_still_exists
+                
+                io.print("   Directory cleanup: %o", dir_cleanup)
+                
+                if (dir_cleanup) {
+                    return 1
+                }
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testLogicalOperatorIntegration(): Int {
+        io.print("=== Logical Operators with Filesystem Test ===")
+        
+        # Test multiple files with logical operations
+        file1: Text = "logic_test1.txt"
+        file2: Text = "logic_test2.txt"
+        file3: Text = "logic_test3.txt"
+        
+        content1: Text = "Content 1"
+        content2: Text = "Content 2"
+        content3: Text = "Content 3"
+        
+        # Create files
+        create1: Bool = fs.writeText(file1, content1)
+        create2: Bool = fs.writeText(file2, content2)
+        create3: Bool = fs.writeText(file3, content3)
+        
+        io.print("1. File creation results:")
+        io.print("   File 1: %o", create1)
+        io.print("   File 2: %o", create2)
+        io.print("   File 3: %o", create3)
+        
+        # Test logical AND - all files should exist
+        all_created: Bool = create1 && create2 && create3
+        io.print("   All files created: %o", all_created)
+        
+        if (all_created) {
+            # Test existence with logical operations
+            exists1: Bool = fs.exists(file1)
+            exists2: Bool = fs.exists(file2)
+            exists3: Bool = fs.exists(file3)
+            
+            all_exist: Bool = exists1 && exists2 && exists3
+            io.print("   All files exist: %o", all_exist)
+            
+            # Test logical OR - at least one should exist
+            any_exist: Bool = exists1 || exists2 || exists3
+            io.print("   At least one exists: %o", any_exist)
+            
+            # Test NOT operations
+            none_missing: Bool = !(!exists1 || !exists2 || !exists3)
+            io.print("   None missing (De Morgan): %o", none_missing)
+            
+            # Cleanup with logical validation
+            if (all_exist) {
+                delete1: Bool = fs.deleteFile(file1)
+                delete2: Bool = fs.deleteFile(file2)
+                delete3: Bool = fs.deleteFile(file3)
+                
+                all_deleted: Bool = delete1 && delete2 && delete3
+                io.print("   All files deleted: %o", all_deleted)
+                
+                # Verify deletion
+                still_exists1: Bool = fs.exists(file1)
+                still_exists2: Bool = fs.exists(file2)
+                still_exists3: Bool = fs.exists(file3)
+                
+                none_exist: Bool = !still_exists1 && !still_exists2 && !still_exists3
+                io.print("   Cleanup verified: %o", none_exist)
+                
+                if (none_exist) {
+                    return 1
+                }
+            }
+        }
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: FilesystemSimplifiedTester = new FilesystemSimplifiedTester()
+        
+        result1: Int = tester.testBasicFileOperations()
+        io.print("")
+        
+        result2: Int = tester.testDirectoryOperations()
+        io.print("")
+        
+        result3: Int = tester.testLogicalOperatorIntegration()
+        io.print("")
+        
+        # Use step-by-step logical evaluation
+        basic_tests: Bool = (result1 == 1) && (result2 == 1)
+        all_tests: Bool = basic_tests && (result3 == 1)
+        
+        if (all_tests) {
+            io.print("=== All simplified filesystem tests passed! ===")
+            return 0
+        } else {
+            io.print("=== Some simplified filesystem tests failed ===")
+            return 1
+        }
+    }
+}

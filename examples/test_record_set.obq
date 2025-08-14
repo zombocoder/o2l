@@ -1,0 +1,16 @@
+Record Person { 
+    name: Text
+    age: Int
+}
+
+Object Main {
+    method main(): Text {
+        var person1: Person = Person { name = "John", age = 30 }
+        var person2: Person = Person { name = "Jane", age = 25 }
+        var person3: Person = Person { name = "John", age = 30 }
+        
+        var personSet: Set<Person> = (person1, person2, person3, person1)
+        
+        "Set contains " + toString(personSet.size()) + " people"
+    }
+}

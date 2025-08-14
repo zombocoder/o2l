@@ -1,0 +1,71 @@
+import system.io
+
+Object LogicalTester {
+    @external method testLogicalOperators(): Int {
+        io.print("=== Logical Operators Test ===")
+        
+        # Test basic boolean values
+        true_val: Bool = true
+        false_val: Bool = false
+        
+        # Test AND operator (&&)
+        io.print("1. Testing AND operator (&&):")
+        result1: Bool = true_val && true_val
+        io.print("   true && true = %o", result1)
+        
+        result2: Bool = true_val && false_val
+        io.print("   true && false = %o", result2)
+        
+        result3: Bool = false_val && true_val
+        io.print("   false && true = %o", result3)
+        
+        result4: Bool = false_val && false_val
+        io.print("   false && false = %o", result4)
+        
+        # Test OR operator (||)
+        io.print("2. Testing OR operator (||):")
+        result5: Bool = true_val || true_val
+        io.print("   true || true = %o", result5)
+        
+        result6: Bool = true_val || false_val
+        io.print("   true || false = %o", result6)
+        
+        result7: Bool = false_val || true_val
+        io.print("   false || true = %o", result7)
+        
+        result8: Bool = false_val || false_val
+        io.print("   false || false = %o", result8)
+        
+        # Test complex expressions
+        io.print("3. Testing complex logical expressions:")
+        
+        # Test precedence: AND has higher precedence than OR
+        # false || true && false should be false || (true && false) = false || false = false
+        complex1: Bool = false_val || true_val && false_val
+        io.print("   false || true && false = %o", complex1)
+        
+        # Test with parentheses: (false || true) && false = true && false = false
+        complex2: Bool = (false_val || true_val) && false_val
+        io.print("   (false || true) && false = %o", complex2)
+        
+        # Test mixed with comparisons
+        x: Int = 5
+        y: Int = 10
+        
+        logical_with_comparison: Bool = (x < y) && (y > 0)
+        io.print("   (5 < 10) && (10 > 0) = %o", logical_with_comparison)
+        
+        logical_with_comparison2: Bool = (x > y) || (y > 0)
+        io.print("   (5 > 10) || (10 > 0) = %o", logical_with_comparison2)
+        
+        io.print("=== All logical operator tests completed ===")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: LogicalTester = new LogicalTester()
+        return tester.testLogicalOperators()
+    }
+}

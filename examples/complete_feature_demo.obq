@@ -1,0 +1,68 @@
+import system.io
+import system.os
+
+# Enum with custom values
+enum Priority {
+    LOW,
+    MEDIUM = 5,
+    HIGH = 10
+}
+
+# Record with multiple fields
+record Task {
+    name: Text
+    priority: Priority
+    completed: Bool
+}
+
+Object TaskManager {
+    property currentTask: Task
+    
+    constructor() {
+        const DEFAULT_PRIORITY: Priority = Priority.MEDIUM
+        this.currentTask = Task(name="Setup", priority=DEFAULT_PRIORITY, completed=false)
+    }
+    
+    # Protected method
+    method updateTask(): Void {
+        io.print("Updating task internally")
+    }
+    
+    # External method
+    @external method showTask(): Void {
+        io.print("Task: %s", this.currentTask.name)
+        io.print("Priority: %o", this.currentTask.priority)
+        io.print("Completed: %s", this.currentTask.completed)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        io.print("=== Complete O2L Feature Demo ===")
+        
+        # System library usage
+        io.print("Running from: %s", os.getEnv("PWD"))
+        io.print("User: %s", os.getEnv("USER"))
+        
+        # Object creation and method calls  
+        manager: TaskManager = new TaskManager()
+        manager.showTask()
+        
+        # Enum usage
+        highPriority: Priority = Priority.HIGH
+        io.print("High priority value: %o", highPriority)
+        
+        # Record creation
+        newTask: Task = Task(name="Demo Complete", priority=Priority.HIGH, completed=true)
+        io.print("New task: %s (Priority: %o)", newTask.name, newTask.priority)
+        
+        # Conditional logic
+        if (newTask.completed) {
+            io.print("Task is completed!")
+            return 0
+        } else {
+            io.print("Task is not completed")
+            return 1
+        }
+    }
+}

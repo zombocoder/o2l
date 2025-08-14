@@ -1,0 +1,5 @@
+Object Main {
+    method main(): Int {
+        return 0
+    }
+}

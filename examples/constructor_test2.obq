@@ -1,0 +1,15 @@
+Object Student {
+    constructor(name: Text, age: Int) {
+        name
+    }
+    
+    method getInfo(): Text {
+        "Student info"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        new Student("Bob", 20).getInfo()
+    }
+}

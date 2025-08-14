@@ -1,0 +1,5 @@
+Object Main {
+    method main(): Void {
+        return
+    }
+}

@@ -1,0 +1,15 @@
+Object Greeter {
+  method sayHello(): Text {
+    "Hello from Greeter!"
+  }
+  
+  method greet(name: Text): Text {
+    "Greetings, visitor!"
+  }
+}
+
+Object Main {
+  method main(): Text {
+    Greeter.sayHello()
+  }
+}

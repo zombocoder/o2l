@@ -1,0 +1,13 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        name: Text = "Alice"
+        age: Int = 25
+        
+        io.print("Name: %s", name)
+        io.print("Age: %d", age)
+        
+        return 0
+    }
+}

@@ -1,0 +1,40 @@
+import system.io.*
+
+Object Calculator {
+    property result: Int
+    
+    constructor() {
+        this.result = 0
+    }
+    
+    method add(value: Int): Int {
+        this.result = this.result + value
+        return this.result
+    }
+    
+    method getResult(): Int {
+        return this.result
+    }
+}
+
+Object Main {
+    method main(): Text {
+        calc: Any = new Calculator()
+        
+        io.print("=== Native I/O System Demo ===")
+        io.print("Calculator initialized with result: %s", calc.getResult())
+        
+        calc.add(10)
+        io.print("After adding 10: %s", calc.getResult())
+        
+        calc.add(5)
+        io.print("After adding 5: %s", calc.getResult())
+        
+        finalResult: Int = calc.getResult()
+        io.print("Final result is: %s", finalResult)
+        
+        io.print("String formatting test: %s + %s = %s", 10, 5, finalResult)
+        
+        return "Comprehensive test completed!"
+    }
+}

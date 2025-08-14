@@ -1,0 +1,39 @@
+import system.io
+
+Object TestClass {
+    property value: Int
+    
+    constructor() {
+        this.value = 42
+    }
+    
+    # Protected method - not externally accessible
+    method protectedMethod(): Void {
+        io.print("This is a protected method")
+    }
+    
+    # External method - publicly accessible
+    @external method publicMethod(): Void {
+        io.print("This is a public method, value: %d", this.value)
+    }
+}
+
+Object Main {
+    property test: TestClass
+    
+    constructor() {
+        this.test = new TestClass()
+    }
+    
+    method main(): Int {
+        io.print("=== Access Control Demo ===")
+        
+        # This works - calling external method
+        this.test.publicMethod()
+        
+        # This would fail if uncommented - calling protected method
+        # this.test.protectedMethod()
+        
+        return 0
+    }
+}

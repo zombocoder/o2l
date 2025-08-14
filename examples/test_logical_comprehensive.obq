@@ -1,0 +1,236 @@
+import system.io
+
+Object LogicalOperatorTester {
+    @external method testBasicOperators(): Int {
+        io.print("=== Basic Logical Operators Test ===")
+        
+        true_val: Bool = true
+        false_val: Bool = false
+        
+        # Test AND operator truth table
+        io.print("1. AND operator truth table:")
+        io.print("   true && true = %o", true_val && true_val)
+        io.print("   true && false = %o", true_val && false_val)
+        io.print("   false && true = %o", false_val && true_val)
+        io.print("   false && false = %o", false_val && false_val)
+        
+        # Test OR operator truth table
+        io.print("2. OR operator truth table:")
+        io.print("   true || true = %o", true_val || true_val)
+        io.print("   true || false = %o", true_val || false_val)
+        io.print("   false || true = %o", false_val || true_val)
+        io.print("   false || false = %o", false_val || false_val)
+        
+        # Test NOT operator
+        io.print("3. NOT operator:")
+        io.print("   !true = %o", !true_val)
+        io.print("   !false = %o", !false_val)
+        io.print("   !!true = %o", !!true_val)
+        io.print("   !!false = %o", !!false_val)
+        io.print("   !!!true = %o", !!!true_val)
+        
+        return 0
+    }
+    
+    @external method testPrecedenceAndAssociativity(): Int {
+        io.print("=== Operator Precedence and Associativity Test ===")
+        
+        a: Bool = true
+        b: Bool = false
+        c: Bool = true
+        d: Bool = false
+        
+        # Test operator precedence: ! > && > ||
+        io.print("1. Testing precedence (! > && > ||):")
+        
+        # !a && b should be (!a) && b, not !(a && b)
+        result1: Bool = !a && b
+        expected1: Bool = (!a) && b
+        io.print("   !true && false = %o (should be false)", result1)
+        io.print("   (!true) && false = %o", expected1)
+        
+        # a || b && c should be a || (b && c), not (a || b) && c
+        result2: Bool = a || b && c
+        expected2: Bool = a || (b && c)
+        alt2: Bool = (a || b) && c
+        io.print("   true || false && true = %o (should be true)", result2)
+        io.print("   true || (false && true) = %o", expected2)
+        io.print("   (true || false) && true = %o", alt2)
+        
+        # Complex precedence test: !a || b && !c
+        result3: Bool = !a || b && !c
+        expected3: Bool = (!a) || (b && (!c))
+        io.print("   !true || false && !true = %o", result3)
+        io.print("   (!true) || (false && (!true)) = %o", expected3)
+        
+        # Test left associativity for same precedence operators
+        io.print("2. Testing associativity:")
+        result4: Bool = a && b && c
+        result5: Bool = a || b || c || d
+        io.print("   true && false && true = %o", result4)
+        io.print("   true || false || true || false = %o", result5)
+        
+        return 0
+    }
+    
+    @external method testParenthesesAndGrouping(): Int {
+        io.print("=== Parentheses and Expression Grouping Test ===")
+        
+        a: Bool = true
+        b: Bool = false
+        c: Bool = true
+        d: Bool = false
+        
+        # Test parentheses override precedence
+        io.print("1. Parentheses overriding precedence:")
+        
+        # Without parentheses: a || b && c = a || (b && c)
+        without_parens: Bool = a || b && c
+        io.print("   true || false && true = %o", without_parens)
+        
+        # With parentheses: (a || b) && c
+        with_parens: Bool = (a || b) && c
+        io.print("   (true || false) && true = %o", with_parens)
+        
+        # Test complex nested parentheses
+        io.print("2. Complex nested expressions:")
+        complex1: Bool = (a && b) || (c && d)
+        io.print("   (true && false) || (true && false) = %o", complex1)
+        
+        complex2: Bool = !(a && b) && (c || d)
+        io.print("   !(true && false) && (true || false) = %o", complex2)
+        
+        complex3: Bool = !((a || b) && (c || d))
+        io.print("   !((true || false) && (true || false)) = %o", complex3)
+        
+        # Test deeply nested expressions
+        io.print("3. Deeply nested expressions:")
+        deep1: Bool = (((a && b) || c) && d) || (!a && (b || !c))
+        io.print("   Complex deep expression 1 = %o", deep1)
+        
+        deep2: Bool = !(((a || b) && c) || (d && (!a || !b)))
+        io.print("   Complex deep expression 2 = %o", deep2)
+        
+        return 0
+    }
+    
+    @external method testWithComparisons(): Int {
+        io.print("=== Logical Operators with Comparisons Test ===")
+        
+        x: Int = 5
+        y: Int = 10
+        z: Int = 5
+        
+        # Test logical operators with comparison results
+        io.print("1. Logical operators with comparisons:")
+        result1: Bool = (x < y) && (y > z)
+        io.print("   (5 < 10) && (10 > 5) = %o", result1)
+        
+        result2: Bool = (x == z) || (x > y)
+        io.print("   (5 == 5) || (5 > 10) = %o", result2)
+        
+        result3: Bool = !(x > y) && (z <= x)
+        io.print("   !(5 > 10) && (5 <= 5) = %o", result3)
+        
+        # Test complex comparison chains
+        io.print("2. Complex comparison chains:")
+        chain1: Bool = (x < y) && (y > z) && (x == z)
+        io.print("   (5 < 10) && (10 > 5) && (5 == 5) = %o", chain1)
+        
+        chain2: Bool = (x > y) || (y < z) || (x != z)
+        io.print("   (5 > 10) || (10 < 5) || (5 != 5) = %o", chain2)
+        
+        # Test with NOT and comparisons
+        io.print("3. NOT with comparisons:")
+        not_comp1: Bool = !(x == y) && (z == x)
+        io.print("   !(5 == 10) && (5 == 5) = %o", not_comp1)
+        
+        not_comp2: Bool = !((x < y) && (x > z))
+        io.print("   !((5 < 10) && (5 > 5)) = %o", not_comp2)
+        
+        return 0
+    }
+    
+    @external method testDeMorganLaws(): Int {
+        io.print("=== De Morgan's Laws Test ===")
+        
+        io.print("1. Testing !(A && B) = (!A || !B):")
+        
+        # Test case 1: true, true
+        a1: Bool = true
+        b1: Bool = true
+        left1: Bool = !(a1 && b1)
+        right1: Bool = !a1 || !b1
+        io.print("   !(true && true) = %o, (!true || !true) = %o, Equal: %o", left1, right1, left1 == right1)
+        
+        # Test case 2: true, false
+        a2: Bool = true
+        b2: Bool = false
+        left2: Bool = !(a2 && b2)
+        right2: Bool = !a2 || !b2
+        io.print("   !(true && false) = %o, (!true || !false) = %o, Equal: %o", left2, right2, left2 == right2)
+        
+        # Test case 3: false, true
+        a3: Bool = false
+        b3: Bool = true
+        left3: Bool = !(a3 && b3)
+        right3: Bool = !a3 || !b3
+        io.print("   !(false && true) = %o, (!false || !true) = %o, Equal: %o", left3, right3, left3 == right3)
+        
+        # Test case 4: false, false
+        a4: Bool = false
+        b4: Bool = false
+        left4: Bool = !(a4 && b4)
+        right4: Bool = !a4 || !b4
+        io.print("   !(false && false) = %o, (!false || !false) = %o, Equal: %o", left4, right4, left4 == right4)
+        
+        io.print("2. Testing !(A || B) = (!A && !B):")
+        
+        # Test all combinations for second law
+        left5: Bool = !(a1 || b1)
+        right5: Bool = !a1 && !b1
+        io.print("   !(true || true) = %o, (!true && !true) = %o, Equal: %o", left5, right5, left5 == right5)
+        
+        left6: Bool = !(a2 || b2)
+        right6: Bool = !a2 && !b2
+        io.print("   !(true || false) = %o, (!true && !false) = %o, Equal: %o", left6, right6, left6 == right6)
+        
+        left7: Bool = !(a3 || b3)
+        right7: Bool = !a3 && !b3
+        io.print("   !(false || true) = %o, (!false && !true) = %o, Equal: %o", left7, right7, left7 == right7)
+        
+        left8: Bool = !(a4 || b4)
+        right8: Bool = !a4 && !b4
+        io.print("   !(false || false) = %o, (!false && !false) = %o, Equal: %o", left8, right8, left8 == right8)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: LogicalOperatorTester = new LogicalOperatorTester()
+        
+        result1: Int = tester.testBasicOperators()
+        io.print("")
+        
+        result2: Int = tester.testPrecedenceAndAssociativity()
+        io.print("")
+        
+        result3: Int = tester.testParenthesesAndGrouping()
+        io.print("")
+        
+        result4: Int = tester.testWithComparisons()
+        io.print("")
+        
+        result5: Int = tester.testDeMorganLaws()
+        
+        if (result1 == 0 && result2 == 0 && result3 == 0 && result4 == 0 && result5 == 0) {
+            io.print("=== All logical operator tests passed! ===")
+            return 0
+        } else {
+            io.print("=== Some logical operator tests failed! ===")
+            return 1
+        }
+    }
+}

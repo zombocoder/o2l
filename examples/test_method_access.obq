@@ -1,0 +1,28 @@
+import system.io.*
+
+Object TestObj {
+    property value: Int
+    
+    constructor() {
+        this.value = 0
+    }
+    
+    method protectedMethod(): Int {
+        return 42
+    }
+    
+    @external method externalMethod(): Int {
+        return 100
+    }
+}
+
+Object Main {
+    method main(): Void {
+        obj: TestObj = new TestObj()
+        
+        obj.externalMethod()
+        
+        # This should fail - protected method
+        result2: TestObj = obj.protectedMethod()
+    }
+}

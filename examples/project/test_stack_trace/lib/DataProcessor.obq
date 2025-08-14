@@ -1,0 +1,34 @@
+# Data processor that uses Calculator and can cause errors
+
+@import lib.Calculator
+import system.io
+
+Object DataProcessor {
+    @external method processNumbers(numbers: List<Int>, operation: Text): List<Int> {
+        results: List<Int> =  []
+        
+        first: Int = numbers.get(0)
+        second: Int = numbers.get(1)
+        
+        calc: Calculator = new Calculator()
+        
+        result: Int = calc.compute(operation, first, second)
+        io.print("result: %o", result)
+        results.add(result)
+        return results
+    }
+    
+    @external method validateData(data: Int): Bool {
+        calc: Calculator = new Calculator()
+        
+        # This will trigger the deep nested error
+        value: Int = calc.nestedError(data)
+        return value > 0
+    }
+    
+    @external method complexOperation(x: Int, y: Int): Float {
+        calc: Calculator = new Calculator()
+        
+        return calc.advancedCalculation(x, y)
+    }
+}

@@ -1,0 +1,24 @@
+import system.io.*
+
+Object Counter {
+    constructor(initial: Int) {
+        this.count = initial
+    }
+    
+    method getCount(): Int {
+        return this.count
+    }
+    
+    method increment(): Int {
+        this.count = this.count + 1
+        return this.count
+    }
+}
+
+Object Main {
+    method main(): Int {
+        c: Any = new Counter(5)
+        io.print("My counter: %s", c.getCount())
+        return 1
+    }
+}

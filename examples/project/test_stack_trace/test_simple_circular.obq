@@ -1,0 +1,11 @@
+@import lib.SimpleA
+import system.io
+
+Object Main {
+    method main(): Int {
+        obj: SimpleA = new SimpleA()
+        
+        io.print("obj.getValue(): %d", obj.getValue())
+        return 0
+    }
+}

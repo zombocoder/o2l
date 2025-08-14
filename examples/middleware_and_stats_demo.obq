@@ -1,0 +1,389 @@
+# Advanced HTTP Server Demo: Middleware Pipeline & Statistics Monitoring
+# This demonstrates the new middleware system and enhanced server statistics in O2L
+
+import http.server
+import system.io
+import system.fs
+
+# =============================================================================
+# MIDDLEWARE OBJECTS - Express.js-style middleware pipeline
+# =============================================================================
+
+Object LoggerMiddleware {
+    @external method handle($req: HttpRequest, $res: HttpResponse, $next: NextFunction): Text {
+        # Get request details
+        http_method: Text = $req.getMethod()
+        path: Text = $req.getPath()
+        remote_addr: Text = $req.getRemoteAddress()
+        
+        # Log the incoming request
+        io.print("🔍 [Logger] %s %s from %s", http_method, path, remote_addr)
+        
+        # Continue to next middleware
+        next_result: Bool = $next.call()
+        
+        if (next_result) {
+            io.print("✅ [Logger] Request processed successfully")
+        } else {
+            io.print("❌ [Logger] Request processing failed")
+        }
+        
+        return "Logger middleware executed"
+    }
+}
+
+Object AuthMiddleware {
+    @external method handle($req: HttpRequest, $res: HttpResponse, $next: NextFunction): Text {
+        # Check for Authorization header
+        headers: Map = $req.getHeaders()
+        
+        if (headers.contains("Authorization")) {
+            auth_header: Text = headers.get("Authorization")
+            
+            if (auth_header.startswith("Bearer ") && auth_header.length() > 7) {
+                token: Text = auth_header.substring(7)
+                io.print("🔐 [Auth] Valid token: %s***", token.substring(0, 3))
+                
+                # Continue processing
+                $next.call()
+            } else {
+                io.print("❌ [Auth] Invalid authorization format")
+                $res.setStatus(401)
+                $res.setHeader("Content-Type", "application/json")
+                $res.send("{\"error\": \"Invalid authorization header\"}")
+                # Don't call next() - stops the pipeline
+            }
+        } else {
+            io.print("❌ [Auth] No authorization header")
+            $res.setStatus(401)
+            $res.setHeader("Content-Type", "application/json") 
+            $res.send("{\"error\": \"Authorization required\"}")
+            # Don't call next() - stops the pipeline
+        }
+        
+        return "Auth middleware executed"
+    }
+}
+
+Object CorsMiddleware {
+    @external method handle($req: HttpRequest, $res: HttpResponse, $next: NextFunction): Text {
+        # Add CORS headers to all responses
+        $res.setHeader("Access-Control-Allow-Origin", "*")
+        $res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        $res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        
+        http_method: Text = $req.getMethod()
+        
+        if (http_method == "OPTIONS") {
+            # Handle preflight requests
+            io.print("🌐 [CORS] Handling OPTIONS preflight request")
+            $res.setStatus(200)
+            $res.send("")
+            # Don't call next for OPTIONS
+        } else {
+            io.print("🌐 [CORS] Headers added for %s request", http_method)
+            $next.call()
+        }
+        
+        return "CORS middleware executed"
+    }
+}
+
+Object RateLimitMiddleware {
+    property request_count: Int
+    property max_requests: Int
+    
+    constructor() {
+        this.request_count = 0
+        this.max_requests = 10  # Low limit for demo purposes
+    }
+    
+    @external method handle($req: HttpRequest, $res: HttpResponse, $next: NextFunction): Text {
+        this.request_count = this.request_count + 1
+        
+        if (this.request_count > this.max_requests) {
+            io.print("🚫 [RateLimit] Limit exceeded: %d/%d", this.request_count, this.max_requests)
+            $res.setStatus(429)
+            $res.setHeader("Content-Type", "application/json")
+            $res.send("{\"error\": \"Rate limit exceeded\"}")
+            # Don't call next() - request blocked
+        } else {
+            io.print("✅ [RateLimit] Request allowed: %d/%d", this.request_count, this.max_requests)
+            $next.call()
+        }
+        
+        return "Rate limit middleware executed"
+    }
+    
+    @external method reset(): Text {
+        this.request_count = 0
+        io.print("🔄 [RateLimit] Counter reset")
+        return "Rate limit reset"
+    }
+}
+
+# =============================================================================
+# ROUTE HANDLERS
+# =============================================================================
+
+Object ApiHandlers {
+    @external method getUsers($req: HttpRequest, $res: HttpResponse): Text {
+        http_method: Text = $req.getMethod()
+        path: Text = $req.getPath()
+        
+        # Simulate some processing
+        io.print("📋 [Handler] Processing user list request")
+        
+        users_json: Text = "{"
+        users_json = users_json + "\"users\": ["
+        users_json = users_json + "{\"id\": 1, \"name\": \"Alice\", \"role\": \"admin\"},"
+        users_json = users_json + "{\"id\": 2, \"name\": \"Bob\", \"role\": \"user\"},"
+        users_json = users_json + "{\"id\": 3, \"name\": \"Charlie\", \"role\": \"user\"}"
+        users_json = users_json + "],"
+        users_json = users_json + "\"total\": 3,"
+        users_json = users_json + "\"method\": \"" + http_method + "\","
+        users_json = users_json + "\"path\": \"" + path + "\""
+        users_json = users_json + "}"
+        
+        $res.setStatus(200)
+        $res.setHeader("Content-Type", "application/json")
+        $res.send(users_json)
+        
+        return "Users retrieved successfully"
+    }
+    
+    @external method createUser($req: HttpRequest, $res: HttpResponse): Text {
+        body: Text = $req.getBody()
+        io.print("🆕 [Handler] Creating user with data: %s", body)
+        
+        # Simulate user creation
+        response_json: Text = "{"
+        response_json = response_json + "\"message\": \"User created successfully\","
+        response_json = response_json + "\"id\": 42,"
+        response_json = response_json + "\"data\": " + body
+        response_json = response_json + "}"
+        
+        $res.setStatus(201)
+        $res.setHeader("Content-Type", "application/json")
+        $res.send(response_json)
+        
+        return "User created successfully"
+    }
+    
+    @external method getPublicInfo($req: HttpRequest, $res: HttpResponse): Text {
+        # Public endpoint - no auth required
+        io.print("ℹ️  [Handler] Public info request")
+        
+        info_json: Text = "{"
+        info_json = info_json + "\"service\": \"O2L HTTP Server\","
+        info_json = info_json + "\"version\": \"1.0.0\","
+        info_json = info_json + "\"status\": \"running\","
+        info_json = info_json + "\"middleware\": \"enabled\""
+        info_json = info_json + "}"
+        
+        $res.setStatus(200)
+        $res.setHeader("Content-Type", "application/json")
+        $res.send(info_json)
+        
+        return "Public info served"
+    }
+}
+
+Object StatsHandler {
+    @external method getServerStats($req: HttpRequest, $res: HttpResponse): Text {
+        io.print("📊 [Stats] Retrieving server statistics")
+        
+        # Note: In real implementation, you'd get actual stats from the server
+        # For demo, we'll create sample stats structure
+        stats_json: Text = "{"
+        stats_json = stats_json + "\"server_info\": {"
+        stats_json = stats_json + "\"total_requests\": 15,"
+        stats_json = stats_json + "\"active_connections\": 2,"
+        stats_json = stats_json + "\"error_count\": 0,"
+        stats_json = stats_json + "\"uptime_seconds\": 120,"
+        stats_json = stats_json + "\"requests_per_second\": 0.125,"
+        stats_json = stats_json + "\"error_rate_percent\": 0.0,"
+        stats_json = stats_json + "\"is_running\": true"
+        stats_json = stats_json + "},"
+        stats_json = stats_json + "\"middleware_stats\": {"
+        stats_json = stats_json + "\"cors_requests\": 15,"
+        stats_json = stats_json + "\"auth_checks\": 10,"
+        stats_json = stats_json + "\"rate_limited\": 1,"
+        stats_json = stats_json + "\"logged_requests\": 15"
+        stats_json = stats_json + "},"
+        stats_json = stats_json + "\"timestamp\": \"2024-01-01T12:00:00Z\""
+        stats_json = stats_json + "}"
+        
+        $res.setStatus(200)
+        $res.setHeader("Content-Type", "application/json")
+        $res.send(stats_json)
+        
+        return "Server statistics retrieved"
+    }
+}
+
+# =============================================================================
+# MAIN APPLICATION
+# =============================================================================
+
+Object Main {
+    method main(): Text {
+        io.print("🚀 O2L HTTP SERVER - MIDDLEWARE & MONITORING DEMO")
+        io.print("")
+        
+        # Create server instance
+        server_instance: HttpServerInstance = server.create()
+        server.setHost(server_instance, "127.0.0.1")
+        server.setPort(server_instance, 8090)
+        server.setWorkerThreads(server_instance, 3)
+        
+        io.print("📡 Server configured on http://127.0.0.1:8090")
+        io.print("")
+        
+        # =============================================================================
+        # REGISTER MIDDLEWARE PIPELINE (Express.js-style)
+        # =============================================================================
+        
+        io.print("🔗 Setting up middleware pipeline...")
+        
+        # 1. CORS middleware (runs first for all requests)
+        cors_middleware: CorsMiddleware = new CorsMiddleware()
+        result1: Text = server.use(server_instance, cors_middleware)
+        io.print("  1. ✅ CORS middleware: %s", result1)
+        
+        # 2. Logger middleware (logs all requests)
+        logger_middleware: LoggerMiddleware = new LoggerMiddleware()
+        result2: Text = server.use(server_instance, logger_middleware)
+        io.print("  2. ✅ Logger middleware: %s", result2)
+        
+        # 3. Rate limiting middleware (prevents abuse)
+        rate_limit: RateLimitMiddleware = new RateLimitMiddleware()
+        result3: Text = server.use(server_instance, rate_limit)
+        io.print("  3. ✅ Rate limit middleware: %s", result3)
+        
+        # 4. Auth middleware (checks for protected routes)
+        auth_middleware: AuthMiddleware = new AuthMiddleware()
+        result4: Text = server.use(server_instance, auth_middleware)
+        io.print("  4. ✅ Auth middleware: %s", result4)
+        
+        # 5. Simple string-based middleware for additional logging
+        result5: Text = server.use(server_instance, "RequestTracker")
+        io.print("  5. ✅ String middleware: %s", result5)
+        
+        io.print("")
+        io.print("🎯 Middleware pipeline established!")
+        io.print("   Flow: CORS → Logger → RateLimit → Auth → StringLogger → Routes")
+        io.print("")
+        
+        # =============================================================================
+        # REGISTER ROUTES
+        # =============================================================================
+        
+        io.print("🛣️  Registering routes...")
+        
+        # Create handlers
+        api_handlers: ApiHandlers = new ApiHandlers()
+        stats_handler: StatsHandler = new StatsHandler()
+        
+        # Public routes (no auth required)
+        server.get(server_instance, "/info", api_handlers, "getPublicInfo")
+        io.print("  ✅ GET  /info (public)")
+        
+        # Protected routes (require Authorization header)
+        server.get(server_instance, "/api/users", api_handlers, "getUsers")
+        io.print("  ✅ GET  /api/users (protected)")
+        
+        server.post(server_instance, "/api/users", api_handlers, "createUser")
+        io.print("  ✅ POST /api/users (protected)")
+        
+        # Statistics endpoint (protected)
+        server.get(server_instance, "/stats", stats_handler, "getServerStats")
+        io.print("  ✅ GET  /stats (protected)")
+        
+        io.print("")
+        
+        # =============================================================================
+        # DEMONSTRATE SERVER STATISTICS (Production-ready monitoring)
+        # =============================================================================
+        
+        io.print("📊 Server Statistics Monitoring Demo:")
+        io.print("")
+        
+        # Get initial server statistics
+        initial_stats: Map = server.getStats(server_instance)
+        
+        io.print("📈 Current Server Statistics:")
+        io.print("   • Total Requests: %d", initial_stats.get("total_requests"))
+        io.print("   • Active Connections: %d", initial_stats.get("active_connections"))
+        io.print("   • Error Count: %d", initial_stats.get("error_count"))
+        io.print("   • Uptime: %d seconds", initial_stats.get("uptime_seconds"))
+        io.print("   • Request Rate: %.4f req/sec", initial_stats.get("requests_per_second"))
+        io.print("   • Error Rate: %.2f%%", initial_stats.get("error_rate_percent"))
+        io.print("   • Server Running: %s", initial_stats.get("is_running"))
+        
+        io.print("")
+        
+        # =============================================================================
+        # START SERVER
+        # =============================================================================
+        
+        io.print("🚀 Starting server with middleware pipeline...")
+        io.print("")
+        
+        listen_result: Bool = server.listen(server_instance)
+        
+        if (listen_result) {
+            io.print("🎉 SERVER STARTED SUCCESSFULLY!")
+            io.print("")
+            io.print("📡 Server URL: http://127.0.0.1:8090")
+            io.print("")
+            io.print("🔗 Middleware Pipeline Active:")
+            io.print("   CORS → Logger → RateLimit → Auth → StringLogger → Routes")
+            io.print("")
+            io.print("🛣️  Available Endpoints:")
+            io.print("   GET  /info           → Public server info (no auth)")
+            io.print("   GET  /api/users      → List users (requires auth)")
+            io.print("   POST /api/users      → Create user (requires auth)")
+            io.print("   GET  /stats          → Server statistics (requires auth)")
+            io.print("")
+            io.print("🔐 Authentication Required:")
+            io.print("   Header: Authorization: Bearer <token>")
+            io.print("   Example: Authorization: Bearer abc123")
+            io.print("")
+            io.print("📊 Monitoring Features:")
+            io.print("   • Real-time request logging")
+            io.print("   • Rate limiting (10 requests max)")
+            io.print("   • CORS support")
+            io.print("   • Authentication checking")
+            io.print("   • Server statistics at /stats")
+            io.print("")
+            io.print("🧪 Test Commands:")
+            io.print("   # Public endpoint (no auth)")
+            io.print("   curl http://127.0.0.1:8090/info")
+            io.print("")
+            io.print("   # Protected endpoints (with auth)")
+            io.print("   curl -H 'Authorization: Bearer abc123' http://127.0.0.1:8090/api/users")
+            io.print("   curl -H 'Authorization: Bearer abc123' http://127.0.0.1:8090/stats")
+            io.print("")
+            io.print("   # Create user (POST with auth)")
+            io.print("   curl -X POST -H 'Authorization: Bearer abc123' \\")
+            io.print("        -H 'Content-Type: application/json' \\")
+            io.print("        -d '{\"name\":\"Alice\",\"email\":\"alice@example.com\"}' \\")
+            io.print("        http://127.0.0.1:8090/api/users")
+            io.print("")
+            io.print("   # Test rate limiting (run multiple times quickly)")
+            io.print("   for i in {1..15}; do curl http://127.0.0.1:8090/info; done")
+            io.print("")
+            io.print("💡 Watch the console for middleware execution logs!")
+            io.print("")
+            io.print("⏳ Server running forever with middleware pipeline...")
+            
+            # Wait forever (blocking)
+            wait_result: Text = server.waitForever(server_instance)
+            return wait_result
+        } else {
+            io.print("❌ Failed to start server")
+            return "Server startup failed"
+        }
+    }
+}

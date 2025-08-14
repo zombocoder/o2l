@@ -1,0 +1,58 @@
+// Test O2L file for syntax highlighting and LSP functionality
+import system.io
+
+Object Calculator {
+    property name: Text
+    property version: Float
+    
+    constructor(name: Text, version: Float) {
+        this.name = name
+        this.version = version
+    }
+    
+    @external method add(x: Int, y: Int): Int {
+        result: Int = x + y
+        io.print("Adding %d + %d = %d", x, y, result)
+        return result
+    }
+    
+    @external method multiply(x: Double, y: Double): Double {
+        return x * y
+    }
+    
+    method getName(): Text {
+        return this.name
+    }
+}
+
+Object TestEnum {
+    enum Status {
+        ACTIVE = 1,
+        INACTIVE = 0,
+        PENDING = 2
+    }
+}
+
+Object Main {
+    method main(): Text {
+        calc: Calculator = Calculator("BasicCalc", 1.0)
+        
+        sum: Int = calc.add(5, 3)
+        product: Double = calc.multiply(2.5, 4.0)
+        
+        if (sum > 0) {
+            io.print("Sum is positive: %d", sum)
+        } else {
+            io.print("Sum is not positive")
+        }
+        
+        numbers: List<Int> = [1, 2, 3, 4, 5]
+        data: Map<Text, Int> = {
+            "first": 1,
+            "second": 2,
+            "third": 3
+        }
+        
+        return "Test completed successfully"
+    }
+}

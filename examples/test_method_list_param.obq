@@ -1,0 +1,13 @@
+Object ListTester {
+    @external method processNumbers(numbers: List<Int>): Int {
+        return numbers.size()
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: ListTester = new ListTester()
+        numbers: List<Int> = [1, 2, 3]
+        return tester.processNumbers(numbers)
+    }
+}

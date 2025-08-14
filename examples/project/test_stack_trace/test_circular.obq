@@ -1,0 +1,8 @@
+@import lib.CircularA
+
+Object Main {
+    method main(): Int {
+        obj: CircularA = new CircularA()
+        return obj.methodA()
+    }
+}

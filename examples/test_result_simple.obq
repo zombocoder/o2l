@@ -1,0 +1,11 @@
+import system.io
+
+Object Main {
+    @external method testMethod(): Result<Int, Error> {
+        return Result.success(42)
+    }
+    
+    method main(): Int {
+        return 0
+    }
+}

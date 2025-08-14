@@ -1,0 +1,10 @@
+import system.io
+import system.os
+
+Object Main {
+    method main(): Int {
+        io.print("=== O2L System Demo ===")
+        io.print("Testing basic functionality...")
+        return 0
+    }
+}

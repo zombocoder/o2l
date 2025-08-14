@@ -1,0 +1,52 @@
+import system.io
+import system.os
+
+enum PersonalInfoAge {
+    OLD = 1,
+    YOUNG = 2
+}
+
+record PersonalInfoDTO {
+    ###
+        Some comments about this Record
+    ###
+    personalName: Text
+    PersonalAge: Text
+    ageInfo: PersonalInfoAge
+}
+
+Object PersonalInfo {
+    property name: Text
+    property age: Text
+    property info: PersonalInfoAge
+
+    constructor(data: PersonalInfoDTO) {
+        this.name = data.personalName
+        this.age = data.PersonalAge
+        this.info = data.ageInfo
+    }
+    
+    @external method greet(): Text {
+        const message: Text = "Hello, %s! You are %s years old."
+        io.print(message, this.name, this.age)
+        io.print("Info: %o", this.info)
+        return this.name
+    }
+}
+
+Object Main {
+    property data: PersonalInfoDTO
+    property person: PersonalInfo
+    
+    constructor() {
+        this.data = PersonalInfoDTO(personalName="John Doe", PersonalAge="25", ageInfo=PersonalInfoAge.OLD)
+        this.person = new PersonalInfo(this.data)
+    }
+    
+    method main(): Int {
+        io.print("=== Personal Info Demo ===")
+        this.person.greet()
+        io.print("Thanks for using O2L!")
+        return 0
+    }
+}

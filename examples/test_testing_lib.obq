@@ -1,0 +1,165 @@
+import testing
+import system.io
+import math
+
+Object Calculator {
+    @external method add(a: Int, b: Int): Int {
+        return a + b
+    }
+    
+    @external method multiply(a: Int, b: Int): Int {
+        return a * b
+    }
+    
+    @external method divide(a: Double, b: Double): Double {
+        if (b == 0.0) {
+            throw("Division by zero")
+        }
+        return a / b
+    }
+    
+    @external method factorial(n: Int): Int {
+        if (n <= 1) {
+            return 1
+        }
+        return n * this.factorial(n - 1)
+    }
+}
+
+Object StringHelper {
+    @external method reverse(text: Text): Text {
+        # Simple reverse implementation
+        return text  # Placeholder - actual implementation would reverse
+    }
+    
+    @external method isPalindrome(text: Text): Bool {
+        reversed: Text = this.reverse(text)
+        return text == reversed
+    }
+}
+
+Object TestRunner {
+    @external method runCalculatorTests(): Int {
+        # Create test suite
+        testing.createSuite("CalculatorTests")
+        
+        calc: Calculator = new Calculator()
+        
+        # Test basic addition
+        testing.runTest("testAddition")
+        result: Int = calc.add(2, 3)
+        testing.assertEqual(5, result, "Addition should work correctly")
+        
+        # Test multiplication
+        testing.runTest("testMultiplication")
+        product: Int = calc.multiply(4, 5)
+        testing.assertEqual(20, product, "Multiplication should work correctly")
+        
+        # Test division
+        testing.runTest("testDivision")
+        quotient: Double = calc.divide(10.0, 2.0)
+        testing.assertNear(5.0, quotient, 0.001, "Division should work correctly")
+        
+        # Test factorial
+        testing.runTest("testFactorial")
+        fact5: Int = calc.factorial(5)
+        testing.assertEqual(120, fact5, "5! should equal 120")
+        
+        # Test assertions with math library
+        testing.runTest("testMathIntegration")
+        pi: Double = math.pi()
+        testing.assertGreater(pi, 3.0, "π should be greater than 3")
+        testing.assertLess(pi, 4.0, "π should be less than 4")
+        testing.assertNear(3.14159, pi, 0.001, "π should be approximately 3.14159")
+        
+        # Test boolean assertions
+        testing.runTest("testBooleanAssertions")
+        testing.assertTrue(true, "True should be true")
+        testing.assertFalse(false, "False should be false")
+        
+        # Test string assertions
+        testing.runTest("testStringAssertions")
+        greeting: Text = "Hello World"
+        testing.assertContains(greeting, "World", "Should contain 'World'")
+        testing.assertStartsWith(greeting, "Hello", "Should start with 'Hello'")
+        
+        # Test collection assertions
+        testing.runTest("testCollectionAssertions")
+        empty_text: Text = ""
+        testing.assertEmpty(empty_text, "Empty string should be empty")
+        
+        # Print test results
+        testing.printResults()
+        
+        # Get result statistics
+        total: Int = testing.getTotalCount()
+        passed: Int = testing.getPassedCount()
+        failed: Int = testing.getFailedCount()
+        
+        io.print("=== Final Summary ===")
+        io.print("Total tests: %d", total)
+        io.print("Passed: %d", passed)
+        io.print("Failed: %d", failed)
+        
+        if (failed == 0) {
+            io.print("✅ All tests passed!")
+            return 0
+        } else {
+            io.print("❌ Some tests failed")
+            return 1
+        }
+    }
+    
+    @external method runStringTests(): Int {
+        testing.createSuite("StringTests")
+        
+        helper: StringHelper = new StringHelper()
+        
+        # Test string operations
+        testing.runTest("testReverse")
+        reversed: Text = helper.reverse("hello")
+        testing.assertEqual("hello", reversed, "Reverse should work") # This will fail on purpose
+        
+        # Test error handling with try-catch
+        testing.runTest("testErrorHandling")
+        calc: Calculator = new Calculator()
+        try {
+            result: Double = calc.divide(10.0, 0.0)
+            testing.fail("Should have thrown an exception for division by zero")
+        } catch (error) {
+            io.print("Caught expected error: %s", error)
+            # Test passes because we expected an exception
+        }
+        
+        testing.printResults("StringTests")
+        return testing.getFailedCount("StringTests")
+    }
+}
+
+Object Main {
+    method main(): Int {
+        io.print("🧪 Running O2L Testing Library Demo")
+        io.print("====================================")
+        
+        runner: TestRunner = new TestRunner()
+        
+        # Run calculator tests
+        calc_result: Int = runner.runCalculatorTests()
+        
+        io.print("")
+        io.print("🔤 Running String Tests")
+        io.print("========================")
+        
+        # Run string tests  
+        string_result: Int = runner.runStringTests()
+        
+        # Overall result
+        if (calc_result == 0 && string_result == 0) {
+            io.print("🎉 All test suites completed successfully!")
+            return 0
+        } else {
+            io.print("⚠️  Some tests failed. Check results above.")
+            return 1
+        }
+    }
+}

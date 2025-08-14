@@ -1,0 +1,147 @@
+import system.io
+
+Object IteratorDemo {
+    @external method testBasicIteration(): Int {
+        io.print("=== Basic Iterator Test ===")
+        
+        # Create a list with literals
+        numbers: List<Int> = [10, 20, 30, 40, 50]
+        io.print("Original list: %s", numbers)
+        
+        # Create iterator
+        iter: ListIterator = numbers.iterator()
+        io.print("Created iterator")
+        
+        # Test initial state
+        io.print("Initial hasNext: %o", iter.hasNext())
+        io.print("Initial index: %d", iter.getCurrentIndex())
+        
+        # Iterate through first few elements
+        if (iter.hasNext()) {
+            first: Int = iter.next()
+            io.print("First value: %d", first)
+            io.print("Index after first: %d", iter.getCurrentIndex())
+        }
+        
+        if (iter.hasNext()) {
+            second: Int = iter.next()
+            io.print("Second value: %d", second)
+            io.print("Index after second: %d", iter.getCurrentIndex())
+        }
+        
+        if (iter.hasNext()) {
+            third: Int = iter.next()
+            io.print("Third value: %d", third)
+            io.print("Index after third: %d", iter.getCurrentIndex())
+        }
+        
+        return 0
+    }
+    
+    @external method testIteratorReset(): Int {
+        io.print("=== Iterator Reset Test ===")
+        
+        names: List<Text> = ["Alice", "Bob", "Charlie"]
+        io.print("Names list: %s", names)
+        
+        iter: ListIterator = names.iterator()
+        
+        # Consume some elements
+        if (iter.hasNext()) {
+            name1: Text = iter.next()
+            io.print("Got name: %s", name1)
+        }
+        
+        if (iter.hasNext()) {
+            name2: Text = iter.next()
+            io.print("Got name: %s", name2)
+        }
+        
+        io.print("Before reset - hasNext: %o, index: %d", iter.hasNext(), iter.getCurrentIndex())
+        
+        # Reset iterator
+        iter.reset()
+        io.print("After reset - hasNext: %o, index: %d", iter.hasNext(), iter.getCurrentIndex())
+        
+        # Test first element again
+        if (iter.hasNext()) {
+            first_again: Text = iter.next()
+            io.print("First element after reset: %s", first_again)
+        }
+        
+        return 0
+    }
+    
+    @external method testEmptyListIterator(): Int {
+        io.print("=== Empty List Iterator Test ===")
+        
+        empty: List<Int> = []
+        io.print("Empty list: %s", empty)
+        
+        iter: ListIterator = empty.iterator()
+        io.print("Empty list hasNext: %o", iter.hasNext())
+        io.print("Empty list index: %d", iter.getCurrentIndex())
+        
+        return 0
+    }
+    
+    @external method testFullIteration(): Int {
+        io.print("=== Full Iteration Test ===")
+        
+        values: List<Int> = [100, 200, 300]
+        io.print("Values: %s", values)
+        
+        iter: ListIterator = values.iterator()
+        
+        # Manually iterate through all elements
+        io.print("Starting full iteration:")
+        
+        if (iter.hasNext()) {
+            val1: Int = iter.next()
+            io.print("  Element 1: %d", val1)
+        }
+        
+        if (iter.hasNext()) {
+            val2: Int = iter.next()
+            io.print("  Element 2: %d", val2)
+        }
+        
+        if (iter.hasNext()) {
+            val3: Int = iter.next()
+            io.print("  Element 3: %d", val3)
+        }
+        
+        io.print("After full iteration - hasNext: %o", iter.hasNext())
+        io.print("Final index: %d", iter.getCurrentIndex())
+        
+        return 0
+    }
+    
+    @external method runAllTests(): Int {
+        io.print("Starting Iterator Tests")
+        io.print("==================================================")
+        
+        this.testBasicIteration()
+        io.print("")
+        
+        this.testIteratorReset()
+        io.print("")
+        
+        this.testEmptyListIterator()
+        io.print("")
+        
+        this.testFullIteration()
+        
+        io.print("==================================================")
+        io.print("All iterator tests completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: IteratorDemo = new IteratorDemo()
+        return demo.runAllTests()
+    }
+}

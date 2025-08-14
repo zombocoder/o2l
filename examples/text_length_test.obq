@@ -1,0 +1,26 @@
+import system.io
+
+Object LengthTest {
+    @external method testLength(): Text {
+        text1: Text = "Hello World"
+        text2: Text = ""
+        text3: Text = "Test"
+        
+        len1: Int = text1.length()
+        len2: Int = text2.length()
+        len3: Int = text3.length()
+        
+        io.print("'%s' has length: %d", text1, len1)
+        io.print("'%s' has length: %d", text2, len2)
+        io.print("'%s' has length: %d", text3, len3)
+        
+        return "Length test completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        tester: LengthTest = new LengthTest()
+        return tester.testLength()
+    }
+}

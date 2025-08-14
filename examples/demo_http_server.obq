@@ -1,0 +1,99 @@
+# HTTP Server Demo
+# A working HTTP server with multiple routes for testing
+
+import http.server
+import system.io
+
+Object DemoServer {
+    @external method startServer(): Text {
+        io.print("🌟 Starting O2L HTTP Server Demo")
+        
+        # Create and configure server
+        server_instance: HttpServerInstance = server.create()
+        server.setHost(server_instance, "127.0.0.1")
+        server.setPort(server_instance, 8080)
+        server.setWorkerThreads(server_instance, 4)
+        
+        io.print("⚙️  Server Configuration:")
+        io.print("   Host: 127.0.0.1")
+        io.print("   Port: 8080")
+        io.print("   Worker Threads: 4")
+        
+        # Register various routes
+        io.print("\n📍 Registering Routes:")
+        
+        server.get(server_instance, "/", "root_handler")
+        io.print("   GET  /")
+        
+        server.get(server_instance, "/hello", "hello_handler") 
+        io.print("   GET  /hello")
+        
+        server.get(server_instance, "/api/status", "status_handler")
+        io.print("   GET  /api/status")
+        
+        server.get(server_instance, "/users/:id", "user_handler")
+        io.print("   GET  /users/:id")
+        
+        server.get(server_instance, "/api/data/:type", "data_handler")
+        io.print("   GET  /api/data/:type")
+        
+        server.post(server_instance, "/api/users", "create_user_handler")
+        io.print("   POST /api/users")
+        
+        server.post(server_instance, "/api/data", "create_data_handler")
+        io.print("   POST /api/data")
+        
+        server.get(server_instance, "/health", "health_handler")
+        io.print("   GET  /health")
+        
+        # Start the server
+        io.print("\n🚀 Starting HTTP Server...")
+        listen_result: Bool = server.listen(server_instance)
+        
+        if (listen_result) {
+            io.print("✅ HTTP Server Started Successfully!")
+            io.print("")
+            io.print("🌐 Server is running at: http://127.0.0.1:8080")
+            io.print("")
+            io.print("🧪 Test Commands:")
+            io.print("   curl http://127.0.0.1:8080/")
+            io.print("   curl http://127.0.0.1:8080/hello")
+            io.print("   curl http://127.0.0.1:8080/api/status")
+            io.print("   curl http://127.0.0.1:8080/users/123")
+            io.print("   curl http://127.0.0.1:8080/api/data/json")
+            io.print("   curl -X POST http://127.0.0.1:8080/api/users -d '{\"name\":\"Alice\"}'")
+            io.print("   curl -X POST http://127.0.0.1:8080/api/data -d '{\"value\":42}'")
+            io.print("   curl http://127.0.0.1:8080/health")
+            io.print("")
+            io.print("💡 All routes return JSON with request details")
+            io.print("📊 Each request will be logged with method, path, and status")
+            io.print("")
+            io.print("⚠️  Press Ctrl+C to stop the server")
+            io.print("⏳ Server will run until manually stopped...")
+            
+            # Keep server running indefinitely
+            # In a real application, you might add signal handling here
+            while (server.isRunning(server_instance)) {
+                # Server is running and handling requests
+                # This will run until the server is stopped externally
+                stats: Map = server.getStats(server_instance)
+                total_requests: Int = stats.get("total_requests")
+                
+                # Just yield control - the server handles requests in background threads
+                # In a real implementation, we might add a sleep or wait mechanism
+            }
+            
+            io.print("🛑 Server stopped")
+            return "Server shutdown completed"
+        } else {
+            io.print("❌ Failed to start server (port might be in use)")
+            return "Server startup failed"
+        }
+    }
+}
+
+Object Main {
+    method main(): Text {
+        return DemoServer.startServer()
+    }
+}

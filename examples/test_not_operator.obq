@@ -1,0 +1,70 @@
+import system.io
+
+Object NotTester {
+    @external method testNotOperator(): Int {
+        io.print("=== NOT Operator Test ===")
+        
+        # Test basic NOT operations
+        true_val: Bool = true
+        false_val: Bool = false
+        
+        io.print("1. Testing basic NOT operator:")
+        result1: Bool = !true_val
+        io.print("   !true = %o", result1)
+        
+        result2: Bool = !false_val
+        io.print("   !false = %o", result2)
+        
+        # Test double NOT (should return to original value)
+        io.print("2. Testing double NOT:")
+        result3: Bool = !!true_val
+        io.print("   !!true = %o", result3)
+        
+        result4: Bool = !!false_val
+        io.print("   !!false = %o", result4)
+        
+        # Test NOT with parentheses
+        io.print("3. Testing NOT with parentheses:")
+        result5: Bool = !(true_val && false_val)
+        io.print("   !(true && false) = %o", result5)
+        
+        result6: Bool = !(true_val || false_val)
+        io.print("   !(true || false) = %o", result6)
+        
+        # Test De Morgan's laws: !(A && B) = !A || !B
+        io.print("4. Testing De Morgan's laws:")
+        
+        # !(true && false) should equal (!true || !false)
+        left_side: Bool = !(true_val && false_val)
+        right_side: Bool = !true_val || !false_val
+        demorgan1: Bool = left_side == right_side
+        io.print("   !(A && B) = (!A || !B): %o", demorgan1)
+        
+        # !(true || false) should equal (!true && !false)
+        left_side2: Bool = !(true_val || false_val)
+        right_side2: Bool = !true_val && !false_val
+        demorgan2: Bool = left_side2 == right_side2
+        io.print("   !(A || B) = (!A && !B): %o", demorgan2)
+        
+        # Test NOT with comparisons
+        io.print("5. Testing NOT with comparisons:")
+        x: Int = 5
+        y: Int = 10
+        
+        not_less: Bool = !(x < y)
+        io.print("   !(5 < 10) = %o", not_less)
+        
+        not_equal: Bool = !(x == y)
+        io.print("   !(5 == 10) = %o", not_equal)
+        
+        io.print("=== NOT operator tests completed ===")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: NotTester = new NotTester()
+        return tester.testNotOperator()
+    }
+}

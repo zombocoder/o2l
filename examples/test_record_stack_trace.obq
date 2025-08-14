@@ -1,0 +1,27 @@
+import system.io
+
+Record Person {
+    name: Text
+    age: Int
+}
+
+Object PersonManager {
+    @external method processPersonData(person: Person): Text {
+        # This will cause an error - accessing non-existent field
+        return person.nonExistentField
+    }
+    
+    @external method validatePerson(person: Person): Text {
+        return this.processPersonData(person)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        manager: PersonManager = new PersonManager()
+        person: Person = Person(name="John", age=30)
+        result: Text = manager.validatePerson(person)
+        io.print("Result: %s", result)
+        return 0
+    }
+}

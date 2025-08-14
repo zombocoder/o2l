@@ -1,0 +1,176 @@
+import system.io
+import system.fs
+
+Object PathDemo {
+    @external method demonstrateBasicPathOperations(): Text {
+        io.print("=== Basic Path Operations Demo ===")
+        io.print("")
+        
+        # Test file paths
+        test_path: Text = "/home/user/documents/project/readme.txt"
+        io.print("Original path: %s", test_path)
+        
+        # Extract filename
+        filename: Text = fs.basename(test_path)
+        io.print("Filename (basename): %s", filename)
+        
+        # Get directory
+        directory: Text = fs.dirname(test_path)
+        io.print("Directory (dirname): %s", directory)
+        
+        # Get file extension
+        extension: Text = fs.extname(test_path)
+        io.print("Extension (extname): %s", extension)
+        
+        # Check if path is absolute
+        is_absolute: Bool = fs.isAbsolute(test_path)
+        io.print("Is absolute: %b", is_absolute)
+        
+        return "Basic path operations completed"
+    }
+    
+    @external method demonstratePathManipulation(): Text {
+        io.print("")
+        io.print("=== Path Manipulation Demo ===")
+        io.print("")
+        
+        # Join path components
+        joined: Text = fs.join("home", "user", "documents", "file.txt")
+        io.print("Joined path: %s", joined)
+        
+        # Join absolute and relative paths
+        joined_mixed: Text = fs.join("/usr", "local", "bin", "program")
+        io.print("Mixed join: %s", joined_mixed)
+        
+        # Normalize complex path
+        complex_path: Text = "/usr/./local/../bin/./program"
+        normalized: Text = fs.normalize(complex_path)
+        io.print("Complex path: %s", complex_path)
+        io.print("Normalized: %s", normalized)
+        
+        # Change file extension
+        original_file: Text = "document.docx"
+        new_file: Text = fs.changeExtension(original_file, ".pdf")
+        io.print("Original: %s -> Changed: %s", original_file, new_file)
+        
+        return "Path manipulation completed"
+    }
+    
+    @external method demonstratePathResolution(): Text {
+        io.print("")
+        io.print("=== Path Resolution Demo ===")
+        io.print("")
+        
+        # Resolve relative path to absolute
+        relative_path: Text = "documents/file.txt"
+        absolute_path: Text = fs.resolve(relative_path)
+        io.print("Relative: %s", relative_path)
+        io.print("Resolved: %s", absolute_path)
+        
+        # Get parent directory (same as dirname)
+        test_path: Text = "/var/log/system/app.log"
+        parent: Text = fs.getParent(test_path)
+        io.print("Path: %s", test_path)
+        io.print("Parent: %s", parent)
+        
+        # Get relative path between two locations
+        from_path: Text = "/home/user/projects"
+        to_path: Text = "/home/user/documents/file.txt"
+        relative: Text = fs.relative(from_path, to_path)
+        io.print("From: %s", from_path)
+        io.print("To: %s", to_path)
+        io.print("Relative path: %s", relative)
+        
+        return "Path resolution completed"
+    }
+    
+    @external method demonstratePathSplitting(): Text {
+        io.print("")
+        io.print("=== Path Splitting Demo ===")
+        io.print("")
+        
+        # Split path into components
+        complex_path: Text = "/usr/local/bin/program"
+        components: List = fs.splitPath(complex_path)
+        
+        io.print("Path: %s", complex_path)
+        io.print("Components:")
+        
+        iterator: ListIterator = components.iterator()
+        while (iterator.hasNext()) {
+            component: Text = iterator.next()
+            index: Int = iterator.index()
+            io.print("  [%d]: %s", index, component)
+        }
+        
+        io.print("Total components: %d", components.size())
+        
+        return "Path splitting completed"
+    }
+    
+    @external method demonstrateRealWorldUsage(): Text {
+        io.print("")
+        io.print("=== Real World Usage Examples ===")
+        io.print("")
+        
+        # Configuration file paths
+        config_base: Text = fs.resolve(".")
+        config_dir: Text = fs.join(config_base, "config")
+        main_config: Text = fs.join(config_dir, "app.json")
+        backup_config: Text = fs.changeExtension(main_config, ".backup")
+        
+        io.print("Application configuration:")
+        io.print("  Base directory: %s", config_base)
+        io.print("  Config directory: %s", config_dir)
+        io.print("  Main config: %s", main_config)
+        io.print("  Backup config: %s", backup_config)
+        
+        # Log file organization
+        log_base: Text = "/var/log/myapp"
+        current_log: Text = fs.join(log_base, "app.log")
+        error_log: Text = fs.join(log_base, "error.log")
+        archived_log: Text = fs.join(log_base, "archive", "app-2024.log")
+        
+        io.print("")
+        io.print("Log file organization:")
+        io.print("  Current log: %s", current_log)
+        io.print("  Error log: %s", error_log)
+        io.print("  Archived log: %s", archived_log)
+        
+        # Extract information from paths
+        io.print("")
+        io.print("Path analysis:")
+        io.print("  Current log name: %s", fs.basename(current_log))
+        io.print("  Current log extension: %s", fs.extname(current_log))
+        io.print("  Archive directory: %s", fs.dirname(archived_log))
+        
+        # Build portable paths
+        user_docs: Text = fs.join("users", "john", "documents")
+        is_abs_user: Bool = fs.isAbsolute(user_docs)
+        io.print("")
+        io.print("Portable path building:")
+        io.print("  User docs path: %s", user_docs)
+        io.print("  Is absolute: %b", is_abs_user)
+        
+        return "Real world usage examples completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        demo: PathDemo = new PathDemo()
+        
+        # Run all demonstrations
+        demo.demonstrateBasicPathOperations()
+        demo.demonstratePathManipulation()
+        demo.demonstratePathResolution()
+        demo.demonstratePathSplitting()
+        demo.demonstrateRealWorldUsage()
+        
+        io.print("")
+        io.print("=== Path Operations Demo Complete ===")
+        io.print("All filesystem path manipulation methods demonstrated successfully!")
+        
+        return "Filesystem path demo completed"
+    }
+}

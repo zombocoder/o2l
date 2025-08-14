@@ -1,0 +1,21 @@
+import system.io
+
+Protocol TestProtocol {
+    method greet(): Text
+}
+
+Object TestObject: TestProtocol {
+    # Method not marked as @external, so it should fail when called externally
+    method greet(): Text {
+        return "Hello from TestObject"
+    }
+}
+
+Object Main {
+    @external method main(): Int {
+        # This should cause "Cannot call method" error - calling method on a primitive type
+        text_value: Text = "hello"
+        result: Text = text_value.greet()  # This should fail
+        return 0
+    }
+}

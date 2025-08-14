@@ -1,0 +1,22 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        io.print("Testing negative number literals...")
+        
+        # Test negative number without space
+        neg1: Int = -1
+        io.print("neg1 = %d", neg1)
+        
+        # Test negative number with calculation  
+        neg2: Int = 0 - 1
+        io.print("neg2 = %d", neg2)
+        
+        # Test return with negative number
+        if (neg1 == neg2) {
+            return -1
+        }
+        
+        return 0
+    }
+}

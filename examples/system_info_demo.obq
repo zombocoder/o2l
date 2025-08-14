@@ -1,0 +1,164 @@
+import system.io
+import system.os
+
+Object SystemInfoDemo {
+    @external method showSystemInformation(): Text {
+        io.print("=== System Information Demo ===")
+        
+        # Basic system information
+        io.print("\n--- Basic System Information ---")
+        os_name: Text = os.getOSName()
+        os_version: Text = os.getOSVersion()
+        architecture: Text = os.getArchitecture()
+        hostname: Text = os.getHostname()
+        username: Text = os.getUsername()
+        current_dir: Text = os.getCurrentDir()
+        
+        io.print("Operating System: %s", os_name)
+        io.print("OS Version: %s", os_version)
+        io.print("Architecture: %s", architecture)
+        io.print("Hostname: %s", hostname)
+        io.print("Username: %s", username)
+        io.print("Current Directory: %s", current_dir)
+        
+        # Process information
+        io.print("\n--- Process Information ---")
+        pid: Int = os.getProcessId()
+        ppid: Int = os.getParentProcessId()
+        uptime: Long = os.getUptime()
+        
+        io.print("Process ID: %d", pid)
+        io.print("Parent Process ID: %d", ppid)
+        io.print("System Uptime: %d seconds", uptime)
+        
+        # Memory information
+        io.print("\n--- Memory Information ---")
+        total_memory: Long = os.getTotalMemory()
+        available_memory: Long = os.getAvailableMemory()
+        used_memory: Long = os.getUsedMemory()
+        memory_usage: Double = os.getMemoryUsage()
+        
+        io.print("Total Memory: %d KB", total_memory)
+        io.print("Available Memory: %d KB", available_memory)
+        io.print("Used Memory: %d KB", used_memory)
+        io.print("Memory Usage: %.1f%%", memory_usage)
+        
+        # CPU information
+        io.print("\n--- CPU Information ---")
+        cpu_count: Int = os.getCPUCount()
+        cpu_model: Text = os.getCPUModel()
+        cpu_usage: Double = os.getCPUUsage()
+        load_average: List = os.getLoadAverage()
+        
+        io.print("CPU Count: %d cores", cpu_count)
+        io.print("CPU Model: %s", cpu_model)
+        io.print("CPU Usage: %.1f%%", cpu_usage)
+        io.print("Load Average: %s", load_average)
+        
+        return "System information displayed successfully"
+    }
+    
+    @external method demonstrateCommandExecution(): Text {
+        io.print("\n=== Command Execution Demo ===")
+        
+        # Basic command execution
+        io.print("\n--- Basic Command Execution ---")
+        exit_code: Int = os.execute("echo 'Hello from system command!'")
+        io.print("Command exit code: %d", exit_code)
+        
+        # Command with output capture
+        io.print("\n--- Command with Output Capture ---")
+        date_output: Text = os.executeWithOutput("date")
+        io.print("Current date/time: %s", date_output)
+        
+        # File listing
+        ls_output: Text = os.executeWithOutput("ls -la")
+        io.print("Directory listing:\n%s", ls_output)
+        
+        # System information commands
+        io.print("\n--- System Commands ---")
+        uname_output: Text = os.executeWithOutput("uname -a")
+        io.print("System info: %s", uname_output)
+        
+        whoami_output: Text = os.executeWithOutput("whoami")
+        io.print("Current user: %s", whoami_output)
+        
+        pwd_output: Text = os.executeWithOutput("pwd")
+        io.print("Working directory: %s", pwd_output)
+        
+        # Command with timeout (5 seconds)
+        io.print("\n--- Command with Timeout ---")
+        timeout_output: Text = os.executeWithTimeout("sleep 2 && echo 'Command completed within timeout'", 5)
+        io.print("Timeout command result: %s", timeout_output)
+        
+        # Async command execution
+        io.print("\n--- Async Command Execution ---")
+        async_result: Int = os.executeAsync("echo 'This runs in background' > /tmp/o2l_async.txt")
+        io.print("Async command started with result: %d", async_result)
+        
+        # Give async command time to complete and check result
+        sleep_result: Int = os.execute("sleep 1")
+        file_check: Text = os.executeWithOutput("test -f /tmp/o2l_async.txt && echo 'exists' || echo 'not found'")
+        if (file_check.find("exists") >= 0) {
+            async_file_content: Text = os.executeWithOutput("cat /tmp/o2l_async.txt")
+            io.print("Async command output: %s", async_file_content)
+            # Cleanup
+            cleanup_result: Int = os.execute("rm -f /tmp/o2l_async.txt")
+        }
+        
+        return "Command execution demonstration completed"
+    }
+    
+    @external method monitorSystemResources(): Text {
+        io.print("\n=== System Resource Monitoring ===")
+        
+        # Create a simple monitoring loop
+        counter: Int = 0
+        while (counter < 3) {
+            io.print("\n--- Monitoring Sample %d ---", counter + 1)
+            
+            # Get current resource usage
+            memory_usage: Double = os.getMemoryUsage()
+            cpu_usage: Double = os.getCPUUsage()
+            load_avg: List = os.getLoadAverage()
+            
+            io.print("Memory Usage: %.1f%%", memory_usage)
+            io.print("CPU Usage: %.1f%%", cpu_usage)
+            io.print("Load Average: %s", load_avg)
+            
+            # Get process count
+            ps_count: Text = os.executeWithOutput("ps aux | wc -l")
+            io.print("Running Processes: %s", ps_count)
+            
+            # Get disk usage
+            disk_usage: Text = os.executeWithOutput("df -h / | tail -1 | awk '{print $5}'")
+            io.print("Disk Usage: %s", disk_usage)
+            
+            counter = counter + 1
+            
+            # Sleep between samples (except last iteration)
+            if (counter < 3) {
+                sleep_cmd: Int = os.execute("sleep 2")
+            }
+        }
+        
+        return "System resource monitoring completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        demo: SystemInfoDemo = new SystemInfoDemo()
+        
+        # Show system information
+        demo.showSystemInformation()
+        
+        # Demonstrate command execution
+        demo.demonstrateCommandExecution()
+        
+        # Monitor system resources
+        demo.monitorSystemResources()
+        
+        return "System information and command execution demo completed"
+    }
+}

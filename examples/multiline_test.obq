@@ -1,0 +1,20 @@
+import system.io
+
+record TestData {
+    name: Text
+    value: Int
+}
+
+Object Main {
+    method main(): Int {
+        data: TestData = TestData(
+            name="Test",
+            value=42
+        )
+        
+        io.print("Name: %s", data.name)
+        io.print("Value: %d", data.value)
+        
+        return 0
+    }
+}

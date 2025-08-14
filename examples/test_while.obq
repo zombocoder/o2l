@@ -1,0 +1,131 @@
+import system.io
+
+Object WhileDemo {
+    @external method testIteratorWhile(): Int {
+        io.print("=== While Loop with Iterator Test ===")
+        
+        numbers: List<Int> = [10, 20, 30, 40, 50]
+        io.print("List: %s", numbers)
+        
+        iter: ListIterator = numbers.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            io.print("Processing item: %d", value)
+        }
+        
+        return 0
+    }
+    
+    @external method testStringIterator(): Int {
+        io.print("=== While Loop with String List Iterator ===")
+        
+        names: List<Text> = ["Alice", "Bob", "Charlie", "Diana"]
+        io.print("Names: %s", names)
+        
+        iter: ListIterator = names.iterator()
+        
+        while (iter.hasNext()) {
+            name: Text = iter.next()
+            io.print("Hello, %s!", name)
+        }
+        
+        io.print("Greeted %d people total", names.size())
+        return 0
+    }
+    
+    @external method testMultipleIterators(): Int {
+        io.print("=== Multiple Iterator While Loops ===")
+        
+        list1: List<Int> = [1, 2, 3]
+        list2: List<Int> = [10, 20, 30]
+        
+        io.print("First list: %s", list1)
+        io.print("Second list: %s", list2)
+        
+        iter1: ListIterator = list1.iterator()
+        while (iter1.hasNext()) {
+            val1: Int = iter1.next()
+            
+            iter2: ListIterator = list2.iterator()
+            while (iter2.hasNext()) {
+                val2: Int = iter2.next()
+                product: Int = val1 * val2
+                io.print("%d x %d = %d", val1, val2, product)
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testIteratorWithListModification(): Int {
+        io.print("=== Iterator with List Building ===")
+        
+        source: List<Int> = [1, 2, 3, 4, 5]
+        doubled: List<Int> = []
+        
+        io.print("Source: %s", source)
+        
+        iter: ListIterator = source.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            double_value: Int = value * 2
+            doubled.add(double_value)
+            io.print("Added %d * 2 = %d", value, double_value)
+        }
+        
+        io.print("Doubled list: %s", doubled)
+        return 0
+    }
+    
+    @external method testConditionalIteration(): Int {
+        io.print("=== Conditional While with Iterator ===")
+        
+        numbers: List<Int> = [1, 5, 3, 8, 2, 9, 4, 7, 6]
+        io.print("Numbers: %s", numbers)
+        
+        found_large: List<Int> = []
+        
+        iter: ListIterator = numbers.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            if (value > 5) {
+                found_large.add(value)
+                io.print("Found large number: %d", value)
+            }
+        }
+        
+        io.print("Large numbers found: %s", found_large)
+        return 0
+    }
+    
+    @external method runAllTests(): Int {
+        io.print("Starting While Loop with Iterator Tests")
+        io.print("==================================================")
+        
+        this.testIteratorWhile()
+        io.print("")
+        
+        this.testStringIterator()
+        io.print("")
+        
+        this.testMultipleIterators()
+        io.print("")
+        
+        this.testIteratorWithListModification()
+        io.print("")
+        
+        this.testConditionalIteration()
+        
+        io.print("==================================================")
+        io.print("All while loop with iterator tests completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: WhileDemo = new WhileDemo()
+        return demo.runAllTests()
+    }
+}

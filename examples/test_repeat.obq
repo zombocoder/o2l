@@ -1,0 +1,164 @@
+import system.io
+import system.utils
+
+Object RepeatDemo {
+    @external method testBasicRepeat(): Int {
+        io.print("=== Basic Repeat Iterator Test ===")
+        
+        # Create a repeat iterator for 5 iterations
+        repeater: RepeatIterator = utils.repeat(5)
+        io.print("Created repeat iterator for 5 iterations")
+        
+        while (repeater.hasNext()) {
+            iteration: Int = repeater.next()
+            io.print("Iteration: %d", iteration)
+        }
+        
+        io.print("Total iterations completed: %d", repeater.getCurrentCount())
+        return 0
+    }
+    
+    @external method testRepeatWithCalculation(): Int {
+        io.print("=== Repeat Iterator with Calculation ===")
+        
+        # Calculate sum of numbers 0 to 9
+        repeater: RepeatIterator = utils.repeat(10)
+        sum: List<Int> = [0]  # Use list for mutable accumulator
+        
+        while (repeater.hasNext()) {
+            i: Int = repeater.next()
+            current_sum: Int = sum.get(0)
+            sum.remove(0)
+            sum.add(current_sum + i)
+            io.print("Added %d, sum now: %d", i, sum.get(0))
+        }
+        
+        io.print("Final sum of 0-9: %d", sum.get(0))
+        return 0
+    }
+    
+    @external method testRepeatWithListBuilding(): Int {
+        io.print("=== Repeat Iterator for List Building ===")
+        
+        # Build a list of squares
+        repeater: RepeatIterator = utils.repeat(6)
+        squares: List<Int> = []
+        
+        while (repeater.hasNext()) {
+            n: Int = repeater.next()
+            square: Int = n * n
+            squares.add(square)
+            io.print("%d squared = %d", n, square)
+        }
+        
+        io.print("Squares list: %s", squares)
+        return 0
+    }
+    
+    @external method testRepeatReset(): Int {
+        io.print("=== Repeat Iterator Reset Test ===")
+        
+        repeater: RepeatIterator = utils.repeat(3)
+        
+        # First iteration
+        io.print("First run:")
+        while (repeater.hasNext()) {
+            val: Int = repeater.next()
+            io.print("  Value: %d", val)
+        }
+        
+        io.print("After first run - hasNext: %o, count: %d", repeater.hasNext(), repeater.getCurrentCount())
+        
+        # Reset and iterate again
+        repeater.reset()
+        io.print("After reset - hasNext: %o, count: %d", repeater.hasNext(), repeater.getCurrentCount())
+        
+        io.print("Second run:")
+        while (repeater.hasNext()) {
+            val: Int = repeater.next()
+            io.print("  Value: %d", val)
+        }
+        
+        return 0
+    }
+    
+    @external method testNestedRepeat(): Int {
+        io.print("=== Nested Repeat Iterators ===")
+        
+        outer: RepeatIterator = utils.repeat(3)
+        
+        while (outer.hasNext()) {
+            i: Int = outer.next()
+            io.print("Outer iteration %d:", i)
+            
+            inner: RepeatIterator = utils.repeat(3)
+            while (inner.hasNext()) {
+                j: Int = inner.next()
+                product: Int = i * j
+                io.print("  %d x %d = %d", i, j, product)
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testRepeatWithConditional(): Int {
+        io.print("=== Repeat Iterator with Conditional Logic ===")
+        
+        repeater: RepeatIterator = utils.repeat(10)
+        evens: List<Int> = []
+        odds: List<Int> = []
+        
+        while (repeater.hasNext()) {
+            n: Int = repeater.next()
+            divided: Int = n / 2
+            doubled: Int = divided * 2
+            
+            if (doubled == n) {
+                evens.add(n)
+                io.print("%d is even", n)
+            } else {
+                odds.add(n)
+                io.print("%d is odd", n)
+            }
+        }
+        
+        io.print("Even numbers: %s", evens)
+        io.print("Odd numbers: %s", odds)
+        return 0
+    }
+    
+    @external method runAllTests(): Int {
+        io.print("Starting Repeat Iterator Tests")
+        io.print("==================================================")
+        
+        this.testBasicRepeat()
+        io.print("")
+        
+        this.testRepeatWithCalculation()
+        io.print("")
+        
+        this.testRepeatWithListBuilding()
+        io.print("")
+        
+        this.testRepeatReset()
+        io.print("")
+        
+        this.testNestedRepeat()
+        io.print("")
+        
+        this.testRepeatWithConditional()
+        
+        io.print("==================================================")
+        io.print("All repeat iterator tests completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: RepeatDemo = new RepeatDemo()
+        return demo.runAllTests()
+    }
+}

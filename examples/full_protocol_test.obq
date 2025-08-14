@@ -1,0 +1,38 @@
+import system.io
+
+Record PersonData {
+    name: Text,
+    age: Int
+}
+
+Protocol GreetingProtocol {
+    method sayHello(person: PersonData): Text
+    method sayGoodbye(person: PersonData): Text
+}
+
+Object PoliteGreeter: GreetingProtocol {
+    @external method sayHello(person: PersonData): Text {
+        return "Good day, " + person.name + "!"
+    }
+    
+    @external method sayGoodbye(person: PersonData): Text {
+        return "Farewell, " + person.name + ". Safe travels!"
+    }
+}
+
+Object Main {
+    method main(): Int {
+        person: PersonData = PersonData(name="Alice", age=25)
+        
+        greeter: PoliteGreeter = PoliteGreeter()
+        
+        hello: Text = greeter.sayHello(person)
+        io.print(hello)
+        
+        goodbye: Text = greeter.sayGoodbye(person)
+        io.print(goodbye)
+        
+        io.print("Protocol compliance test completed successfully!")
+        return 0
+    }
+}

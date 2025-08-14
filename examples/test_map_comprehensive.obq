@@ -1,0 +1,81 @@
+import system.io
+
+Object MapComprehensiveTest {
+    @external method testMapComprehensive(): Int {
+        io.print("=== Comprehensive Map Test ===")
+        
+        # Test empty map
+        empty_map: Map<Text, Int> = {}
+        empty_size: Int = empty_map.size()
+        io.print("Empty map size: %d", empty_size)
+        
+        # Test map with initial values
+        my_map: Map<Text, Int> = {
+            "apple": 5,
+            "banana": 3,
+            "cherry": 8
+        }
+        
+        # Test size
+        size: Int = my_map.size()
+        io.print("Initial map size: %d", size)
+        
+        # Test get operations
+        apple_count: Int = my_map.get("apple")
+        io.print("Apples: %d", apple_count)
+        
+        banana_count: Int = my_map.get("banana")
+        io.print("Bananas: %d", banana_count)
+        
+        # Test contains
+        has_apple: Bool = my_map.contains("apple")
+        has_orange: Bool = my_map.contains("orange")
+        io.print("Contains apple: %o", has_apple)
+        io.print("Contains orange: %o", has_orange)
+        
+        # Test put - add new entry
+        my_map.put("orange", 12)
+        new_size: Int = my_map.size()
+        io.print("Size after adding orange: %d", new_size)
+        
+        # Test put - update existing entry
+        my_map.put("apple", 7)
+        updated_apple: Int = my_map.get("apple")
+        io.print("Updated apple count: %d", updated_apple)
+        
+        # Test keys method
+        keys: List<Text> = my_map.keys()
+        keys_size: Int = keys.size()
+        io.print("Number of keys: %d", keys_size)
+        
+        # Test values method
+        values: List<Int> = my_map.values()
+        values_size: Int = values.size()
+        io.print("Number of values: %d", values_size)
+        
+        # Test remove
+        my_map.remove("banana")
+        size_after_remove: Int = my_map.size()
+        io.print("Size after removing banana: %d", size_after_remove)
+        
+        # Test empty check
+        is_empty: Bool = my_map.empty()
+        io.print("Map is empty: %o", is_empty)
+        
+        # Test clear
+        my_map.clear()
+        size_after_clear: Int = my_map.size()
+        is_empty_after_clear: Bool = my_map.empty()
+        io.print("Size after clear: %d", size_after_clear)
+        io.print("Empty after clear: %o", is_empty_after_clear)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: MapComprehensiveTest = new MapComprehensiveTest()
+        return test.testMapComprehensive()
+    }
+}

@@ -1,0 +1,92 @@
+# Final demonstration of all advanced O2L features
+import system.io
+
+###
+Multi-line comment demonstrating all features:
+Comments, Constants, Enums, Records, Method visibility, 
+If/else, I/O formatting, Custom constructors, Exit codes
+###
+
+# Enum declaration
+Enum Status {
+    PENDING,
+    RUNNING = 10,
+    COMPLETED,
+    FAILED = 99
+}
+
+# Record declaration
+Record Point {
+    x: Int
+    y: Int
+}
+
+Record Config {
+    name: Text
+    enabled: Bool
+    point: Point
+}
+
+Object Calculator {
+    property value: Int
+    property status: Status
+    
+    constructor(initial: Int, config: Config) {
+        # Constants inside object
+        const PI: Float = 3.14159
+        const VERSION: Int = 1
+        
+        this.value = initial
+        this.status = Status.PENDING
+    }
+    
+    # Protected method - only internal access
+    method internalAdd(amount: Int): Void {
+        this.value = this.value + amount
+        if (this.value > 100) {
+            this.status = Status.COMPLETED
+        } else {
+            this.status = Status.RUNNING
+        }
+    }
+    
+    # External method - public access
+    @external method add(amount: Int): Void {
+        this.internalAdd(amount)
+    }
+    
+    @external method getValue(): Int {
+        return this.value
+    }
+    
+    @external method getStatus(): Status {
+        return this.status
+    }
+}
+
+Object Main {
+    method main(): Int {
+        # Create configuration
+        point: Point = Point(x=10, y=20)
+        config: Config = Config(name="TestCalc", enabled=true, point=point)
+        
+        # Create calculator with custom constructor parameters
+        calc: Calculator = new Calculator(50, config)
+        
+        # Test external method access
+        calc.add(60)
+        
+        final_value: Int = calc.getValue()
+        final_status: Status = calc.getStatus()
+        
+        io.print("%d", final_value)
+        io.print("Status: %o", final_status)
+
+        # Conditional logic
+        if (final_value > 100) {
+            return 0  # Success
+        } else {
+            return 1  # Failure
+        }
+    }
+}

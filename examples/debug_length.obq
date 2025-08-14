@@ -1,0 +1,25 @@
+import system.io
+
+Object LengthDebug {
+    @external method testLengths(): Text {
+        # Test the string from the failing test
+        long_text: Text = "This is a much longer text string with multiple words and punctuation!"
+        len: Int = long_text.length()
+        io.print("Long text: '%s'", long_text)
+        io.print("Actual length: %d", len)
+        
+        # Test the "Hello" string
+        hello: Text = "Hello"
+        hello_len: Int = hello.length()
+        io.print("Hello length: %d", hello_len)
+        
+        return "Debug completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        debug: LengthDebug = new LengthDebug()
+        return debug.testLengths()
+    }
+}

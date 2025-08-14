@@ -1,0 +1,38 @@
+import system.io
+
+Record PersonalInfoDTO {
+    personalName: Text
+    PersonalAge: Int
+}
+
+Object Main {
+    method main(): Int {
+        # Create a Set
+        my_set: Set<PersonalInfoDTO> = (
+            PersonalInfoDTO(
+                personalName="Jonn",
+                PersonalAge=43
+            ),
+            PersonalInfoDTO(
+                personalName="Jonn2",
+                PersonalAge=43
+            ),
+            # This should be a duplicate and removed from the set
+            PersonalInfoDTO( 
+                personalName="Jonn",
+                PersonalAge=43
+            )
+        )
+
+        set_iter: SetIterator = my_set.iterator()
+        io.print("Created set iterator")
+
+        while (set_iter.hasNext()) {
+            item: PersonalInfoDTO = set_iter.next()
+            io.print("item: %o", item)
+        }
+        
+        io.print("Set size: %d", my_set.size())
+        return 0
+    }
+}

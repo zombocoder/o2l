@@ -1,0 +1,15 @@
+import system.io
+
+Object TypeTest {
+    @external method textResult(): Result<Text, Error> {
+        return Result.success("Hello World")
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: TypeTest = new TypeTest()
+        result: Result<Text, Error> = test.textResult()
+        return 1
+    }
+}

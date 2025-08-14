@@ -1,0 +1,14 @@
+import system.io
+import system.os
+
+Object Main {
+    method main(): Int {
+        pwd: Text = os.getEnv("PWD")
+        user: Text = os.getEnv("USER")
+        
+        io.print("Working Directory: %s", pwd)
+        io.print("User: %s", user)
+        
+        return 0
+    }
+}

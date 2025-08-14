@@ -1,0 +1,22 @@
+Object TestAccess {
+    @external method publicMethod(): Int {
+        return 42
+    }
+    
+    method privateMethod(): Int {
+        return 24
+    }
+}
+
+Object Main {
+    property test: TestAccess
+    
+    constructor() {
+        this.test = new TestAccess()
+    }
+    
+    method main(): Int {
+        result: Int = this.test.publicMethod()
+        return result
+    }
+}

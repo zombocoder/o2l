@@ -1,0 +1,300 @@
+# Type Conversion Methods Demo
+# This demonstrates all the new type conversion methods added to O2L
+
+import system.io
+
+Object TypeConversionDemo {
+    @external method testTextConversions(): Text {
+        io.print("=== TEXT CONVERSION METHODS ===")
+        
+        # Text to numeric types
+        number_str: Text = "42"
+        float_str: Text = "3.14159"
+        bool_str: Text = "true"
+        bool_str2: Text = "1"
+        
+        io.print("Original text values:")
+        io.print("  number_str: '%s'", number_str)
+        io.print("  float_str: '%s'", float_str)
+        io.print("  bool_str: '%s'", bool_str)
+        io.print("  bool_str2: '%s'", bool_str2)
+        io.print("")
+        
+        # Test toInt()
+        int_val: Int = number_str.toInt()
+        io.print("Text.toInt():")
+        io.print("  '%s'.toInt() = %d", number_str, int_val)
+        
+        # Test toLong()
+        long_val: Long = number_str.toLong()
+        io.print("Text.toLong():")
+        io.print("  '%s'.toLong() = %s", number_str, long_val.toString())
+        
+        # Test toDouble()
+        double_val: Float = float_str.toDouble()
+        io.print("Text.toDouble():")
+        io.print("  '%s'.toDouble() = %f", float_str, double_val)
+        
+        # Test toFloat()
+        float_val: Float = float_str.toFloat()
+        io.print("Text.toFloat():")
+        io.print("  '%s'.toFloat() = %f", float_str, float_val)
+        
+        # Test toBool()
+        bool_val: Bool = bool_str.toBool()
+        bool_val2: Bool = bool_str2.toBool()
+        io.print("Text.toBool():")
+        io.print("  '%s'.toBool() = %s", bool_str, bool_val.toString())
+        io.print("  '%s'.toBool() = %s", bool_str2, bool_val2.toString())
+        
+        io.print("")
+        return "Text conversions completed"
+    }
+    
+    @external method testIntConversions(): Text {
+        io.print("=== INT CONVERSION METHODS ===")
+        
+        int_val: Int = 42
+        io.print("Original Int value: %d", int_val)
+        io.print("")
+        
+        # Test toString()
+        str_val: Text = int_val.toString()
+        io.print("Int.toString():")
+        io.print("  %d.toString() = '%s'", int_val, str_val)
+        
+        # Test toDouble()
+        double_val: Float = int_val.toDouble()
+        io.print("Int.toDouble():")
+        io.print("  %d.toDouble() = %f", int_val, double_val)
+        
+        # Test toFloat()
+        float_val: Float = int_val.toFloat()
+        io.print("Int.toFloat():")
+        io.print("  %d.toFloat() = %f", int_val, float_val)
+        
+        # Test toLong()
+        long_val: Long = int_val.toLong()
+        io.print("Int.toLong():")
+        io.print("  %d.toLong() = %s", int_val, long_val.toString())
+        
+        # Test toBool()
+        bool_val: Bool = int_val.toBool()
+        zero_val: Int = 0
+        zero_bool: Bool = zero_val.toBool()
+        io.print("Int.toBool():")
+        io.print("  %d.toBool() = %s", int_val, bool_val.toString())
+        io.print("  %d.toBool() = %s", zero_val, zero_bool.toString())
+        
+        io.print("")
+        return "Int conversions completed"
+    }
+    
+    @external method testLongConversions(): Text {
+        io.print("=== LONG CONVERSION METHODS ===")
+        
+        long_val: Long = 9876543210
+        io.print("Original Long value: %s", long_val.toString())
+        io.print("")
+        
+        # Test toString()
+        str_val: Text = long_val.toString()
+        io.print("Long.toString():")
+        io.print("  %s.toString() = '%s'", long_val.toString(), str_val)
+        
+        # Test toInt() (safe conversion)
+        small_long: Long = 100
+        int_val: Int = small_long.toInt()
+        io.print("Long.toInt():")
+        io.print("  %s.toInt() = %d", small_long.toString(), int_val)
+        
+        # Test toDouble()
+        double_val: Float = long_val.toDouble()
+        io.print("Long.toDouble():")
+        io.print("  %s.toDouble() = %f", long_val.toString(), double_val)
+        
+        # Test toFloat()
+        float_val: Float = long_val.toFloat()
+        io.print("Long.toFloat():")
+        io.print("  %s.toFloat() = %f", long_val.toString(), float_val)
+        
+        # Test toBool()
+        bool_val: Bool = long_val.toBool()
+        zero_long: Long = 0
+        zero_bool: Bool = zero_long.toBool()
+        io.print("Long.toBool():")
+        io.print("  %s.toBool() = %s", long_val.toString(), bool_val.toString())
+        io.print("  %s.toBool() = %s", zero_long.toString(), zero_bool.toString())
+        
+        io.print("")
+        return "Long conversions completed"
+    }
+    
+    @external method testFloatConversions(): Text {
+        io.print("=== FLOAT CONVERSION METHODS ===")
+        
+        float_val: Float = 3.14159
+        io.print("Original Float value: %f", float_val)
+        io.print("")
+        
+        # Test toString()
+        str_val: Text = float_val.toString()
+        io.print("Float.toString():")
+        io.print("  %f.toString() = '%s'", float_val, str_val)
+        
+        # Test toInt()
+        int_val: Int = float_val.toInt()
+        io.print("Float.toInt():")
+        io.print("  %f.toInt() = %d", float_val, int_val)
+        
+        # Test toLong()
+        long_val: Long = float_val.toLong()
+        io.print("Float.toLong():")
+        io.print("  %f.toLong() = %s", float_val, long_val.toString())
+        
+        # Test toBool()
+        bool_val: Bool = float_val.toBool()
+        zero_float: Float = 0.0
+        zero_bool: Bool = zero_float.toBool()
+        io.print("Float.toBool():")
+        io.print("  %f.toBool() = %s", float_val, bool_val.toString())
+        io.print("  %f.toBool() = %s", zero_float, zero_bool.toString())
+        
+        # Test special Float methods
+        nan_val: Float = 0.0 / 0.0  # This might not work directly
+        io.print("Float special methods:")
+        io.print("  %f.isNaN() = %s", float_val, float_val.isNaN().toString())
+        io.print("  %f.isInfinite() = %s", float_val, float_val.isInfinite().toString())
+        io.print("  %f.isFinite() = %s", float_val, float_val.isFinite().toString())
+        
+        io.print("")
+        return "Float conversions completed"
+    }
+    
+    @external method testBoolConversions(): Text {
+        io.print("=== BOOL CONVERSION METHODS ===")
+        
+        bool_true: Bool = true
+        bool_false: Bool = false
+        io.print("Original Bool values: true, false")
+        io.print("")
+        
+        # Test toString()
+        true_str: Text = bool_true.toString()
+        false_str: Text = bool_false.toString()
+        io.print("Bool.toString():")
+        io.print("  true.toString() = '%s'", true_str)
+        io.print("  false.toString() = '%s'", false_str)
+        
+        # Test toInt()
+        true_int: Int = bool_true.toInt()
+        false_int: Int = bool_false.toInt()
+        io.print("Bool.toInt():")
+        io.print("  true.toInt() = %d", true_int)
+        io.print("  false.toInt() = %d", false_int)
+        
+        # Test toLong()
+        true_long: Long = bool_true.toLong()
+        false_long: Long = bool_false.toLong()
+        io.print("Bool.toLong():")
+        io.print("  true.toLong() = %s", true_long.toString())
+        io.print("  false.toLong() = %s", false_long.toString())
+        
+        # Test toDouble()
+        true_double: Float = bool_true.toDouble()
+        false_double: Float = bool_false.toDouble()
+        io.print("Bool.toDouble():")
+        io.print("  true.toDouble() = %f", true_double)
+        io.print("  false.toDouble() = %f", false_double)
+        
+        # Test toFloat()
+        true_float: Float = bool_true.toFloat()
+        false_float: Float = bool_false.toFloat()
+        io.print("Bool.toFloat():")
+        io.print("  true.toFloat() = %f", true_float)
+        io.print("  false.toFloat() = %f", false_float)
+        
+        io.print("")
+        return "Bool conversions completed"
+    }
+    
+    @external method testChainedConversions(): Text {
+        io.print("=== CHAINED CONVERSION EXAMPLES ===")
+        
+        # Text -> Int -> Float -> Bool -> Text chain
+        original: Text = "42"
+        result: Text = original.toInt().toDouble().toBool().toString()
+        io.print("Conversion chain:")
+        io.print("  '%s' -> toInt() -> toDouble() -> toBool() -> toString() = '%s'", original, result)
+        
+        # Float -> Int -> Bool -> Int -> Text chain
+        pi: Float = 3.14159
+        result2: Text = pi.toInt().toBool().toInt().toString()
+        io.print("  %f -> toInt() -> toBool() -> toInt() -> toString() = '%s'", pi, result2)
+        
+        io.print("")
+        return "Chained conversions completed"
+    }
+    
+    @external method testErrorHandling(): Text {
+        io.print("=== ERROR HANDLING EXAMPLES ===")
+        
+        # This will demonstrate error handling (these might throw exceptions)
+        io.print("Testing conversion error handling:")
+        
+        try {
+            invalid_number: Text = "not_a_number"
+            # This should throw an error
+            bad_int: Int = invalid_number.toInt()
+            io.print("  ERROR: Should not reach this line!")
+        } catch (error) {
+            io.print("  ✅ Caught expected error for invalid number conversion")
+        }
+        
+        try {
+            invalid_bool: Text = "maybe"
+            # This should throw an error
+            bad_bool: Bool = invalid_bool.toBool()
+            io.print("  ERROR: Should not reach this line!")
+        } catch (error) {
+            io.print("  ✅ Caught expected error for invalid bool conversion")
+        }
+        
+        io.print("")
+        return "Error handling tests completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("🔄 O2L TYPE CONVERSION METHODS DEMONSTRATION")
+        io.print("=" * 60)
+        io.print("")
+        
+        demo: TypeConversionDemo = new TypeConversionDemo()
+        
+        # Run all conversion tests
+        demo.testTextConversions()
+        demo.testIntConversions()
+        demo.testLongConversions()
+        demo.testFloatConversions()
+        demo.testBoolConversions()
+        demo.testChainedConversions()
+        demo.testErrorHandling()
+        
+        io.print("=" * 60)
+        io.print("🎉 ALL TYPE CONVERSION TESTS COMPLETED!")
+        io.print("")
+        io.print("📋 Available Type Conversion Methods:")
+        io.print("  Text:  .toInt(), .toLong(), .toDouble(), .toFloat(), .toBool()")
+        io.print("  Int:   .toString(), .toDouble(), .toFloat(), .toLong(), .toBool()")
+        io.print("  Long:  .toString(), .toInt(), .toDouble(), .toFloat(), .toBool()")
+        io.print("  Float: .toString(), .toInt(), .toLong(), .toBool()")
+        io.print("         .isNaN(), .isInfinite(), .isFinite()")
+        io.print("  Bool:  .toString(), .toInt(), .toLong(), .toDouble(), .toFloat()")
+        io.print("")
+        io.print("💡 All conversions include proper error handling and range checking!")
+        
+        return "Type conversion demonstration completed successfully"
+    }
+}

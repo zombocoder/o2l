@@ -1,0 +1,25 @@
+import system.io
+
+Object MapTest {
+    @external method testBasicMap(): Int {
+        io.print("=== Basic Map Test ===")
+        
+        # Create a simple map literal
+        simple_map: Map<Text, Int> = {
+            "key1": 1,
+            "key2": 2,
+            "key3": 3
+        }
+        
+        io.print("Created map: %s", simple_map)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: MapTest = new MapTest()
+        return test.testBasicMap()
+    }
+}

@@ -1,0 +1,45 @@
+import system.io
+import system.os
+
+enum Status {
+    PENDING,
+    ACTIVE = 10,
+    COMPLETED
+}
+
+record UserData {
+    name: Text
+    status: Status
+}
+
+Object Demo {
+    property user: UserData
+    
+    constructor() {
+        this.user = UserData(name="Test User", status=Status.ACTIVE)
+    }
+    
+    @external method displayInfo(): Void {
+        io.print("User Name: %s", this.user.name)
+        io.print("User Status: %o", this.user.status)
+    }
+}
+
+Object Main {
+    property demo: Demo
+    
+    constructor() {
+        this.demo = new Demo()
+    }
+    
+    method main(): Int {
+        io.print("=== Advanced O2L Demo ===")
+        io.print("Working Directory: %s", os.getEnv("PWD"))
+        io.print("User: %s", os.getEnv("USER"))
+        
+        this.demo.displayInfo()
+        
+        io.print("All features working!")
+        return 0
+    }
+}

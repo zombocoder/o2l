@@ -1,0 +1,57 @@
+import system.io
+import system.os
+
+enum PersonalInfoAge {
+    OLD = 1,
+    YOUNG = 2
+}
+
+record PersonalInfoDTO {
+    ###
+        Some comments about this Record
+    ###
+    personalName: Text
+    PersonalAge: Text
+    ageInfo: PersonalInfoAge
+}
+
+Object PersonalInfo {
+    property name: Text
+    property age: Text
+    property info: PersonalInfoAge
+
+    constructor(data: PersonalInfoDTO) {
+        this.name = data.personalName
+        this.age = data.PersonalAge
+        this.info = data.ageInfo
+    }
+    
+    method greet(): Text {
+        const message: Text = "Hello, %s! You are %s years old.\n"
+        io.print(message, this.name, this.age)
+        io.print("Info: %o.", this.info)
+        return this.name
+    }
+}
+
+Object Main {
+    method main(): Int {
+        pwd: Text = os.getEnv("PWD")
+        io.print("Program runned: %s!", pwd)
+        io.print("=== Interactive Demo ===")
+        
+        name: Text = io.input("What is your name? ")
+        age: Text = io.input("What is your age? ")
+        
+        data = PersonalInfoDTO(
+            personalName=name,
+            PersonalAge=age,
+            ageInfo=PersonalInfoAge.OLD
+        )
+        person: Any = new PersonalInfo(data)
+        person.greet()
+        
+        io.print("Thanks for using the O2L interactive demo!")
+        return 1
+    }
+}

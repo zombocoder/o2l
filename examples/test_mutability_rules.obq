@@ -1,0 +1,166 @@
+import system.io
+
+Object MutabilityTester {
+    property fixed_value: Int
+    
+    constructor() {
+        this.fixed_value = 100
+    }
+    
+    @external method testMethodVariables(): Int {
+        io.print("=== Method Variable Mutability Test ===")
+        
+        # Test 1: Basic variable reassignment
+        counter: Int = 1
+        io.print("1. Initial counter: %d", counter)
+        
+        counter = counter + 1
+        io.print("   After increment: %d", counter)
+        
+        counter = counter * 2
+        io.print("   After double: %d", counter)
+        
+        # Test 2: Multiple reassignments in loop-like structure
+        accumulator: Int = 0
+        step: Int = 1
+        
+        while (step <= 5) {
+            accumulator = accumulator + step
+            io.print("   Step %d: accumulator = %d", step, accumulator)
+            step = step + 1
+        }
+        
+        # Test 3: String variable reassignment
+        message: Text = "Hello"
+        io.print("2. Initial message: %s", message)
+        
+        message = message + ", World"
+        io.print("   After concatenation: %s", message)
+        
+        message = "Completely new message"
+        io.print("   After replacement: %s", message)
+        
+        # Test 4: Boolean variable reassignment
+        flag: Bool = true
+        io.print("3. Initial flag: %o", flag)
+        
+        flag = !flag
+        io.print("   After negation: %o", flag)
+        
+        flag = flag || true
+        io.print("   After OR with true: %o", flag)
+        
+        return accumulator
+    }
+    
+    @external method testPropertyAccess(): Int {
+        io.print("=== Object Property Access Test ===")
+        
+        # Test 1: Properties are accessible
+        io.print("1. Reading fixed_value property: %d", this.fixed_value)
+        
+        # Test 2: Properties can be used in calculations
+        calculated: Int = this.fixed_value * 2
+        io.print("   Calculated value (property * 2): %d", calculated)
+        
+        # Test 3: Properties are immutable (this would fail if attempted)
+        # this.fixed_value = 200  # This would cause an error!
+        
+        return this.fixed_value
+    }
+    
+    @external method testComplexMutability(): Int {
+        io.print("=== Complex Mutability Patterns Test ===")
+        
+        # Test 1: Method variables can store property values and be modified
+        stored_property: Int = this.fixed_value
+        io.print("1. Stored property value: %d", stored_property)
+        
+        stored_property = stored_property + 50
+        io.print("   Modified stored value: %d", stored_property)
+        io.print("   Original property unchanged: %d", this.fixed_value)
+        
+        # Test 2: Complex expressions with reassignment
+        base: Int = 10
+        multiplier: Int = 2
+        result: Int = 0
+        
+        result = base * multiplier
+        io.print("2. Initial calculation: %d * %d = %d", base, multiplier, result)
+        
+        base = base + 5
+        multiplier = multiplier * 2
+        result = base * multiplier
+        io.print("   After modifications: %d * %d = %d", base, multiplier, result)
+        
+        # Test 3: Conditional reassignment
+        condition: Bool = true
+        value: Int = 100
+        
+        if (condition) {
+            value = value * 2
+            condition = false
+        }
+        
+        if (!condition) {
+            value = value + 10
+        }
+        
+        io.print("3. Final conditional value: %d", value)
+        
+        return result
+    }
+    
+    @external method testScopeRules(): Int {
+        io.print("=== Variable Scope and Mutability Test ===")
+        
+        outer_var: Int = 1
+        io.print("1. Outer scope variable: %d", outer_var)
+        
+        if (outer_var == 1) {
+            inner_var: Int = 10
+            io.print("   Inner scope variable: %d", inner_var)
+            
+            # Can modify variables from outer scope
+            outer_var = outer_var + 5
+            io.print("   Modified outer from inner: %d", outer_var)
+            
+            # Can modify variables in same scope
+            inner_var = inner_var * 2
+            io.print("   Modified inner variable: %d", inner_var)
+        }
+        
+        # outer_var is still accessible and retains its modified value
+        io.print("2. Outer variable after block: %d", outer_var)
+        
+        # inner_var is not accessible here (would cause error)
+        # io.print("Inner var: %d", inner_var)  # This would fail!
+        
+        return outer_var
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: MutabilityTester = new MutabilityTester()
+        
+        result1: Int = tester.testMethodVariables()
+        io.print("")
+        
+        result2: Int = tester.testPropertyAccess()
+        io.print("")
+        
+        result3: Int = tester.testComplexMutability()
+        io.print("")
+        
+        result4: Int = tester.testScopeRules()
+        io.print("")
+        
+        total: Int = result1 + result2 + result3 + result4
+        io.print("=== Summary ===")
+        io.print("All mutability tests completed successfully!")
+        io.print("Results: %d + %d + %d + %d = %d", result1, result2, result3, result4, total)
+        
+        return 0
+    }
+}

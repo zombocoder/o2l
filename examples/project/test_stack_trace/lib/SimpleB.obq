@@ -1,0 +1,9 @@
+@import lib.SimpleA
+
+Object SimpleB {
+    @external method getValue(): Int {
+        # Force loading of SimpleA by using it  
+        a: SimpleA = new SimpleA()
+        return a.getValue() + 2
+    }
+}

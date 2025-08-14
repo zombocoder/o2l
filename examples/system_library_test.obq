@@ -1,0 +1,13 @@
+import system.io
+import system.os
+
+Object Main {
+    method main(): Int {
+        io.print("System library test:")
+        io.print("Hello from io.print!")
+        io.print("Format test: %s %d", "Number", 42)
+        io.print("PWD: %s", os.getEnv("PWD"))
+        io.print("USER: %s", os.getEnv("USER"))
+        return 0
+    }
+}

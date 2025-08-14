@@ -1,0 +1,15 @@
+# Testing constant redefinition protection
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        const PI: Float = 3.14159
+        io.print("PI is: %s", PI)
+        
+        # This should cause an error - trying to redefine a constant
+        const PI: Float = 2.71828
+        io.print("PI redefined to: %s", PI)
+        
+        return 0
+    }
+}

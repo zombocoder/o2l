@@ -1,0 +1,21 @@
+Object TestObject {
+    @external method testComparison(): Bool {
+        return 5 < "hello"
+    }
+    
+    @external method testMemberAccess(): Int {
+        obj: TestObject = new TestObject()
+        return obj.nonExistentProperty
+    }
+    
+    @external method testDivision(): Int {
+        return 10 / 0
+    }
+}
+
+Object Main {
+    method main(): Bool {
+        test: TestObject = new TestObject()
+        return test.testComparison()
+    }
+}

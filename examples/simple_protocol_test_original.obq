@@ -1,0 +1,20 @@
+import system.io
+
+Protocol TestProtocol {
+    method greet(): Text
+}
+
+Object TestObject: TestProtocol {
+    @external method greet(): Text {
+        return "Hello from TestObject"
+    }
+}
+
+Object Main {
+    @external method main(): Int {
+        obj: TestObject = new TestObject()
+        msg: Text = obj.greet()
+        io.print(msg)
+        return 0
+    }
+}

@@ -1,0 +1,8 @@
+@import lib.CircularB
+
+Object CircularA {
+    @external method methodA(): Int {
+        obj: CircularB = new CircularB()
+        return obj.methodB()
+    }
+}

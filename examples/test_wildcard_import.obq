@@ -1,0 +1,1 @@
+import TestObj.* Object Main { method main(): Text { TestObj.sayHello() } }

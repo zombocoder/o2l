@@ -1,0 +1,303 @@
+// RESTful API Client Example
+// Demonstrates building a complete REST API client using O2L's HTTP library
+
+import http.client
+import system.io
+import json
+
+Object ApiClient {
+    
+    property base_url: Text
+    property api_key: Text
+    
+    constructor(base_url: Text, api_key: Text) {
+        this.base_url = base_url
+        this.api_key = api_key
+    }
+    
+    @external method createAuthHeaders(): Map<Text, Text> {
+        headers: Map<Text, Text> = {
+            "Authorization": "Bearer " + this.api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "User-Agent": "O2L-API-Client/1.0"
+        }
+        
+        return headers
+    }
+    
+    @external method buildEndpointUrl(endpoint: Text): Text {
+        clean_endpoint: Text = endpoint
+        if (endpoint.startsWith("/")) {
+            clean_endpoint = endpoint.substring(1, endpoint.length())
+        }
+        
+        return client.buildUrl(this.base_url + "/" + clean_endpoint, {})
+    }
+    
+    @external method handleResponse(response: HttpResponse): Map<Text, Value> {
+        status: Int = client.getStatus(response)
+        success: Bool = client.isSuccess(response)
+        
+        result: Map<Text, Value> = {}
+        result.put("status", status)
+        result.put("success", success)
+        
+        if (success) {
+            body: Text = client.getBody(response)
+            result.put("data", body)
+            
+            // Try to parse as JSON
+            if (json.isValid(body)) {
+                parsed_data: Map<Text, Value> = json.parseToMap(body)
+                result.put("json", parsed_data)
+            }
+        } else {
+            error_msg: Text = client.getError(response)
+            result.put("error", error_msg)
+            result.put("data", "")
+        }
+        
+        return result
+    }
+    
+    @external method getUsers(): Map<Text, Value> {
+        io.print("📋 Fetching users...")
+        
+        url: Text = this.buildEndpointUrl("/users")
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.get(url, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method getUser(user_id: Int): Map<Text, Value> {
+        io.print("👤 Fetching user %d...", user_id)
+        
+        endpoint: Text = "/users/" + user_id.toString()
+        url: Text = this.buildEndpointUrl(endpoint)
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.get(url, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method createUser(name: Text, email: Text, age: Int): Map<Text, Value> {
+        io.print("➕ Creating user: %s (%s)", name, email)
+        
+        user_data: Text = json.createObject(
+            "name", name,
+            "email", email,
+            "age", age,
+            "active", true
+        )
+        
+        url: Text = this.buildEndpointUrl("/users")
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.post(url, user_data, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method updateUser(user_id: Int, name: Text, email: Text): Map<Text, Value> {
+        io.print("✏️ Updating user %d...", user_id)
+        
+        update_data: Text = json.createObject(
+            "id", user_id,
+            "name", name,
+            "email", email,
+            "updated_at", "2024-01-01T12:00:00Z"
+        )
+        
+        endpoint: Text = "/users/" + user_id.toString()
+        url: Text = this.buildEndpointUrl(endpoint)
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.put(url, update_data, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method partialUpdateUser(user_id: Int, field: Text, value: Text): Map<Text, Value> {
+        io.print("🔧 Partially updating user %d...", user_id)
+        
+        patch_data: Text = json.createObject(field, value)
+        
+        endpoint: Text = "/users/" + user_id.toString()
+        url: Text = this.buildEndpointUrl(endpoint)
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.patch(url, patch_data, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method deleteUser(user_id: Int): Map<Text, Value> {
+        io.print("🗑️ Deleting user %d...", user_id)
+        
+        endpoint: Text = "/users/" + user_id.toString()
+        url: Text = this.buildEndpointUrl(endpoint)
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.delete(url, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method searchUsers(query: Text, page: Int, limit: Int): Map<Text, Value> {
+        io.print("🔍 Searching users with query: %s", query)
+        
+        params: Map<Text, Text> = {
+            "q": query,
+            "page": page.toString(),
+            "limit": limit.toString(),
+            "sort": "name"
+        }
+        
+        base_endpoint: Text = "/users/search"
+        url: Text = client.buildUrl(this.buildEndpointUrl(base_endpoint), params)
+        headers: Map<Text, Text> = this.createAuthHeaders()
+        
+        response: HttpResponse = client.get(url, headers)
+        return this.handleResponse(response)
+    }
+    
+    @external method uploadUserAvatar(user_id: Int, file_path: Text): Map<Text, Value> {
+        io.print("📤 Uploading avatar for user %d...", user_id)
+        
+        endpoint: Text = "/users/" + user_id.toString() + "/avatar"
+        url: Text = this.buildEndpointUrl(endpoint)
+        
+        response: HttpResponse = client.uploadFile(url, file_path)
+        return this.handleResponse(response)
+    }
+    
+    @external method downloadUserData(user_id: Int, format: Text): Map<Text, Value> {
+        io.print("📥 Downloading user data for user %d in %s format...", user_id, format)
+        
+        params: Map<Text, Text> = {
+            "format": format
+        }
+        
+        endpoint: Text = "/users/" + user_id.toString() + "/export"
+        url: Text = client.buildUrl(this.buildEndpointUrl(endpoint), params)
+        
+        dest_file: Text = "user_" + user_id.toString() + "_data." + format
+        response: HttpResponse = client.downloadFile(url, dest_file)
+        
+        result: Map<Text, Value> = this.handleResponse(response)
+        result.put("file", dest_file)
+        
+        return result
+    }
+    
+    @external method demonstrateFullWorkflow(): Text {
+        io.print("\n🎯 Demonstrating Complete API Workflow")
+        
+        // 1. Get all users
+        users_result: Map<Text, Value> = this.getUsers()
+        if (!users_result.get("success")) {
+            io.print("❌ Failed to get users")
+            return "Workflow failed at step 1"
+        }
+        
+        // 2. Create a new user
+        create_result: Map<Text, Value> = this.createUser("Alice Johnson", "alice.johnson@example.com", 28)
+        if (!create_result.get("success")) {
+            io.print("❌ Failed to create user")
+            return "Workflow failed at step 2"
+        }
+        
+        // 3. Update the user
+        update_result: Map<Text, Value> = this.updateUser(123, "Alice Smith", "alice.smith@example.com")
+        if (!update_result.get("success")) {
+            io.print("❌ Failed to update user")
+            return "Workflow failed at step 3"
+        }
+        
+        // 4. Partial update
+        partial_result: Map<Text, Value> = this.partialUpdateUser(123, "status", "premium")
+        if (!partial_result.get("success")) {
+            io.print("❌ Failed to partially update user")
+            return "Workflow failed at step 4"
+        }
+        
+        // 5. Search users
+        search_result: Map<Text, Value> = this.searchUsers("Alice", 1, 10)
+        if (!search_result.get("success")) {
+            io.print("❌ Failed to search users")
+            return "Workflow failed at step 5"
+        }
+        
+        // 6. Get specific user
+        user_result: Map<Text, Value> = this.getUser(123)
+        if (!user_result.get("success")) {
+            io.print("❌ Failed to get specific user")
+            return "Workflow failed at step 6"
+        }
+        
+        io.print("✅ Complete API workflow executed successfully!")
+        return "Full workflow completed"
+    }
+}
+
+Object ApiDemo {
+    
+    @external method runJsonPlaceholderDemo(): Text {
+        io.print("🌐 JSONPlaceholder API Demo")
+        
+        // Using JSONPlaceholder as a real test API
+        api: ApiClient = ApiClient("https://jsonplaceholder.typicode.com", "demo-token")
+        
+        // Get all posts
+        io.print("\n--- Getting Posts ---")
+        posts_result: Map<Text, Value> = api.getUsers() // This will try to get /users
+        
+        status: Int = posts_result.get("status")
+        success: Bool = posts_result.get("success")
+        
+        io.print("Status: %d, Success: %b", status, success)
+        
+        if (success) {
+            data: Text = posts_result.get("data")
+            io.print("Received data (first 100 chars): %s...", data.substring(0, 100))
+        }
+        
+        return "JSONPlaceholder demo completed"
+    }
+    
+    @external method runMockApiDemo(): Text {
+        io.print("🎭 Mock API Demo (httpbin.org)")
+        
+        // Using httpbin.org for testing HTTP methods
+        api: ApiClient = ApiClient("https://httpbin.org", "test-token-123")
+        
+        // Test GET
+        io.print("\n--- Testing GET ---")
+        get_result: Map<Text, Value> = api.getUsers() // This will try httpbin.org/users
+        io.print("GET Status: %d", get_result.get("status"))
+        
+        // Test POST with httpbin
+        io.print("\n--- Testing POST ---")
+        post_result: Map<Text, Value> = api.createUser("Test User", "test@example.com", 25)
+        io.print("POST Status: %d", post_result.get("status"))
+        
+        return "Mock API demo completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("🚀 Advanced API Client Example")
+        
+        demo: ApiDemo = ApiDemo()
+        
+        // Run different demo scenarios
+        demo.runJsonPlaceholderDemo()
+        demo.runMockApiDemo()
+        
+        // Create a local API client for demonstration
+        local_api: ApiClient = ApiClient("https://api.example.com", "your-api-key-here")
+        workflow_result: Text = local_api.demonstrateFullWorkflow()
+        
+        io.print("\n🎉 All API demos completed!")
+        return workflow_result
+    }
+}

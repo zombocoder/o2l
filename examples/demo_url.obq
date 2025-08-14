@@ -1,0 +1,212 @@
+import url
+import system.io
+
+Object UrlDemo {
+    @external method demonstrateBasicOperations(): Text {
+        io.print("=== Basic URL Operations ===")
+        
+        # URL validation
+        test_url: Text = "https://api.example.com:8080/v1/users?limit=50#results"
+        io.print("URL: %s", test_url)
+        io.print("Valid: %o", url.isValid(test_url))
+        
+        # Parse URL components
+        io.print("Scheme: %s", url.getScheme(test_url))
+        io.print("Host: %s", url.getHost(test_url))
+        io.print("Port: %s", url.getPort(test_url))
+        io.print("Path: %s", url.getPath(test_url))
+        io.print("Query: %s", url.getQuery(test_url))
+        io.print("Fragment: %s", url.getFragment(test_url))
+        io.print("")
+        
+        return "Basic operations completed"
+    }
+    
+    @external method demonstrateUrlConstruction(): Text {
+        io.print("=== URL Construction ===")
+        
+        # Build URLs from components
+        simple: Text = url.create("https", "example.com")
+        io.print("Simple URL: %s", simple)
+        
+        with_port: Text = url.create("https", "api.example.com", "8080")
+        io.print("With port: %s", with_port)
+        
+        complete: Text = url.create("https", "api.github.com", "", "/repos/user/project", "per_page=100", "readme")
+        io.print("Complete URL: %s", complete)
+        io.print("")
+        
+        return "Construction completed"
+    }
+    
+    @external method demonstrateQueryParameters(): Text {
+        io.print("=== Query Parameter Management ===")
+        
+        base: Text = "https://search.example.com"
+        io.print("Base: %s", base)
+        
+        # Add parameters
+        with_query: Text = url.setParam(base, "q", "o2l programming")
+        with_limit: Text = url.setParam(with_query, "limit", "25")
+        final: Text = url.setParam(with_limit, "sort", "relevance")
+        
+        io.print("Final URL: %s", final)
+        
+        # Extract parameters
+        query_value: Text = url.getParam(final, "q")
+        limit_value: Text = url.getParam(final, "limit")
+        
+        io.print("Query parameter: %s", query_value)
+        io.print("Limit parameter: %s", limit_value)
+        
+        # Remove parameter
+        without_sort: Text = url.removeParam(final, "sort")
+        io.print("Without sort: %s", without_sort)
+        io.print("")
+        
+        return "Query parameters completed"
+    }
+    
+    @external method demonstrateUrlManipulation(): Text {
+        io.print("=== URL Manipulation ===")
+        
+        # URL normalization
+        messy: Text = "HTTPS://Example.COM:443/api/../users/./profile/../settings"
+        io.print("Messy: %s", messy)
+        normalized: Text = url.normalize(messy)
+        io.print("Normalized: %s", normalized)
+        
+        # URL resolution
+        base: Text = "https://api.example.com/v1/users/"
+        relative: Text = "../projects/123"
+        
+        resolved: Text = url.resolve(base, relative)
+        io.print("Base: %s", base)
+        io.print("Relative: %s", relative)
+        io.print("Resolved: %s", resolved)
+        
+        # URL joining
+        joined: Text = url.join("https://cdn.example.com", "assets", "images", "logo.png")
+        io.print("Joined: %s", joined)
+        io.print("")
+        
+        return "Manipulation completed"
+    }
+    
+    @external method demonstrateEncodingDecoding(): Text {
+        io.print("=== URL Encoding/Decoding ===")
+        
+        special_text: Text = "hello world! @#$%"
+        io.print("Original: %s", special_text)
+        
+        encoded: Text = url.encode(special_text)
+        io.print("Encoded: %s", encoded)
+        
+        decoded: Text = url.decode(encoded)
+        io.print("Decoded: %s", decoded)
+        
+        # Query with special characters
+        search_url: Text = "https://search.example.com"
+        complex_query: Text = "C++ & algorithms"
+        
+        with_param: Text = url.setParam(search_url, "q", complex_query)
+        io.print("URL with special chars: %s", with_param)
+        
+        extracted: Text = url.getParam(with_param, "q")
+        io.print("Extracted param: %s", extracted)
+        io.print("")
+        
+        return "Encoding/decoding completed"
+    }
+    
+    @external method demonstrateUtilities(): Text {
+        io.print("=== URL Utilities ===")
+        
+        test_urls: List<Text> = [
+            "https://www.example.com:8080/path",
+            "https://example.com/path",
+            "/relative/path",
+            "./current/path"
+        ]
+        
+        iterator: ListIterator = test_urls.iterator()
+        while (iterator.hasNext()) {
+            test_url: Text = iterator.next()
+            io.print("URL: %s", test_url)
+            
+            is_abs: Bool = url.isAbsolute(test_url)
+            is_rel: Bool = url.isRelative(test_url)
+            io.print("  Absolute: %o, Relative: %o", is_abs, is_rel)
+            
+            if (is_abs) {
+                domain: Text = url.getDomain(test_url)
+                origin: Text = url.getOrigin(test_url)
+                io.print("  Domain: %s", domain)
+                io.print("  Origin: %s", origin)
+            }
+            io.print("")
+        }
+        
+        return "Utilities completed"
+    }
+    
+    @external method demonstrateRealWorldScenario(): Text {
+        io.print("=== Real-World API Building ===")
+        
+        # Build a GitHub API URL
+        api_base: Text = url.create("https", "api.github.com")
+        repos_path: Text = url.setPath(api_base, "/repos/octocat/Hello-World")
+        
+        # Add pagination
+        with_page: Text = url.setParam(repos_path, "page", "2")
+        with_limit: Text = url.setParam(with_page, "per_page", "50")
+        
+        # Add sorting
+        final_api: Text = url.setParam(with_limit, "sort", "updated")
+        
+        io.print("GitHub API URL: %s", final_api)
+        
+        # Parse analytics URL
+        analytics: Text = "https://analytics.example.com/track?utm_source=google&utm_medium=cpc&utm_campaign=spring_sale&user_id=12345"
+        
+        source: Text = url.getParam(analytics, "utm_source")
+        medium: Text = url.getParam(analytics, "utm_medium")
+        campaign: Text = url.getParam(analytics, "utm_campaign")
+        
+        io.print("")
+        io.print("Analytics tracking:")
+        io.print("Source: %s", source)
+        io.print("Medium: %s", medium)
+        io.print("Campaign: %s", campaign)
+        io.print("")
+        
+        return "Real-world scenario completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        demo: UrlDemo = new UrlDemo()
+        
+        demo.demonstrateBasicOperations()
+        demo.demonstrateUrlConstruction()
+        demo.demonstrateQueryParameters()
+        demo.demonstrateUrlManipulation()
+        demo.demonstrateEncodingDecoding()
+        demo.demonstrateUtilities()
+        demo.demonstrateRealWorldScenario()
+        
+        io.print("=== URL Library Demo Complete! ===")
+        io.print("")
+        io.print("The url library provides 26 methods for comprehensive URL manipulation:")
+        io.print("• URL validation and parsing")
+        io.print("• URL construction from components")
+        io.print("• Query parameter management")
+        io.print("• URL normalization and resolution")
+        io.print("• Text encoding/decoding")
+        io.print("• Domain and origin extraction")
+        io.print("• Absolute/relative URL detection")
+        
+        return "URL demo completed successfully!"
+    }
+}

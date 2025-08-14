@@ -1,0 +1,24 @@
+### 
+Multi-line comment at the beginning
+This should be completely ignored
+###
+
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        ###
+        This is a multi-line comment
+        inside the method body
+        ###
+        
+        io.print("Multi-line comment test!")
+        
+        ###
+        Another multi-line comment
+        with multiple lines
+        ###
+        
+        return 0
+    }
+}

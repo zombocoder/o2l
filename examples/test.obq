@@ -1,0 +1,1 @@
+Object Hello { method greet(name: Text): Text { "Hello, " + name } }

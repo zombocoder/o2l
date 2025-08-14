@@ -1,0 +1,19 @@
+Object Counter {
+    constructor(initial: Int) {
+        this.count = initial
+    }
+    
+    method getCount(): Int {
+        this.count
+    }
+    
+    method increment(): Int {
+        this.count = this.count + 1
+    }
+}
+
+Object Main {
+    method main(): Int {
+        new Counter(5).getCount()
+    }
+}

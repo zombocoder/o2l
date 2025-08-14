@@ -1,0 +1,19 @@
+import system.io
+
+Object TypeErrorTest {
+    @external method testTypeError(): Int {
+        # This should cause a type error
+        numbers: List<Int> = [1, 2, 3, "invalid"]
+        
+        io.print("List: %s", numbers)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        demo: TypeErrorTest = new TypeErrorTest()
+        return demo.testTypeError()
+    }
+}

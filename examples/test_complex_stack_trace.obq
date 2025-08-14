@@ -1,0 +1,32 @@
+import system.io
+
+Object MathUtils {
+    @external method safeDivide(numerator: Int, denominator: Int): Int {
+        return numerator / denominator
+    }
+}
+
+Object Calculator {
+    property utils: MathUtils
+    
+    constructor() {
+        this.utils = new MathUtils()
+    }
+    
+    @external method processNumbers(a: Int, b: Int): Int {
+        return this.utils.safeDivide(a, b)
+    }
+    
+    @external method compute(): Int {
+        return this.processNumbers(100, 0)
+    }
+}
+
+Object Main {
+    method main(): Int {
+        calc: Calculator = new Calculator()
+        result: Int = calc.compute()
+        io.print("Result: %d", result)
+        return result
+    }
+}

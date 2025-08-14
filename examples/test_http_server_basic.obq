@@ -1,0 +1,60 @@
+# Basic HTTP Server Test
+# Test that the http.server module can be loaded and basic methods are available
+
+import http.server
+import system.io
+
+Object HttpServerTest {
+    @external method testServerCreation(): Text {
+        io.print("=== Testing HTTP Server Module ===")
+        
+        # Test that we can create a server
+        server_instance: HttpServerInstance = server.create()
+        io.print("✅ Server created successfully")
+        
+        # Test basic configuration methods exist
+        config_result: Text = server.setHost("127.0.0.1")
+        io.print("SetHost method: %s", config_result)
+        
+        port_result: Text = server.setPort(8080) 
+        io.print("SetPort method: %s", port_result)
+        
+        threads_result: Text = server.setWorkerThreads(4)
+        io.print("SetWorkerThreads method: %s", threads_result)
+        
+        # Test route definition methods exist
+        get_result: Text = server.get("/test", "handler")
+        io.print("GET route method: %s", get_result)
+        
+        post_result: Text = server.post("/api", "handler") 
+        io.print("POST route method: %s", post_result)
+        
+        # Test static file serving method exists
+        static_result: Text = server.static("/static", "./public")
+        io.print("Static method: %s", static_result)
+        
+        # Test middleware method exists
+        middleware_result: Text = server.use("middleware")
+        io.print("Middleware method: %s", middleware_result)
+        
+        # Test server state methods
+        is_running: Bool = server.isRunning()
+        io.print("Server running: %s", is_running)
+        
+        # Test statistics
+        stats: Map = server.getStats()
+        total_requests: Int = stats.get("total_requests")
+        io.print("Total requests: %d", total_requests)
+        
+        io.print("🎉 HTTP Server Module Test Completed!")
+        
+        return "HTTP Server module loaded and basic methods work"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        tester: HttpServerTest = new HttpServerTest()
+        return tester.testServerCreation()
+    }
+}

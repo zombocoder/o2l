@@ -1,0 +1,1 @@
+import TestObj import mypackage.PackageObj Object Main { method main(): Text { TestObj.sayHello() } }

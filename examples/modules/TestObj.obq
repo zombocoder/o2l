@@ -1,0 +1,1 @@
+Object TestObj { method sayHello(): Text { "Hello from TestObj module!" } method greet(name: Text): Text { "Greetings from module!" } }

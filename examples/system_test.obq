@@ -1,0 +1,10 @@
+import system.io
+import system.os
+
+Object Main {
+    method main(): Int {
+        io.print("Hello from O2L!")
+        io.print("Testing system functions...")
+        return 0
+    }
+}

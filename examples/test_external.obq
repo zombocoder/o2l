@@ -1,0 +1,24 @@
+# Test @external modifier for method visibility
+
+Object Calculator {
+    property value: Int
+    
+    constructor(initial: Int) {
+        this.value = initial
+    }
+    
+    # This method is protected by default - only accessible from within the object
+    method add(amount: Int): Void {
+        this.value = this.value + amount
+    }
+    
+    # This method is external - accessible from outside the object
+    @external method getValue(): Int {
+        return this.value
+    }
+    
+    # This method is external - accessible from outside the object
+    @external method increment(): Void {
+        this.add(1)  # Internal call to protected method should work
+    }
+}

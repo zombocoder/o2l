@@ -1,0 +1,24 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        # Create a map with some data (simplified version since Record is not implemented)
+        my_map: Map<Text, Int> = {
+            "John": 43,
+            "Canni": 21,
+            "Alice": 30,
+            "Bob": 25
+        }
+
+        map_iter: MapIterator = my_map.iterator()
+        io.print("Created map iterator")
+
+        while (map_iter.hasNext()) {
+            item: MapObject = map_iter.MapItem()
+            key: Text = item.getKey()
+            value: Int = item.getVal()
+            io.print("key: %s, value: %d", key, value)
+        }
+        return 0
+    }
+}

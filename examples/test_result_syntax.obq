@@ -1,0 +1,8 @@
+import system.io
+
+Object Main {
+    method main(): Int {
+        # Just test if Result<Int, Error> syntax parses correctly
+        return 0
+    }
+}

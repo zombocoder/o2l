@@ -1,0 +1,37 @@
+import system.io
+
+Object PrecisionCalculator {
+    property float_pi: Float
+    property double_pi: Double
+    property default_e: Double
+    
+    constructor() {
+        io.print("Float vs Double precision demonstration")
+        this.float_pi = 3.14159265f
+        this.double_pi = 3.14159265358979323846d
+        this.default_e = 2.718281828459045
+    }
+    
+    @external method demonstratePrecision(): Int {
+        io.print("Float PI (32-bit):  %f", this.float_pi)
+        io.print("Double PI (64-bit): %f", this.double_pi)
+        io.print("Default E (Double): %f", this.default_e)
+        
+        # Calculations to show precision differences
+        float_calc: Float = this.float_pi * 10000.0f
+        double_calc: Double = this.double_pi * 10000.0d
+        
+        io.print("Float calculation:  %f", float_calc)
+        io.print("Double calculation: %f", double_calc)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        calculator: PrecisionCalculator = new PrecisionCalculator()
+        calculator.demonstratePrecision()
+        return 0
+    }
+}

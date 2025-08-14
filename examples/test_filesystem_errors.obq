@@ -1,0 +1,257 @@
+import system.io
+import system.fs
+
+Object FilesystemErrorTester {
+    @external method testNonExistentOperations(): Int {
+        io.print("=== Non-Existent File/Directory Operations Test ===")
+        
+        non_existent_file: Text = "definitely_does_not_exist_12345.txt"
+        non_existent_dir: Text = "definitely_does_not_exist_dir_12345"
+        
+        # Test operations on non-existent files should return false or throw appropriate errors
+        io.print("1. Testing non-existent file operations...")
+        
+        # Existence checks should return false safely
+        file_exists: Bool = fs.exists(non_existent_file)
+        is_file: Bool = fs.isFile(non_existent_file)
+        is_dir: Bool = fs.isDirectory(non_existent_file)
+        
+        io.print("   Non-existent file exists: %o", file_exists)
+        io.print("   Non-existent file isFile: %o", is_file)
+        io.print("   Non-existent file isDirectory: %o", is_dir)
+        
+        # Directory existence checks
+        dir_exists: Bool = fs.exists(non_existent_dir)
+        dir_is_file: Bool = fs.isFile(non_existent_dir)
+        dir_is_dir: Bool = fs.isDirectory(non_existent_dir)
+        
+        io.print("   Non-existent dir exists: %o", dir_exists)
+        io.print("   Non-existent dir isFile: %o", dir_is_file)
+        io.print("   Non-existent dir isDirectory: %o", dir_is_dir)
+        
+        # These operations should handle errors gracefully
+        io.print("2. Testing operations that should handle errors...")
+        
+        # Reading non-existent file should fail gracefully
+        io.print("   Attempting to read non-existent file...")
+        # Note: This will likely throw an exception, but let's see how it's handled
+        # We can't use try-catch yet, so we'll test with logical conditions around it
+        
+        # Test delete non-existent file
+        io.print("   Attempting to delete non-existent file...")
+        # This should also handle the error case
+        
+        # Test listing non-existent directory
+        io.print("   Attempting to list non-existent directory...")
+        # This should also handle the error case
+        
+        return 0
+    }
+    
+    @external method testInvalidPathOperations(): Int {
+        io.print("=== Invalid Path Operations Test ===")
+        
+        # Test various invalid or problematic paths
+        io.print("1. Testing with empty path...")
+        empty_path: Text = ""
+        empty_exists: Bool = fs.exists(empty_path)
+        io.print("   Empty path exists: %o", empty_exists)
+        
+        # Test with whitespace-only path
+        io.print("2. Testing with whitespace path...")
+        whitespace_path: Text = "   "
+        whitespace_exists: Bool = fs.exists(whitespace_path)
+        io.print("   Whitespace path exists: %o", whitespace_exists)
+        
+        # Test with very long path (if system supports it)
+        io.print("3. Testing with long path...")
+        long_path: Text = "very_long_path_name_that_might_cause_issues_with_filesystem_operations_test_file.txt"
+        long_create: Bool = fs.writeText(long_path, "test")
+        long_exists: Bool = fs.exists(long_path)
+        
+        if (long_exists) {
+            long_cleanup: Bool = fs.deleteFile(long_path)
+            io.print("   Long path - created: %o, exists: %o, cleaned: %o", long_create, long_exists, long_cleanup)
+        } else {
+            io.print("   Long path - created: %o, exists: %o", long_create, long_exists)
+        }
+        
+        return 0
+    }
+    
+    @external method testPermissionBoundaryTests(): Int {
+        io.print("=== Permission and Boundary Tests ===")
+        
+        # Test operations that might hit permission or system boundaries
+        io.print("1. Testing directory creation in various locations...")
+        
+        # Test creating directory in current location (should work)
+        local_dir: Text = "test_permission_dir"
+        local_create: Bool = fs.createDirectory(local_dir)
+        local_exists: Bool = fs.exists(local_dir)
+        io.print("   Local directory - create: %o, exists: %o", local_create, local_exists)
+        
+        if (local_exists) {
+            # Test creating file in the directory
+            file_in_dir: Text = local_dir + "/test_file.txt"
+            file_create: Bool = fs.writeText(file_in_dir, "Test content in created directory")
+            file_exists: Bool = fs.exists(file_in_dir)
+            io.print("   File in directory - create: %o, exists: %o", file_create, file_exists)
+            
+            # Test reading the file
+            if (file_exists) {
+                file_content: Text = fs.readText(file_in_dir)
+                io.print("   File content read successfully: %o", file_content != "")  # Simple check
+                
+                # Cleanup file first
+                file_delete: Bool = fs.deleteFile(file_in_dir)
+                io.print("   File deleted: %o", file_delete)
+            }
+            
+            # Cleanup directory
+            dir_delete: Bool = fs.deleteFile(local_dir)
+            io.print("   Directory deleted: %o", dir_delete)
+        }
+        
+        return 0
+    }
+    
+    @external method testFilesystemStateConsistency(): Int {
+        io.print("=== Filesystem State Consistency Test ===")
+        
+        test_file: Text = "consistency_test.txt"
+        test_dir: Text = "consistency_test_dir"
+        
+        io.print("1. Testing create-check-delete cycles...")
+        
+        # Cycle 1: File operations
+        create1: Bool = fs.writeText(test_file, "Test content 1")
+        exists1: Bool = fs.exists(test_file)
+        is_file1: Bool = fs.isFile(test_file)
+        delete1: Bool = fs.deleteFile(test_file)
+        exists_after1: Bool = fs.exists(test_file)
+        
+        io.print("   File cycle 1 - create: %o, exists: %o, isFile: %o, delete: %o, exists after: %o", 
+                create1, exists1, is_file1, delete1, exists_after1)
+        
+        # Cycle 2: Same file again
+        create2: Bool = fs.writeText(test_file, "Test content 2")
+        exists2: Bool = fs.exists(test_file)
+        content2: Text = fs.readText(test_file)
+        content_correct2: Bool = content2 == "Test content 2"
+        delete2: Bool = fs.deleteFile(test_file)
+        
+        io.print("   File cycle 2 - create: %o, exists: %o, content correct: %o, delete: %o", 
+                create2, exists2, content_correct2, delete2)
+        
+        # Cycle 3: Directory operations
+        io.print("2. Testing directory consistency...")
+        
+        dir_create1: Bool = fs.createDirectory(test_dir)
+        dir_exists1: Bool = fs.exists(test_dir)
+        dir_is_dir1: Bool = fs.isDirectory(test_dir)
+        dir_delete1: Bool = fs.deleteFile(test_dir)
+        dir_exists_after1: Bool = fs.exists(test_dir)
+        
+        io.print("   Dir cycle 1 - create: %o, exists: %o, isDir: %o, delete: %o, exists after: %o", 
+                dir_create1, dir_exists1, dir_is_dir1, dir_delete1, dir_exists_after1)
+        
+        # Test mixed operations
+        io.print("3. Testing mixed file/directory operations...")
+        
+        # Create directory, then try to create file with same name (should fail or handle gracefully)
+        mixed_name: Text = "mixed_test"
+        mixed_dir_create: Bool = fs.createDirectory(mixed_name)
+        mixed_dir_exists: Bool = fs.exists(mixed_name)
+        mixed_is_dir: Bool = fs.isDirectory(mixed_name)
+        
+        io.print("   Mixed test - dir created: %o, exists: %o, is directory: %o", 
+                mixed_dir_create, mixed_dir_exists, mixed_is_dir)
+        
+        # Try to write file with same name (this should either fail or handle the conflict)
+        mixed_file_write: Bool = fs.writeText(mixed_name, "This should conflict with directory")
+        mixed_after_write_is_dir: Bool = fs.isDirectory(mixed_name)
+        mixed_after_write_is_file: Bool = fs.isFile(mixed_name)
+        
+        io.print("   After file write attempt - is dir: %o, is file: %o, write result: %o", 
+                mixed_after_write_is_dir, mixed_after_write_is_file, mixed_file_write)
+        
+        # Cleanup
+        mixed_cleanup: Bool = fs.deleteFile(mixed_name)
+        io.print("   Mixed test cleanup: %o", mixed_cleanup)
+        
+        return 0
+    }
+    
+    @external method testBoundaryConditions(): Int {
+        io.print("=== Boundary Conditions Test ===")
+        
+        # Test file operations with extreme cases
+        io.print("1. Testing edge case file names...")
+        
+        # Very short name
+        short_name: Text = "a"
+        short_create: Bool = fs.writeText(short_name, "short")
+        short_exists: Bool = fs.exists(short_name)
+        short_delete: Bool = fs.deleteFile(short_name)
+        io.print("   Single char filename - create: %o, exists: %o, delete: %o", short_create, short_exists, short_delete)
+        
+        # Name with special characters (that are typically allowed)
+        special_name: Text = "test_file_123.txt"
+        special_create: Bool = fs.writeText(special_name, "special chars test")
+        special_exists: Bool = fs.exists(special_name)
+        special_delete: Bool = fs.deleteFile(special_name)
+        io.print("   Special chars filename - create: %o, exists: %o, delete: %o", special_create, special_exists, special_delete)
+        
+        # Test with various content sizes
+        io.print("2. Testing content size boundaries...")
+        
+        size_test_file: Text = "size_test.txt"
+        
+        # Empty content
+        empty_write: Bool = fs.writeText(size_test_file, "")
+        empty_read: Text = fs.readText(size_test_file)
+        empty_correct: Bool = empty_read == ""
+        io.print("   Empty content - write: %o, read correct: %o", empty_write, empty_correct)
+        
+        # Single character
+        single_char_write: Bool = fs.writeText(size_test_file, "x")
+        single_char_read: Text = fs.readText(size_test_file)
+        single_char_correct: Bool = single_char_read == "x"
+        io.print("   Single char content - write: %o, read correct: %o", single_char_write, single_char_correct)
+        
+        # Cleanup
+        size_cleanup: Bool = fs.deleteFile(size_test_file)
+        io.print("   Size test cleanup: %o", size_cleanup)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: FilesystemErrorTester = new FilesystemErrorTester()
+        
+        result1: Int = tester.testNonExistentOperations()
+        io.print("")
+        
+        result2: Int = tester.testInvalidPathOperations()
+        io.print("")
+        
+        result3: Int = tester.testPermissionBoundaryTests()
+        io.print("")
+        
+        result4: Int = tester.testFilesystemStateConsistency()
+        io.print("")
+        
+        result5: Int = tester.testBoundaryConditions()
+        
+        if (result1 == 0 && result2 == 0 && result3 == 0 && result4 == 0 && result5 == 0) {
+            io.print("=== All filesystem error handling tests completed! ===")
+            return 0
+        } else {
+            io.print("=== Some filesystem error tests encountered issues ===")
+            return 1
+        }
+    }
+}

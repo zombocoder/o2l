@@ -1,0 +1,83 @@
+import system.io
+
+Object ErrorTest {
+    @external method testBasicThrow(): Int {
+        io.print("=== Testing Basic Throw ===")
+        
+        try {
+            io.print("About to throw an error")
+            throw("Basic error message")
+            io.print("This should NOT be printed")
+            return 0
+        } catch (error) {
+            io.print("Caught error: %o", error)
+            return 1
+        }
+    }
+    
+    @external method testTryFinally(): Int {
+        io.print("=== Testing Try/Finally ===")
+        
+        try {
+            io.print("In try block")
+            return 42
+        } finally {
+            io.print("Finally block always executes")
+        }
+    }
+    
+    @external method testTryCatchFinally(): Int {
+        io.print("=== Testing Try/Catch/Finally ===")
+        
+        try {
+            io.print("About to throw in try block")
+            throw("Error in try block")
+        } catch (error) {
+            io.print("Caught in catch: %o", error)
+            return 100
+        } finally {
+            io.print("Finally block executes after catch")
+        }
+    }
+    
+    @external method testNestedTryCatch(): Int {
+        io.print("=== Testing Nested Try/Catch ===")
+        
+        try {
+            io.print("Outer try block")
+            
+            try {
+                io.print("Inner try block")
+                throw("Inner error")
+            } catch (innerError) {
+                io.print("Inner catch: %o", innerError)
+                throw("Outer error from inner catch")
+            }
+            
+        } catch (outerError) {
+            io.print("Outer catch: %o", outerError)
+            return 200
+        }
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: ErrorTest = new ErrorTest()
+        
+        result1: Int = tester.testBasicThrow()
+        io.print("Basic throw result: %d", result1)
+        
+        result2: Int = tester.testTryFinally()
+        io.print("Try/finally result: %d", result2)
+        
+        result3: Int = tester.testTryCatchFinally()
+        io.print("Try/catch/finally result: %d", result3)
+        
+        result4: Int = tester.testNestedTryCatch()
+        io.print("Nested try/catch result: %d", result4)
+        
+        io.print("All error handling tests completed!")
+        return 0
+    }
+}

@@ -1,0 +1,35 @@
+Object TestObject {
+    property value: Int
+    
+    constructor() {
+        this.value = 0
+    }
+    
+    method internalIncrement(): Void {
+        this.value = this.value + 1
+    }
+    
+    @external method increment(): Void {
+        # Test calling internal method from external method
+        this.internalIncrement()
+    }
+    
+    @external method getValue(): Int {
+        return this.value
+    }
+    
+    @external method chainedCalls(): Int {
+        # Test multiple chained this calls
+        this.increment()
+        this.increment()
+        return this.getValue()
+    }
+}
+
+Object Main {
+    method main(): Int {
+        obj: TestObject = new TestObject()
+        result: Int = obj.chainedCalls()
+        return 0 # Should return 0
+    }
+}

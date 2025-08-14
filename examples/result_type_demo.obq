@@ -1,0 +1,32 @@
+import system.io
+
+Object SafeMath {
+    @external method divide(a: Int, b: Int): Result<Int, Error> {
+        if (b == 0) {
+            error: Error = new Error("Division by zero")
+            return Result.error(error)
+        }
+        return Result.success(a / b)
+    }
+    
+    @external method processResult(): Int {
+        result: Result<Int, Error> = this.divide(10, 2)
+        
+        if (result.isSuccess()) {
+            value: Int = result.getResult()
+            io.print("Success: %d", value)
+            return value
+        } else {
+            error: Error = result.getError()
+            io.print("Error: %s", error.getMessage())
+            return -1
+        }
+    }
+}
+
+Object Main {
+    method main(): Int {
+        math: SafeMath = new SafeMath()
+        return math.processResult()
+    }
+}

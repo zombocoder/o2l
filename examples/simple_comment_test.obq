@@ -1,0 +1,9 @@
+# Single-line comment test
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        io.print("Hello World!")  # This is a test
+        return 0
+    }
+}

@@ -1,0 +1,19 @@
+import system.io
+
+Protocol SimpleProtocol {
+    method getMessage(): Text
+}
+
+Object SimpleObject: SimpleProtocol {
+    @external method getMessage(): Text {
+        return "Protocol test successful"
+    }
+}
+
+Object Main {
+    @external method main(): Int {
+        obj: SimpleObject = new SimpleObject()
+        io.print("Created object successfully")
+        return 0
+    }
+}

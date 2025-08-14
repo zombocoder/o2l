@@ -1,0 +1,12 @@
+Object TestObject {
+    @external method testDivision(): Int {
+        return 10 / 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        test: TestObject = new TestObject()
+        return test.testDivision()
+    }
+}

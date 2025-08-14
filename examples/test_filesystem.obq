@@ -1,0 +1,146 @@
+import system.io
+import system.fs
+
+Object FilesystemTester {
+    @external method testFileOperations(): Int {
+        io.print("=== File System Operations Test ===")
+        
+        # Test file paths
+        test_file: Text = "test_output.txt"
+        test_dir: Text = "test_directory"
+        test_content: Text = "Hello, O2L filesystem!\nThis is a test file.\nLine 3 here."
+        
+        # Test 1: Write text to file
+        io.print("1. Testing writeText...")
+        write_result: Bool = fs.writeText(test_file, test_content)
+        io.print("   Write result: %o", write_result)
+        
+        # Test 2: Check if file exists
+        io.print("2. Testing exists...")
+        file_exists: Bool = fs.exists(test_file)
+        io.print("   File exists: %o", file_exists)
+        
+        # Test 3: Check if it's a file
+        io.print("3. Testing isFile...")
+        is_file: Bool = fs.isFile(test_file)
+        io.print("   Is file: %o", is_file)
+        
+        # Test 4: Read text from file
+        io.print("4. Testing readText...")
+        if (file_exists) {
+            file_content: Text = fs.readText(test_file)
+            io.print("   File content read successfully: %s", file_content)
+        }
+        
+        # Test 5: Create directory
+        io.print("5. Testing createDirectory...")
+        create_result: Bool = fs.createDirectory(test_dir)
+        io.print("   Directory create result: %o", create_result)
+        
+        # Test 6: Check if directory exists and is directory
+        io.print("6. Testing directory checks...")
+        dir_exists: Bool = fs.exists(test_dir)
+        is_directory: Bool = fs.isDirectory(test_dir)
+        io.print("   Directory exists: %o", dir_exists)
+        io.print("   Is directory: %o", is_directory)
+        
+        # Test 7: List files in current directory
+        io.print("7. Testing listFiles...")
+        current_files: List = fs.listFiles(".")
+        file_count: Int = current_files.size()
+        io.print("   Files in current directory: %d", file_count)
+        
+        # Show some files
+        iterator: ListIterator = current_files.iterator()
+        while (iterator.hasNext()) {
+            filename: Text = iterator.next()
+            io.print("   - %s", filename)
+        }
+        
+        # Test 8: Create nested file in directory
+        io.print("8. Testing nested file operations...")
+        nested_file: Text = test_dir + "/nested_file.txt"
+        nested_content: Text = "This is a nested file inside the test directory."
+        nested_write: Bool = fs.writeText(nested_file, nested_content)
+        io.print("   Nested file write result: %o", nested_write)
+        
+        if (nested_write) {
+            nested_read: Text = fs.readText(nested_file)
+            io.print("   Nested file content: %s", nested_read)
+        }
+        
+        # Test 9: List files in test directory
+        io.print("9. Testing directory listing...")
+        if (dir_exists) {
+            dir_files: List = fs.listFiles(test_dir)
+            dir_file_count: Int = dir_files.size()
+            io.print("   Files in test directory: %d", dir_file_count)
+            
+            dir_iterator: ListIterator = dir_files.iterator()
+            while (dir_iterator.hasNext()) {
+                dir_filename: Text = dir_iterator.next()
+                io.print("   - %s", dir_filename)
+            }
+        }
+        
+        # Test 10: Cleanup - delete files
+        io.print("10. Testing cleanup...")
+        if (fs.exists(nested_file)) {
+            delete_nested: Bool = fs.deleteFile(nested_file)
+            io.print("   Deleted nested file: %o", delete_nested)
+        }
+        
+        if (fs.exists(test_file)) {
+            delete_file: Bool = fs.deleteFile(test_file)
+            io.print("   Deleted test file: %o", delete_file)
+        }
+        
+        if (fs.exists(test_dir)) {
+            delete_dir: Bool = fs.deleteFile(test_dir)
+            io.print("   Deleted test directory: %o", delete_dir)
+        }
+        
+        io.print("=== Filesystem test completed ===")
+        return 0
+    }
+    
+    @external method testErrorHandling(): Int {
+        io.print("=== Error Handling Tests ===")
+        
+        # Test existence checks for non-existent files
+        io.print("1. Testing non-existent file checks...")
+        non_existent_exists: Bool = fs.exists("non_existent_file.txt")
+        io.print("   Non-existent file exists: %o", non_existent_exists)
+        
+        non_existent_is_file: Bool = fs.isFile("non_existent_file.txt")
+        io.print("   Non-existent is file: %o", non_existent_is_file)
+        
+        non_existent_is_dir: Bool = fs.isDirectory("non_existent_directory")
+        io.print("   Non-existent is directory: %o", non_existent_is_dir)
+        
+        io.print("=== Error handling tests completed ===")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: FilesystemTester = new FilesystemTester()
+        
+        # Run basic functionality tests
+        result1: Int = tester.testFileOperations()
+        io.print("")
+        
+        # Run error handling tests
+        result2: Int = tester.testErrorHandling()
+        
+        # Return success if both tests passed
+        if (result1 == 0 && result2 == 0) {
+            io.print("All filesystem tests passed successfully!")
+            return 0
+        } else {
+            io.print("Some filesystem tests failed!")
+            return 1
+        }
+    }
+}

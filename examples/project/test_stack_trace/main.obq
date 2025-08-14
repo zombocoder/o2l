@@ -1,0 +1,30 @@
+# Main application demonstrating cross-file stack traces
+
+@import lib.DataProcessor
+import system.io
+
+Object TestRunner {
+    @external method testDivisionByZero(): Int {
+        processor: DataProcessor = new DataProcessor()
+        
+        numbers: List<Int> = []
+        numbers.add(10)
+        numbers.add(5)
+        
+        results: List<Int> = processor.processNumbers(numbers, "modulo")
+        io.print("%o", results)
+        return 1
+    }
+    
+}
+
+Object Main {
+    method main(): Int {
+        runner: TestRunner = new TestRunner()
+        
+        # Test 1: Direct division by zero across multiple files
+        result: Int = runner.testDivisionByZero()
+        io.print("All test passed!")
+        return 0
+    }
+}

@@ -1,0 +1,86 @@
+import datetime
+import system.io
+
+Object DateTimeDemo {
+    @external method demonstrateDateTime(): Text {
+        io.print("=== DateTime Library Demo ===")
+        
+        # Current date/time functions
+        io.print("\n--- Current Date/Time ---")
+        current_dt: Text = datetime.now()
+        io.print("Current DateTime: %s", datetime.toString(current_dt))
+        
+        today_dt: Text = datetime.today()
+        io.print("Today (midnight): %s", datetime.toString(today_dt))
+        
+        # Create specific date/time
+        io.print("\n--- Creating Specific DateTime ---")
+        custom_dt: Text = datetime.create(2024, 8, 7, 15, 30, 45)
+        io.print("Created DateTime: %s", datetime.toString(custom_dt))
+        
+        # Extract components
+        io.print("\n--- Extracting Components ---")
+        year: Int = datetime.getYear(custom_dt)
+        month: Int = datetime.getMonth(custom_dt)
+        day: Int = datetime.getDay(custom_dt)
+        hour: Int = datetime.getHour(custom_dt)
+        minute: Int = datetime.getMinute(custom_dt)
+        second: Int = datetime.getSecond(custom_dt)
+        
+        io.print("Year: %d, Month: %d, Day: %d", year, month, day)
+        io.print("Hour: %d, Minute: %d, Second: %d", hour, minute, second)
+        
+        # Formatting
+        io.print("\n--- Formatting ---")
+        date_str: Text = datetime.toDateString(custom_dt)
+        time_str: Text = datetime.toTimeString(custom_dt)
+        iso_str: Text = datetime.formatISO(custom_dt)
+        
+        io.print("Date String: %s", date_str)
+        io.print("Time String: %s", time_str)
+        io.print("ISO Format: %s", iso_str)
+        
+        # Date arithmetic
+        io.print("\n--- Date Arithmetic ---")
+        plus_days: Text = datetime.addDays(custom_dt, 7)
+        plus_hours: Text = datetime.addHours(custom_dt, 3)
+        
+        io.print("Plus 7 days: %s", datetime.toString(plus_days))
+        io.print("Plus 3 hours: %s", datetime.toString(plus_hours))
+        
+        # Comparisons
+        io.print("\n--- Comparisons ---")
+        newer_dt: Text = datetime.create(2024, 8, 8, 12, 0, 0)
+        
+        is_before: Bool = datetime.isBefore(custom_dt, newer_dt)
+        is_equal: Bool = datetime.isEqual(custom_dt, custom_dt)
+        
+        io.print("Custom DT is before newer DT: %s", is_before)
+        io.print("Custom DT equals itself: %s", is_equal)
+        
+        # Utilities
+        io.print("\n--- Utilities ---")
+        is_leap_2024: Bool = datetime.isLeapYear(2024)
+        days_in_feb_2024: Int = datetime.daysInMonth(2024, 2)
+        
+        io.print("2024 is leap year: %s", is_leap_2024)
+        io.print("Days in Feb 2024: %d", days_in_feb_2024)
+        
+        # Calendar functions
+        io.print("\n--- Calendar Functions ---")
+        start_of_day: Text = datetime.startOfDay(custom_dt)
+        end_of_month: Text = datetime.endOfMonth(custom_dt)
+        
+        io.print("Start of day: %s", datetime.toString(start_of_day))
+        io.print("End of month: %s", datetime.toString(end_of_month))
+        
+        io.print("\n=== Demo Complete ===")
+        return "DateTime library demonstration completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        DateTimeDemo.demonstrateDateTime()
+    }
+}

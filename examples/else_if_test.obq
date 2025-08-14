@@ -1,0 +1,89 @@
+import system.io
+
+Object ElseIfTest {
+    @external method testGrading(): Text {
+        score: Int = 85
+        
+        if (score >= 90) {
+            io.print("Grade: A")
+        } else if (score >= 80) {
+            io.print("Grade: B")
+        } else if (score >= 70) {
+            io.print("Grade: C")
+        } else if (score >= 60) {
+            io.print("Grade: D")
+        } else {
+            io.print("Grade: F")
+        }
+        
+        return "Grading test completed"
+    }
+    
+    @external method testDayOfWeek(): Text {
+        day: Int = 3
+        
+        if (day == 1) {
+            io.print("Monday")
+        } else if (day == 2) {
+            io.print("Tuesday")
+        } else if (day == 3) {
+            io.print("Wednesday")
+        } else if (day == 4) {
+            io.print("Thursday")
+        } else if (day == 5) {
+            io.print("Friday")
+        } else if (day == 6) {
+            io.print("Saturday")
+        } else if (day == 7) {
+            io.print("Sunday")
+        } else {
+            io.print("Invalid day")
+        }
+        
+        return "Day of week test completed"
+    }
+    
+    @external method testMultipleConditions(): Text {
+        temperature: Int = 75
+        humidity: Int = 60
+        
+        if (temperature > 80 && humidity > 70) {
+            io.print("Hot and humid - turn on AC")
+        } else if (temperature > 80) {
+            io.print("Hot but dry - use fan")
+        } else if (temperature < 60) {
+            io.print("Cold - turn on heater")
+        } else if (humidity > 80) {
+            io.print("Very humid - use dehumidifier")
+        } else {
+            io.print("Pleasant weather")
+        }
+        
+        return "Weather conditions test completed"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        tester: ElseIfTest = new ElseIfTest()
+        
+        io.print("=== Testing Else If Implementation ===")
+        io.print("")
+        
+        io.print("--- Grade Test ---")
+        tester.testGrading()
+        
+        io.print("")
+        io.print("--- Day of Week Test ---")
+        tester.testDayOfWeek()
+        
+        io.print("")
+        io.print("--- Multiple Conditions Test ---")
+        tester.testMultipleConditions()
+        
+        io.print("")
+        io.print("=== Else If Tests Completed Successfully! ===")
+        
+        return "All else if tests completed"
+    }
+}

@@ -1,0 +1,31 @@
+# Single-line comment at the beginning
+import system.io.*
+
+###
+This is a multi-line comment
+that can span multiple lines
+and include documentation
+###
+
+Object Main {
+    # Another single-line comment
+    @external
+    method main(): Int {
+        io.print("Comment test starting...")
+        
+        ### 
+        Multi-line comment inside method
+        This should be ignored by the lexer
+        ###
+        
+        value: Int = 42  # Inline comment
+        io.print("Value: %s", value)
+        
+        ###
+        Final multi-line comment
+        Testing nested content
+        ###
+        
+        return 0  # Success comment
+    }
+}

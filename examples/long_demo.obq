@@ -1,0 +1,34 @@
+import system.io
+
+Object LongCalculator {
+    property int_value: Int
+    property long_value: Long
+    
+    constructor() {
+        io.print("Long type precision demonstration")
+        this.int_value = 9223372036854775807  # Max Int (2^63 - 1)
+        this.long_value = 170141183460469231731687303715884105727L  # Large Long value
+    }
+    
+    @external method demonstrateLong(): Int {
+        io.print("Int value:  %d", this.int_value)
+        io.print("Long value: %l", this.long_value)
+        
+        # Simple Long arithmetic
+        result: Long = this.long_value + 1000L
+        io.print("Long + 1000L = %l", result)
+        
+        # Mixed arithmetic  
+        mixed_result: Long = this.int_value + 42L
+        io.print("Int + 42L = %l", mixed_result)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        calculator: LongCalculator = new LongCalculator()
+        return calculator.demonstrateLong()
+    }
+}

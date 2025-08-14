@@ -1,0 +1,43 @@
+# Test what happens when we try to access request/response in methods
+
+import http.server
+import system.io
+
+Object TestController {
+    @external method handleWithParams($req: HttpRequest, $res: HttpResponse): Text {
+        # This should work with $ parameter access
+        http_method: Text = $req.getMethod()
+        request_path: Text = $req.getPath()
+        
+        response_json: Text = "{\"method\": \"" + http_method + "\", \"path\": \"" + request_path + "\"}"
+        $res.json(response_json)
+        
+        return "Handler called with params"
+    }
+    
+    @external method simpleHandle(): Text {
+        # This currently works but has no access to request/response
+        return "Simple handler without params"
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("=== Testing Method Parameters ===")
+        
+        server_instance: HttpServerInstance = server.create()
+        server.setPort(server_instance, 8088)
+        
+        controller: TestController = new TestController()
+        
+        # Try to bind method with parameters
+        server.get(server_instance, "/with-params", controller, "handleWithParams")
+        server.get(server_instance, "/simple", controller, "simpleHandle")
+        
+        server.listen(server_instance)
+        io.print("Server started - testing parameter access...")
+        server.stop(server_instance)
+        
+        return "Test completed"
+    }
+}

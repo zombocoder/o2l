@@ -1,0 +1,1 @@
+Object Greeter { method sayHello(): Text { "Hello from Greeter!" } } Object Main { method main(): Text { Greeter.sayHello() } }

@@ -1,0 +1,12 @@
+import system.io
+
+Protocol TestProtocol {
+    method test(): Text
+}
+
+Object Main {
+    method main(): Int {
+        io.print("Test")
+        return 0
+    }
+}

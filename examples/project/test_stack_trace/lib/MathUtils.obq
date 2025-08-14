@@ -1,0 +1,22 @@
+# Math utility library with potential division errors
+
+Object MathUtils {
+    @external method divide(a: Int, b: Int): Int {
+        # This will cause division by zero error on line 4
+        return a / b
+    }
+    
+    @external method safeDivide(numerator: Int, denominator: Int): Float {
+        if (denominator == 0) {
+            # This should trigger a comparison error
+            result: Bool = numerator < "invalid"
+            return 0.0
+        }
+        return numerator / denominator
+    }
+    
+    @external method modulus(x: Int, y: Int): Int {
+        # Potential modulo by zero error
+        return x % y
+    }
+}

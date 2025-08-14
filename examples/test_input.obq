@@ -1,0 +1,10 @@
+import system.io.*
+
+Object Main {
+    method main(): Text {
+        io.print("What's your name?")
+        name: Text = io.input("Enter name: ")
+        io.print("Hello, %s!", name)
+        return name
+    }
+}

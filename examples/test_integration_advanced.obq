@@ -1,0 +1,324 @@
+import system.io
+import system.fs
+
+Object AdvancedIntegrationTester {
+    @external method testLogicalFilesystemIntegration(): Int {
+        io.print("=== Advanced Logical Operators + Filesystem Integration ===")
+        
+        # Setup test files for complex logical operations
+        config_file: Text = "integration_config.conf"
+        backup_file: Text = "integration_backup.bak"
+        log_file: Text = "integration_log.log"
+        temp_dir: Text = "integration_temp"
+        
+        io.print("1. Setting up test environment...")
+        
+        # Create test files with different content
+        config_content: Text = "setting1=value1\nsetting2=value2\nenabled=true"
+        backup_content: Text = "backup_data_from_yesterday"
+        log_content: Text = "LOG: System started\nLOG: Configuration loaded\nLOG: Backup created"
+        
+        # Complex logical conditions for file creation
+        create_config: Bool = fs.writeText(config_file, config_content)
+        create_backup: Bool = fs.writeText(backup_file, backup_content)
+        create_log: Bool = fs.writeText(log_file, log_content)
+        create_dir: Bool = fs.createDirectory(temp_dir)
+        
+        # Verify all components are created using logical AND
+        all_created: Bool = create_config && create_backup && create_log && create_dir
+        io.print("   All components created: %o", all_created)
+        
+        if (!all_created) {
+            io.print("   Setup failed - aborting test")
+            return 1
+        }
+        
+        return 0
+    }
+    
+    @external method testComplexLogicalFileChecks(): Int {
+        io.print("2. Testing complex logical file validation...")
+        
+        config_file: Text = "integration_config.conf"
+        backup_file: Text = "integration_backup.bak"
+        log_file: Text = "integration_log.log"
+        temp_dir: Text = "integration_temp"
+        
+        # Individual file checks
+        config_exists: Bool = fs.exists(config_file)
+        config_is_file: Bool = fs.isFile(config_file)
+        backup_exists: Bool = fs.exists(backup_file)
+        backup_is_file: Bool = fs.isFile(backup_file)
+        log_exists: Bool = fs.exists(log_file)
+        log_is_file: Bool = fs.isFile(log_file)
+        dir_exists: Bool = fs.exists(temp_dir)
+        dir_is_dir: Bool = fs.isDirectory(temp_dir)
+        
+        # Complex logical validations
+        all_files_exist: Bool = config_exists && backup_exists && log_exists
+        all_files_are_files: Bool = config_is_file && backup_is_file && log_is_file
+        directory_valid: Bool = dir_exists && dir_is_dir && !fs.isFile(temp_dir)
+        
+        io.print("   All files exist: %o", all_files_exist)
+        io.print("   All files are files: %o", all_files_are_files)
+        io.print("   Directory is valid: %o", directory_valid)
+        
+        # Overall system health check using nested logical operators
+        system_healthy: Bool = (all_files_exist && all_files_are_files) && directory_valid
+        io.print("   System health check: %o", system_healthy)
+        
+        # Alternative health check using OR for fault tolerance
+        partial_system_ok: Bool = (config_exists || backup_exists) && (log_exists || dir_exists)
+        io.print("   Partial system OK (fault tolerant): %o", partial_system_ok)
+        
+        # Complex condition: At least 2 out of 3 files exist
+        file_count_check: Bool = (config_exists && backup_exists) || (config_exists && log_exists) || (backup_exists && log_exists)
+        io.print("   At least 2 of 3 files exist: %o", file_count_check)
+        
+        return 0
+    }
+    
+    @external method testConditionalFileOperations(): Int {
+        io.print("3. Testing conditional file operations...")
+        
+        config_file: Text = "integration_config.conf"
+        backup_file: Text = "integration_backup.bak"
+        log_file: Text = "integration_log.log"
+        temp_dir: Text = "integration_temp"
+        
+        # Read files conditionally
+        config_exists: Bool = fs.exists(config_file)
+        backup_exists: Bool = fs.exists(backup_file)
+        
+        if (config_exists && backup_exists) {
+            io.print("   Both config and backup exist - reading contents...")
+            config_content: Text = fs.readText(config_file)
+            backup_content: Text = fs.readText(backup_file)
+            
+            # Logical checks on content
+            config_not_empty: Bool = config_content != ""
+            backup_not_empty: Bool = backup_content != ""
+            both_have_content: Bool = config_not_empty && backup_not_empty
+            
+            io.print("   Both files have content: %o", both_have_content)
+            
+            # Conditional file processing based on content checks
+            if (both_have_content) {
+                # Create processed files in temp directory
+                processed_config: Text = temp_dir + "/processed_config.txt"
+                processed_backup: Text = temp_dir + "/processed_backup.txt"
+                
+                # Process and write (simulated processing by adding prefix)
+                processed_config_content: Text = "PROCESSED: " + config_content
+                processed_backup_content: Text = "PROCESSED: " + backup_content
+                
+                write_processed_config: Bool = fs.writeText(processed_config, processed_config_content)
+                write_processed_backup: Bool = fs.writeText(processed_backup, processed_backup_content)
+                
+                # Verify processing results
+                processing_successful: Bool = write_processed_config && write_processed_backup
+                io.print("   File processing successful: %o", processing_successful)
+                
+                if (processing_successful) {
+                    # Verify processed files exist and have correct content
+                    processed_config_exists: Bool = fs.exists(processed_config)
+                    processed_backup_exists: Bool = fs.exists(processed_backup)
+                    verification_passed: Bool = processed_config_exists && processed_backup_exists
+                    
+                    io.print("   Processed files verification: %o", verification_passed)
+                }
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testLogicalDirectoryManagement(): Int {
+        io.print("4. Testing logical directory management...")
+        
+        temp_dir: Text = "integration_temp"
+        nested_dir1: Text = temp_dir + "/branch1"
+        nested_dir2: Text = temp_dir + "/branch2"
+        nested_dir3: Text = temp_dir + "/branch3"
+        
+        # Create nested directory structure conditionally
+        temp_exists: Bool = fs.exists(temp_dir)
+        
+        if (temp_exists) {
+            # Create multiple branches
+            create_branch1: Bool = fs.createDirectory(nested_dir1)
+            create_branch2: Bool = fs.createDirectory(nested_dir2)
+            create_branch3: Bool = fs.createDirectory(nested_dir3)
+            
+            # Check if all branches were created successfully
+            all_branches_created: Bool = create_branch1 && create_branch2 && create_branch3
+            io.print("   All directory branches created: %o", all_branches_created)
+            
+            # Verify directory structure using logical checks
+            branch1_exists: Bool = fs.exists(nested_dir1) && fs.isDirectory(nested_dir1)
+            branch2_exists: Bool = fs.exists(nested_dir2) && fs.isDirectory(nested_dir2)
+            branch3_exists: Bool = fs.exists(nested_dir3) && fs.isDirectory(nested_dir3)
+            
+            directory_structure_valid: Bool = branch1_exists && branch2_exists && branch3_exists
+            io.print("   Directory structure validation: %o", directory_structure_valid)
+            
+            # Create files in directories conditionally
+            if (directory_structure_valid) {
+                file1: Text = nested_dir1 + "/data1.txt"
+                file2: Text = nested_dir2 + "/data2.txt"
+                file3: Text = nested_dir3 + "/data3.txt"
+                
+                create_file1: Bool = fs.writeText(file1, "Data in branch 1")
+                create_file2: Bool = fs.writeText(file2, "Data in branch 2")
+                create_file3: Bool = fs.writeText(file3, "Data in branch 3")
+                
+                # Check success with logical OR (at least one should succeed)
+                at_least_one_file: Bool = create_file1 || create_file2 || create_file3
+                all_files_created: Bool = create_file1 && create_file2 && create_file3
+                
+                io.print("   At least one file created: %o", at_least_one_file)
+                io.print("   All files created: %o", all_files_created)
+                
+                # List files in each directory
+                if (all_files_created) {
+                    branch1_files: List = fs.listFiles(nested_dir1)
+                    branch2_files: List = fs.listFiles(nested_dir2)
+                    branch3_files: List = fs.listFiles(nested_dir3)
+                    
+                    branch1_count: Int = branch1_files.size()
+                    branch2_count: Int = branch2_files.size()
+                    branch3_count: Int = branch3_files.size()
+                    
+                    # Logical check: each directory should have exactly 1 file
+                    correct_file_distribution: Bool = (branch1_count == 1) && (branch2_count == 1) && (branch3_count == 1)
+                    io.print("   Correct file distribution: %o", correct_file_distribution)
+                }
+            }
+        }
+        
+        return 0
+    }
+    
+    @external method testAdvancedLogicalCleanup(): Int {
+        io.print("5. Testing advanced logical cleanup...")
+        
+        config_file: Text = "integration_config.conf"
+        backup_file: Text = "integration_backup.bak"
+        log_file: Text = "integration_log.log"
+        temp_dir: Text = "integration_temp"
+        
+        # Clean up files with logical conditions
+        files_to_clean: List = [config_file, backup_file, log_file]
+        file_iterator: ListIterator = files_to_clean.iterator()
+        cleaned_count: Int = 0
+        
+        while (file_iterator.hasNext()) {
+            filename: Text = file_iterator.next()
+            file_exists: Bool = fs.exists(filename)
+            is_file: Bool = fs.isFile(filename)
+            
+            # Only delete if it exists AND is a file (safety check)
+            should_delete: Bool = file_exists && is_file
+            
+            if (should_delete) {
+                delete_success: Bool = fs.deleteFile(filename)
+                if (delete_success) {
+                    cleaned_count = cleaned_count + 1
+                }
+                io.print("   Cleaned %s: %o", filename, delete_success)
+            } else {
+                io.print("   Skipped %s (not a file or doesn't exist)", filename)
+            }
+        }
+        
+        total_files: Int = files_to_clean.size()
+        io.print("   Files cleaned: %d out of %d", cleaned_count, total_files)
+        
+        # Clean up directory structure recursively (simulate)
+        io.print("   Cleaning directory structure...")
+        
+        # Clean up nested files first
+        nested_files: List = [
+            temp_dir + "/branch1/data1.txt",
+            temp_dir + "/branch2/data2.txt", 
+            temp_dir + "/branch3/data3.txt",
+            temp_dir + "/processed_config.txt",
+            temp_dir + "/processed_backup.txt"
+        ]
+        
+        nested_iterator: ListIterator = nested_files.iterator()
+        nested_cleaned: Int = 0
+        
+        while (nested_iterator.hasNext()) {
+            nested_file: Text = nested_iterator.next()
+            nested_exists: Bool = fs.exists(nested_file)
+            
+            if (nested_exists) {
+                nested_delete: Bool = fs.deleteFile(nested_file)
+                if (nested_delete) {
+                    nested_cleaned = nested_cleaned + 1
+                }
+            }
+        }
+        
+        # Clean up directories
+        dirs_to_clean: List = [
+            temp_dir + "/branch1",
+            temp_dir + "/branch2",
+            temp_dir + "/branch3",
+            temp_dir
+        ]
+        
+        dir_iterator: ListIterator = dirs_to_clean.iterator()
+        dirs_cleaned: Int = 0
+        
+        while (dir_iterator.hasNext()) {
+            dirname: Text = dir_iterator.next()
+            dir_exists: Bool = fs.exists(dirname)
+            is_directory: Bool = fs.isDirectory(dirname)
+            
+            should_delete_dir: Bool = dir_exists && is_directory
+            
+            if (should_delete_dir) {
+                dir_delete: Bool = fs.deleteFile(dirname)
+                if (dir_delete) {
+                    dirs_cleaned = dirs_cleaned + 1
+                }
+            }
+        }
+        
+        # Final verification - nothing should exist
+        final_check1: Bool = !fs.exists(config_file)
+        final_check2: Bool = !fs.exists(backup_file)
+        final_check3: Bool = !fs.exists(log_file)
+        final_check4: Bool = !fs.exists(temp_dir)
+        
+        complete_cleanup: Bool = final_check1 && final_check2 && final_check3 && final_check4
+        io.print("   Complete cleanup verification: %o", complete_cleanup)
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        tester: AdvancedIntegrationTester = new AdvancedIntegrationTester()
+        
+        result1: Int = tester.testLogicalFilesystemIntegration()
+        
+        if (result1 == 0) {
+            result2: Int = tester.testComplexLogicalFileChecks()
+            result3: Int = tester.testConditionalFileOperations()
+            result4: Int = tester.testLogicalDirectoryManagement()
+            result5: Int = tester.testAdvancedLogicalCleanup()
+            
+            if (result2 == 0 && result3 == 0 && result4 == 0 && result5 == 0) {
+                io.print("=== All advanced integration tests passed! ===")
+                return 0
+            }
+        }
+        
+        io.print("=== Some advanced integration tests failed ===")
+        return 1
+    }
+}

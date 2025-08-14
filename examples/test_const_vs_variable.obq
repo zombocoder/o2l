@@ -1,0 +1,15 @@
+# Testing constant vs variable collision protection
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        const MAX_SIZE: Int = 100
+        io.print("MAX_SIZE constant: %s", MAX_SIZE)
+        
+        # This should cause an error - trying to define variable with same name as constant
+        MAX_SIZE: Int = 200
+        io.print("MAX_SIZE variable: %s", MAX_SIZE)
+        
+        return 0
+    }
+}

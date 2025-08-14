@@ -1,0 +1,15 @@
+# Testing constant immutability
+import system.io.*
+
+Object Main {
+    method main(): Int {
+        const PI: Float = 3.14159
+        io.print("PI is: %s", PI)
+        
+        # This should cause an error - trying to reassign a constant
+        PI = 2.71828
+        io.print("PI changed to: %s", PI)
+        
+        return 0
+    }
+}
