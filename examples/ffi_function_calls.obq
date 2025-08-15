@@ -1,0 +1,76 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI function calls...")
+        
+        # Load our test library
+        libpath: Text = "/Users/zombocoder/dev/zombocoder/o2l/simple_lib_bundle.bundle"
+        io.print("Loading library: %s", libpath)
+        
+        libResult: Result<Value, Error> = ffi.load(libpath)
+        success: Bool = libResult.isSuccess()
+        if (success == false) {
+            error: Value = libResult.getError()
+            io.print("Failed to load library: %s", error.getMessage())
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        io.print("Library loaded successfully!")
+        
+        # Test 1: Call test_magic() - no arguments, returns i32
+        io.print("Getting test_magic function...")
+        magicResult: Result<Value, Error> = lib.symbol("_test_magic", "->i32")
+        magicSuccess: Bool = magicResult.isSuccess()
+        if (magicSuccess == false) {
+            error: Value = magicResult.getError()
+            io.print("Failed to get test_magic: %s", error.getMessage())
+            return 1
+        }
+        
+        magicFn: Value = magicResult.getResult()
+        io.print("Calling test_magic()...")
+        
+        # Call the function with no arguments
+        callResult: Result<Value, Error> = magicFn.call()
+        callSuccess: Bool = callResult.isSuccess()
+        if (callSuccess == false) {
+            error: Value = callResult.getError()
+            io.print("Failed to call test_magic: %s", error.getMessage())
+            return 1
+        }
+        
+        result: Value = callResult.getResult()
+        io.print("test_magic() returned: %s", result.toString())
+        
+        # Test 2: Call test_add(5, 3) - two i32 arguments, returns i32
+        io.print("Getting test_add function...")
+        addResult: Result<Value, Error> = lib.symbol("_test_add", "i32,i32->i32")
+        addSuccess: Bool = addResult.isSuccess()
+        if (addSuccess == false) {
+            error: Value = addResult.getError()
+            io.print("Failed to get test_add: %s", error.getMessage())
+            return 1
+        }
+        
+        addFn: Value = addResult.getResult()
+        io.print("Calling test_add(5, 3)...")
+        
+        # Call the function with two arguments
+        addCallResult: Result<Value, Error> = addFn.call(5, 3)
+        addCallSuccess: Bool = addCallResult.isSuccess()
+        if (addCallSuccess == false) {
+            error: Value = addCallResult.getError()
+            io.print("Failed to call test_add: %s", error.getMessage())
+            return 1
+        }
+        
+        addResultValue: Value = addCallResult.getResult()
+        io.print("test_add(5, 3) returned: %s", addResultValue.toString())
+        
+        io.print("FFI function calls completed successfully!")
+        return 0
+    }
+}

@@ -1,0 +1,41 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI function calls...")
+        
+        # Try to load libffi-trampolines which is available on macOS
+        libname: Text = "/usr/lib/libffi-trampolines.dylib"
+        io.print("Loading library: %s", libname)
+        
+        libResult: Result<Value, Error> = ffi.load(libname)
+        success: Bool = libResult.isSuccess()
+        if (success == false) {
+            error: Value = libResult.getError()
+            io.print("Failed to load library: %s", error.getMessage())
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        io.print("Library loaded successfully!")
+        
+        # Test getting strlen function (signature: ptr->i64)
+        strlenResult: Result<Value, Error> = lib.symbol("strlen", "ptr->i64")
+        strlenSuccess: Bool = strlenResult.isSuccess()
+        if (strlenSuccess == false) {
+            error: Value = strlenResult.getError()
+            io.print("Failed to get strlen symbol: %s", error.getMessage())
+            return 1
+        }
+        
+        strlenFn: Value = strlenResult.getResult()
+        io.print("strlen function loaded successfully!")
+        
+        # TODO: Test calling the function once we get string->pointer conversion working
+        # For now, just test that we can get symbols with signatures
+        
+        io.print("FFI function call test completed!")
+        return 0
+    }
+}

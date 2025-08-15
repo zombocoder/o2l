@@ -19,6 +19,7 @@
 #include "SystemLibrary.hpp"
 #include "TestLibrary.hpp"
 #include "UrlLibrary.hpp"
+#include "FFILibrary.hpp"
 
 namespace o2l {
 
@@ -453,6 +454,11 @@ bool ModuleLoader::isNativeSystemModule(const ImportPath& import_path) {
         return true;
     }
 
+    // Check if this is a direct ffi import
+    if (import_path.package_path.empty() && import_path.object_name == "ffi") {
+        return true;
+    }
+
     return false;
 }
 
@@ -482,6 +488,8 @@ std::shared_ptr<ObjectInstance> ModuleLoader::createNativeSystemModule(
         return HttpClientLibrary::createHttpClientObject();
     } else if (module_name == "server") {
         return HttpServerLibrary::createHttpServerObject();
+    } else if (module_name == "ffi") {
+        return FFILibrary::createFFIObject();
     }
 
     throw EvaluationError("Unknown native module: " + module_name);

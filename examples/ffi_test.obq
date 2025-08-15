@@ -1,0 +1,27 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI functionality...")
+        
+        # Test that FFI module is accessible
+        io.print("FFI module available: %s", "yes")
+        
+        # Test getting last errno (should be 0 initially)
+        errno: Int = ffi.getLastErrno()
+        io.print("Last errno: %d", errno)
+        
+        # Test basic FFI operations
+        io.print("Creating null pointer...")
+        nullPtr: Value = ffi.nullPtr()
+        io.print("Null pointer created successfully")
+        
+        io.print("Creating pointer from integer...")
+        ptr: Value = ffi.ptr(305419896)
+        io.print("Pointer created successfully")
+        
+        io.print("Basic FFI tests completed successfully!")
+        return 0
+    }
+}

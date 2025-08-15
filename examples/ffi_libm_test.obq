@@ -1,0 +1,36 @@
+import ffi  
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI with libm (math library)...")
+        
+        # Test loading the math library
+        # On macOS: libm.dylib, Linux: libm.so, Windows: msvcrt.dll
+        libname: Text = this.getLibraryName()
+        io.print("Attempting to load: %s", libname)
+        
+        libResult: Result<Value, Error> = ffi.load(libname)
+        if (!libResult.isSuccess()) {
+            error: Value = libResult.getError()
+            io.print("Failed to load library: %s", error.getMessage())
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        io.print("Library loaded successfully!")
+        
+        # Test basic FFI operations work
+        io.print("Last errno: %d", ffi.getLastErrno())
+        
+        io.print("FFI library loading test completed!")
+        return 0
+    }
+    
+    @external method getLibraryName(): Text {
+        # Simple platform detection - in a real implementation,
+        # we'd use system.os to determine platform
+        # For this demo, try a library that exists on macOS
+        "/usr/lib/libffi-trampolines.dylib"  # A library that exists on macOS
+    }
+}

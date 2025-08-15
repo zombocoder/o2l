@@ -2,6 +2,7 @@
 
 #include "../Common/Exceptions.hpp"
 #include "../Common/StackFrameGuard.hpp"
+#include "../Runtime/Value.hpp"
 
 namespace o2l {
 
@@ -21,7 +22,7 @@ Value UnaryNode::evaluate(Context& context) {
             case UnaryOperator::NOT:
                 // Logical NOT: operand must be a Bool
                 if (!std::holds_alternative<Bool>(operand_value)) {
-                    throw TypeMismatchError("NOT operator requires a Bool operand");
+                    throw TypeMismatchError("NOT operator requires a Bool operand, got " + getTypeName(operand_value));
                 }
                 return Bool(!std::get<Bool>(operand_value));
 

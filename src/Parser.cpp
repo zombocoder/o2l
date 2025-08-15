@@ -180,7 +180,7 @@ ASTNodePtr Parser::parseBinaryExpression() {
 }
 
 ASTNodePtr Parser::parseComparisonExpression() {
-    ASTNodePtr left = parsePrimaryExpression();
+    ASTNodePtr left = parseUnaryExpression();
     
     // Handle comparison operators
     while (currentToken().type == TokenType::EQUAL ||
@@ -204,7 +204,7 @@ ASTNodePtr Parser::parseComparisonExpression() {
         // Capture source location before consuming operator
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
         advance(); // consume operator
-        ASTNodePtr right = parsePrimaryExpression();
+        ASTNodePtr right = parseUnaryExpression();
         left = std::make_unique<ComparisonNode>(std::move(left), op, std::move(right), opLocation);
     }
     
@@ -300,7 +300,7 @@ ASTNodePtr Parser::parsePrimaryExpression() {
     return expr;
 }
 
-ASTNodePtr Parser::parseAtomicExpression() {
+ASTNodePtr Parser::parseUnaryExpression() {
     // Handle unary operators
     if (currentToken().type == TokenType::MINUS || currentToken().type == TokenType::LOGICAL_NOT) {
         UnaryOperator op;
@@ -314,11 +314,17 @@ ASTNodePtr Parser::parseAtomicExpression() {
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
         advance(); // consume unary operator
         
-        // Parse the operand with recursive call to handle chained unary operators
-        ASTNodePtr operand = parseAtomicExpression();
+        // Parse the operand - now calls parsePrimaryExpression to include method calls
+        ASTNodePtr operand = parseUnaryExpression(); // Recursive call for chained unary operators
         
         return std::make_unique<UnaryNode>(op, std::move(operand), opLocation);
     }
+    
+    // No unary operator, parse primary expression (method calls, member access, etc.)
+    return parsePrimaryExpression();
+}
+
+ASTNodePtr Parser::parseAtomicExpression() {
     
     // Handle literals and basic expressions
     const Token& token = currentToken();

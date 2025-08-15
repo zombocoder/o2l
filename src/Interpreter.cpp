@@ -12,6 +12,7 @@
 #include "Common/Exceptions.hpp"
 #include "Runtime/ListInstance.hpp"
 #include "Runtime/ObjectInstance.hpp"
+#include "Runtime/FFILibrary.hpp"
 
 namespace o2l {
 
@@ -159,6 +160,10 @@ void Interpreter::setProgramArguments(const std::vector<std::string>& args) {
 
     // Store in global context with a special name
     global_context_.defineVariable("__program_args__", Value(args_list));
+}
+
+void Interpreter::setFFIEnabled(bool enabled) {
+    FFILibrary::setFFIEnabled(enabled);
 }
 
 }  // namespace o2l

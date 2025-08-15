@@ -31,6 +31,7 @@ class Parser {
     ASTNodePtr parseLogicalExpression();
     ASTNodePtr parseBinaryExpression();
     ASTNodePtr parseComparisonExpression();
+    ASTNodePtr parseUnaryExpression();
     ASTNodePtr parsePrimaryExpression();
     ASTNodePtr parseAtomicExpression();
     ASTNodePtr parseObjectDeclaration();

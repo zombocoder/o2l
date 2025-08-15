@@ -1,0 +1,17 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI Result type...")
+        
+        # Try calling ffi.load and check what type we get back
+        libResult: Value = ffi.load("nonexistent.so")
+        
+        # Try calling isSuccess without the NOT operator to see what we get
+        success: Value = libResult.isSuccess()
+        io.print("isSuccess returned something {%o}", success)
+        
+        return 0
+    }
+}

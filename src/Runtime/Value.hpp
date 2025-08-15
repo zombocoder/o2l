@@ -26,6 +26,12 @@ class SetIterator;
 class ErrorInstance;
 class ResultInstance;
 
+// FFI forward declarations
+namespace ffi {
+class PtrInstance;
+class CBufferInstance;
+}
+
 // Built-in immutable types
 using Text = std::string;
 using Int = long long;
@@ -74,7 +80,8 @@ struct Value
                           std::shared_ptr<MapInstance>, std::shared_ptr<MapIterator>,
                           std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
                           std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
-                          std::shared_ptr<ResultInstance>, ValueList, ValueMap, ValueOptional> {
+                          std::shared_ptr<ResultInstance>, std::shared_ptr<ffi::PtrInstance>,
+                          std::shared_ptr<ffi::CBufferInstance>, ValueList, ValueMap, ValueOptional> {
     using variant::variant;
 };
 

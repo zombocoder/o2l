@@ -126,6 +126,10 @@ set(SOURCES
     src/Runtime/ResultInstance.cpp
     src/Runtime/NativeLibrary.cpp
     src/Runtime/DynamicLibraryManager.cpp
+    src/Runtime/FFILibrary.cpp
+    src/Runtime/FFI/SharedLibrary.cpp
+    src/Runtime/FFI/FFITypes.cpp
+    src/Runtime/FFI/FFIEngine.cpp
     src/Common/Exceptions.cpp
 )
 
@@ -192,6 +196,10 @@ set(HEADERS
     src/Runtime/SetIterator.hpp
     src/Runtime/NativeLibrary.hpp
     src/Runtime/DynamicLibraryManager.hpp
+    src/Runtime/FFILibrary.hpp
+    src/Runtime/FFI/SharedLibrary.hpp
+    src/Runtime/FFI/FFITypes.hpp
+    src/Runtime/FFI/FFIEngine.hpp
     src/Common/Exceptions.hpp
 )
 
@@ -205,6 +213,21 @@ set_target_properties(o2l PROPERTIES
 
 # Include directories
 target_include_directories(o2l PRIVATE src)
+
+# Find and link libffi
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+    pkg_check_modules(FFI libffi)
+    if(FFI_FOUND)
+        target_include_directories(o2l PRIVATE ${FFI_INCLUDE_DIRS})
+        target_link_libraries(o2l ${FFI_LIBRARIES})
+        target_compile_definitions(o2l PRIVATE HAVE_FFI=1)
+    else()
+        message(WARNING "libffi not found - FFI will use minimal fallback")
+    endif()
+else()
+    message(WARNING "pkg-config not found - FFI will use minimal fallback")
+endif()
 
 # Platform-specific linking for dynamic library support
 if(WIN32)

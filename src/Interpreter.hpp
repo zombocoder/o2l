@@ -40,6 +40,9 @@ class Interpreter {
     // Set program arguments for system.os.args
     void setProgramArguments(const std::vector<std::string>& args);
 
+    // Enable/disable FFI
+    void setFFIEnabled(bool enabled);
+
    private:
     // Generate main namespace from filename
     std::string generateMainNamespace() const;

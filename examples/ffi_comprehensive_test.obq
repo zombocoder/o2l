@@ -1,0 +1,174 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing comprehensive FFI functionality...")
+        
+        # Load our test library
+        libpath: Text = "/Users/zombocoder/dev/zombocoder/o2l/simple_lib_bundle.bundle"
+        io.print("Loading library: %s", libpath)
+        
+        libResult: Result<Value, Error> = ffi.load(libpath)
+        success: Bool = libResult.isSuccess()
+        if (success == false) {
+            error: Value = libResult.getError()
+            io.print("Failed to load library: %s", error.getMessage())
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        io.print("Library loaded successfully!")
+        
+        # Test 1: Integer arithmetic (i32,i32->i32)
+        io.print("\\n=== Test 1: Integer arithmetic ===")
+        addResult: Result<Value, Error> = lib.symbol("_test_add", "i32,i32->i32")
+        addSuccess: Bool = addResult.isSuccess()
+        if (addSuccess == false) {
+            error: Value = addResult.getError()
+            io.print("Failed to get test_add: %s", error.getMessage())
+            return 1
+        }
+        
+        addFn: Value = addResult.getResult()
+        addCallResult: Result<Value, Error> = addFn.call(15, 27)
+        addCallSuccess: Bool = addCallResult.isSuccess()
+        if (addCallSuccess == false) {
+            error: Value = addCallResult.getError()
+            io.print("Failed to call test_add: %s", error.getMessage())
+            return 1
+        }
+        
+        addResultValue: Value = addCallResult.getResult()
+        io.print("test_add(15, 27) = %s", addResultValue.toString())
+        
+        # Test 2: No-argument function (->i32)
+        io.print("\\n=== Test 2: No-argument function ===")
+        magicResult: Result<Value, Error> = lib.symbol("_test_magic", "->i32")
+        magicSuccess: Bool = magicResult.isSuccess()
+        if (magicSuccess == false) {
+            error: Value = magicResult.getError()
+            io.print("Failed to get test_magic: %s", error.getMessage())
+            return 1
+        }
+        
+        magicFn: Value = magicResult.getResult()
+        magicCallResult: Result<Value, Error> = magicFn.call()
+        magicCallSuccess: Bool = magicCallResult.isSuccess()
+        if (magicCallSuccess == false) {
+            error: Value = magicCallResult.getError()
+            io.print("Failed to call test_magic: %s", error.getMessage())
+            return 1
+        }
+        
+        magicResultValue: Value = magicCallResult.getResult()
+        io.print("test_magic() = %s", magicResultValue.toString())
+        
+        # Test 3: Double precision floating point (f64,f64->f64)
+        io.print("\\n=== Test 3: Double precision math ===")
+        mulDoubleResult: Result<Value, Error> = lib.symbol("_test_multiply_doubles", "f64,f64->f64")
+        mulDoubleSuccess: Bool = mulDoubleResult.isSuccess()
+        if (mulDoubleSuccess == false) {
+            error: Value = mulDoubleResult.getError()
+            io.print("Failed to get test_multiply_doubles: %s", error.getMessage())
+            return 1
+        }
+        
+        mulDoubleFn: Value = mulDoubleResult.getResult()
+        pi: Double = 3.14
+        two: Double = 2.0
+        mulDoubleCallResult: Result<Value, Error> = mulDoubleFn.call(pi, two)
+        mulDoubleCallSuccess: Bool = mulDoubleCallResult.isSuccess()
+        if (mulDoubleCallSuccess == false) {
+            error: Value = mulDoubleCallResult.getError()
+            io.print("Failed to call test_multiply_doubles: %s", error.getMessage())
+            return 1
+        }
+        
+        mulDoubleResultValue: Value = mulDoubleCallResult.getResult()
+        io.print("test_multiply_doubles(3.14, 2.0) = %s", mulDoubleResultValue.toString())
+        
+        # Test 4: Single precision floating point (f32,f32->f32)
+        io.print("\\n=== Test 4: Single precision math ===")
+        mulFloatResult: Result<Value, Error> = lib.symbol("_test_multiply_floats", "f32,f32->f32")
+        mulFloatSuccess: Bool = mulFloatResult.isSuccess()
+        if (mulFloatSuccess == false) {
+            error: Value = mulFloatResult.getError()
+            io.print("Failed to get test_multiply_floats: %s", error.getMessage())
+            return 1
+        }
+        
+        mulFloatFn: Value = mulFloatResult.getResult()
+        # Note: O²L defaults to Double for decimal literals, so we need explicit conversion
+        floatA: Float = 2.5.toFloat()
+        floatB: Float = 4.0.toFloat()
+        mulFloatCallResult: Result<Value, Error> = mulFloatFn.call(floatA, floatB)
+        mulFloatCallSuccess: Bool = mulFloatCallResult.isSuccess()
+        if (mulFloatCallSuccess == false) {
+            error: Value = mulFloatCallResult.getError()
+            io.print("Failed to call test_multiply_floats: %s", error.getMessage())
+            return 1
+        }
+        
+        mulFloatResultValue: Value = mulFloatCallResult.getResult()
+        io.print("test_multiply_floats(2.5, 4.0) = %s", mulFloatResultValue.toString())
+        
+        # Test 5: Boolean return (i32->bool) 
+        io.print("\\n=== Test 5: Boolean function ===")
+        boolResult: Result<Value, Error> = lib.symbol("_test_is_positive", "i32->i32")
+        boolSuccess: Bool = boolResult.isSuccess()
+        if (boolSuccess == false) {
+            error: Value = boolResult.getError()
+            io.print("Failed to get test_is_positive: %s", error.getMessage())
+            return 1
+        }
+        
+        boolFn: Value = boolResult.getResult()
+        boolCallResult1: Result<Value, Error> = boolFn.call(5)
+        boolCallSuccess1: Bool = boolCallResult1.isSuccess()
+        if (boolCallSuccess1 == false) {
+            error: Value = boolCallResult1.getError()
+            io.print("Failed to call test_is_positive(5): %s", error.getMessage())
+            return 1
+        }
+        
+        boolResultValue1: Value = boolCallResult1.getResult()
+        io.print("test_is_positive(5) = %s", boolResultValue1.toString())
+        
+        boolCallResult2: Result<Value, Error> = boolFn.call(-3)
+        boolCallSuccess2: Bool = boolCallResult2.isSuccess()
+        if (boolCallSuccess2 == false) {
+            error: Value = boolCallResult2.getError()
+            io.print("Failed to call test_is_positive(-3): %s", error.getMessage())
+            return 1
+        }
+        
+        boolResultValue2: Value = boolCallResult2.getResult()
+        io.print("test_is_positive(-3) = %s", boolResultValue2.toString())
+        
+        # Test 6: Void function (i32->void)
+        io.print("\\n=== Test 6: Void function ===")
+        voidResult: Result<Value, Error> = lib.symbol("_test_print_number", "i32->void")
+        voidSuccess: Bool = voidResult.isSuccess()
+        if (voidSuccess == false) {
+            error: Value = voidResult.getError()
+            io.print("Failed to get test_print_number: %s", error.getMessage())
+            return 1
+        }
+        
+        voidFn: Value = voidResult.getResult()
+        voidCallResult: Result<Value, Error> = voidFn.call(123)
+        voidCallSuccess: Bool = voidCallResult.isSuccess()
+        if (voidCallSuccess == false) {
+            error: Value = voidCallResult.getError()
+            io.print("Failed to call test_print_number: %s", error.getMessage())
+            return 1
+        }
+        
+        voidResultValue: Value = voidCallResult.getResult()
+        io.print("test_print_number(123) completed (void function)")
+        
+        io.print("\\n=== All FFI tests completed successfully! ===")
+        return 0
+    }
+}

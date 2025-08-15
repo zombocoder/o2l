@@ -17,6 +17,7 @@
 #include "ResultInstance.hpp"
 #include "SetInstance.hpp"
 #include "SetIterator.hpp"
+#include "FFI/FFITypes.hpp"
 
 // Helper function to convert Long (__int128) to string
 std::string longToString(o2l::Long value) {
@@ -93,6 +94,10 @@ std::string valueToString(const Value& value) {
                 return v->toString();
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
                 return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::PtrInstance>>) {
+                return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
+                return v->toString();
             } else {
                 return "UnknownValue";
             }
@@ -147,6 +152,10 @@ std::string getTypeName(const Value& value) {
                 return "Error";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
                 return "Result<" + v->getValueTypeName() + ", " + v->getErrorTypeName() + ">";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::PtrInstance>>) {
+                return "Ptr<Void>";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
+                return "CBuffer";
             } else {
                 return "Unknown";
             }

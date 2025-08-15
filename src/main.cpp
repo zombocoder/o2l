@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
         std::cout << "  parse <file>   Parse file and output AST (for LSP/tooling)\n";
         std::cout << "  repl           Start interactive Read-Eval-Print Loop\n";
         std::cout << "  --debug        Enable debug output (use with run command)\n";
+        std::cout << "  --allow-ffi    Enable Foreign Function Interface (FFI) support\n";
         std::cout << "  --json-output  Output in JSON format (use with parse command)\n";
         std::cout << "  --help         Show this help message\n";
         std::cout << "  --version      Show version information\n";
@@ -109,6 +110,8 @@ int main(int argc, char* argv[]) {
 
     if (command == "run") {
         std::string filename;
+        bool debug_mode = false;
+        bool ffi_enabled = false;
 
         if (argc < 3) {
             // No file specified, check for o2l.toml
@@ -129,7 +132,22 @@ int main(int argc, char* argv[]) {
                                 size_t end = value.find_last_not_of(" \t\"");
                                 if (start != std::string::npos && end != std::string::npos) {
                                     filename = value.substr(start, end - start + 1);
-                                    break;
+                                }
+                            }
+                        }
+                        // Simple TOML parsing for allow-ffi field
+                        else if (line.find("allow-ffi") != std::string::npos &&
+                                 line.find("=") != std::string::npos) {
+                            size_t eq_pos = line.find("=");
+                            if (eq_pos != std::string::npos) {
+                                std::string value = line.substr(eq_pos + 1);
+                                // Remove whitespace
+                                size_t start = value.find_first_not_of(" \t");
+                                if (start != std::string::npos) {
+                                    std::string bool_val = value.substr(start);
+                                    if (bool_val.starts_with("true")) {
+                                        ffi_enabled = true;
+                                    }
                                 }
                             }
                         }
@@ -152,7 +170,6 @@ int main(int argc, char* argv[]) {
         } else {
             filename = argv[2];
         }
-        bool debug_mode = false;
         std::vector<std::string> program_args;
 
         // Add the program name (filename) as argv[0] - following C/C++ convention
@@ -165,6 +182,8 @@ int main(int argc, char* argv[]) {
         for (int i = start_idx; i < argc; ++i) {
             if (std::string(argv[i]) == "--debug") {
                 debug_mode = true;
+            } else if (std::string(argv[i]) == "--allow-ffi") {
+                ffi_enabled = true;
             } else {
                 // All other arguments are passed to the program
                 program_args.push_back(std::string(argv[i]));
@@ -234,6 +253,9 @@ int main(int argc, char* argv[]) {
 
             // Set program arguments so they can be accessed via system.os.args
             interpreter.setProgramArguments(program_args);
+            
+            // Enable FFI if requested
+            interpreter.setFFIEnabled(ffi_enabled);
 
             // Add the source file's directory to module search paths for relative imports
             std::filesystem::path source_dir = std::filesystem::path(filename).parent_path();

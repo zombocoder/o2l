@@ -1,0 +1,51 @@
+import ffi
+import system.io
+
+Object Main {
+    @external method main(): Int {
+        io.print("Testing FFI double precision...")
+        
+        # Load our test library
+        libpath: Text = "/Users/zombocoder/dev/zombocoder/o2l/simple_lib_bundle.bundle"
+        libResult: Result<Value, Error> = ffi.load(libpath)
+        success: Bool = libResult.isSuccess()
+        if (success == false) {
+            error: Value = libResult.getError()
+            io.print("Failed to load library: %s", error.getMessage())
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        io.print("Library loaded successfully!")
+        
+        # Test double precision function
+        mulDoubleResult: Result<Value, Error> = lib.symbol("_test_multiply_doubles", "f64,f64->f64")
+        mulDoubleSuccess: Bool = mulDoubleResult.isSuccess()
+        if (mulDoubleSuccess == false) {
+            error: Value = mulDoubleResult.getError()
+            io.print("Failed to get test_multiply_doubles: %s", error.getMessage())
+            return 1
+        }
+        
+        mulDoubleFn: Value = mulDoubleResult.getResult()
+        io.print("Got double function successfully!")
+        
+        # Try calling with simple values
+        pi: Double = 3.14
+        two: Double = 2.0
+        
+        io.print("Calling test_multiply_doubles...")
+        mulDoubleCallResult: Result<Value, Error> = mulDoubleFn.call(pi, two)
+        mulDoubleCallSuccess: Bool = mulDoubleCallResult.isSuccess()
+        if (mulDoubleCallSuccess == false) {
+            error: Value = mulDoubleCallResult.getError()
+            io.print("Failed to call test_multiply_doubles: %s", error.getMessage())
+            return 1
+        }
+        
+        mulDoubleResultValue: Value = mulDoubleCallResult.getResult()
+        io.print("test_multiply_doubles result: %s", mulDoubleResultValue.toString())
+        
+        return 0
+    }
+}

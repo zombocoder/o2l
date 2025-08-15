@@ -1511,6 +1511,74 @@ Value MethodCallNode::evaluate(Context& context) {
             }
         }
 
+        // Check if it's a Double
+        if (std::holds_alternative<Double>(object_value)) {
+            auto double_value = std::get<Double>(object_value);
+
+            if (method_name_ == "toString") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.toString() takes no arguments", context);
+                }
+                return Text(std::to_string(double_value));
+            } else if (method_name_ == "toInt") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.toInt() takes no arguments", context);
+                }
+                if (std::isnan(double_value) || std::isinf(double_value)) {
+                    throw EvaluationError("Cannot convert NaN or Infinity to Int", context);
+                }
+                if (double_value > std::numeric_limits<int>::max() ||
+                    double_value < std::numeric_limits<int>::min()) {
+                    throw EvaluationError(
+                        "Double value " + std::to_string(double_value) + " out of Int range",
+                        context);
+                }
+                return Int(static_cast<int>(double_value));
+            } else if (method_name_ == "toLong") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.toLong() takes no arguments", context);
+                }
+                if (std::isnan(double_value) || std::isinf(double_value)) {
+                    throw EvaluationError("Cannot convert NaN or Infinity to Long", context);
+                }
+                if (double_value > std::numeric_limits<long>::max() ||
+                    double_value < std::numeric_limits<long>::min()) {
+                    throw EvaluationError(
+                        "Double value " + std::to_string(double_value) + " out of Long range",
+                        context);
+                }
+                return Long(static_cast<long>(double_value));
+            } else if (method_name_ == "toFloat") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.toFloat() takes no arguments", context);
+                }
+                return Float(static_cast<float>(double_value));
+            } else if (method_name_ == "toBool") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.toBool() takes no arguments", context);
+                }
+                return Bool(double_value != 0.0);
+            } else if (method_name_ == "isNaN") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.isNaN() takes no arguments", context);
+                }
+                return Bool(std::isnan(double_value));
+            } else if (method_name_ == "isInfinite") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.isInfinite() takes no arguments", context);
+                }
+                return Bool(std::isinf(double_value));
+            } else if (method_name_ == "isFinite") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Double.isFinite() takes no arguments", context);
+                }
+                return Bool(std::isfinite(double_value));
+            } else {
+                throw EvaluationError("Unknown method '" + method_name_ + "' on Double type",
+                                      context);
+            }
+        }
+
         // Check if it's a Bool
         if (std::holds_alternative<Bool>(object_value)) {
             auto bool_value = std::get<Bool>(object_value);
