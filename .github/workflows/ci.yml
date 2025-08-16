@@ -38,7 +38,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libcurl4-openssl-dev gcc-13 g++-13
+          sudo apt-get install -y build-essential cmake ninja-build libgtest-dev libcurl4-openssl-dev gcc-13 g++-13 libffi-dev pkg-config
           # Build and install Google Test
           cd /usr/src/gtest
           sudo cmake CMakeLists.txt
@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install cmake ninja googletest
+          brew install cmake ninja googletest libffi pkg-config
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
@@ -120,7 +120,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libgtest-dev clang-tidy libcurl4-openssl-dev
+          sudo apt-get install -y build-essential cmake libgtest-dev clang-tidy libcurl4-openssl-dev libffi-dev pkg-config
 
       - name: Check code formatting
         run: |
@@ -160,7 +160,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libgtest-dev libcurl4-openssl-dev gcc-13 g++-13
+          sudo apt-get install -y build-essential cmake libgtest-dev libcurl4-openssl-dev gcc-13 g++-13 libffi-dev pkg-config
 
       - name: Build Release
         run: |
