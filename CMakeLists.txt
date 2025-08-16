@@ -231,7 +231,8 @@ endif()
 
 # Platform-specific linking for dynamic library support
 if(WIN32)
-    # Windows doesn't need explicit linking for LoadLibrary/GetProcAddress
+    # Windows linking for system libraries
+    target_link_libraries(o2l wininet ws2_32)
 elseif(APPLE)
     # macOS
     target_link_libraries(o2l ${CMAKE_DL_LIBS})
