@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 #include <cstdlib>
 #include <iostream>
