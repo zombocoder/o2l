@@ -130,7 +130,7 @@ void DynamicLibraryManager::unloadDynamicLibrary(void* handle) {
 
 void* DynamicLibraryManager::getSymbol(void* handle, const std::string& symbol_name) {
 #ifdef _WIN32
-    void* symbol = GetProcAddress(static_cast<HMODULE>(handle), symbol_name.c_str());
+    void* symbol = reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(handle), symbol_name.c_str()));
 #else
     void* symbol = dlsym(handle, symbol_name.c_str());
 #endif

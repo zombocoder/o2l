@@ -70,7 +70,7 @@ void* SharedLibrary::symbol(std::string_view name) const noexcept {
     }
 
 #ifdef _WIN32
-    return GetProcAddress(handle_, name.data());
+    return reinterpret_cast<void*>(GetProcAddress(handle_, name.data()));
 #else
     // Clear any previous dlerror
     dlerror();
