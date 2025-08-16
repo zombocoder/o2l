@@ -224,7 +224,7 @@ std::string O2LFormatter::break_up_oneliners(const std::string& line) {
     result = std::regex_replace(result, std::regex("\\n\\s*\\n\\s*\\n+"), "\n\n");
     
     // Restore string literals
-    for (int i = 0; i < strings.size(); i++) {
+    for (size_t i = 0; i < strings.size(); i++) {
         std::string placeholder = "STRING_PLACEHOLDER_" + std::to_string(i);
         result = std::regex_replace(result, std::regex(placeholder), strings[i]);
     }

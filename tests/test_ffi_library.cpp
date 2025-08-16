@@ -15,6 +15,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <cstring>
 #include "../src/Runtime/FFILibrary.hpp"
 #include "../src/Runtime/FFI/FFITypes.hpp"
 #include "../src/Runtime/Context.hpp"

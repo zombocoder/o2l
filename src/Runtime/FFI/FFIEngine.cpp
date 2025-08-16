@@ -61,6 +61,10 @@ PreparedCall::PreparedCall(Signature sig)
             break;
         case CType::Text:
         case CType::Ptr:
+        case CType::Struct:
+        case CType::Array:
+        case CType::Callback:
+        case CType::CString:
             impl->return_type = &ffi_type_pointer;
             break;
     }
@@ -89,6 +93,10 @@ PreparedCall::PreparedCall(Signature sig)
                 break;
             case CType::Text:
             case CType::Ptr:
+            case CType::Struct:
+            case CType::Array:
+            case CType::Callback:
+            case CType::CString:
                 ffi_type = &ffi_type_pointer;
                 break;
         }
@@ -177,6 +185,10 @@ std::expected<Value, FFICallError> FFIEngine::call(void* func_ptr, const Signatu
             break;
         case CType::Text:
         case CType::Ptr:
+        case CType::Struct:
+        case CType::Array:
+        case CType::Callback:
+        case CType::CString:
             result_storage = &result_ptr;
             break;
     }
@@ -387,6 +399,13 @@ std::expected<void*, FFICallError> FFIEngine::marshalValue(
                 FFICallError{FFICallError::TypeMismatch, "Expected Ptr for ptr parameter"});
         }
 
+        case CType::Struct:
+        case CType::Array:
+        case CType::Callback:
+        case CType::CString:
+            // These are handled the same as Ptr - all become pointer types
+            return marshalValue(value, CType::Ptr, storage);
+
         case CType::Void:
             return std::unexpected(
                 FFICallError{FFICallError::TypeMismatch, "Cannot marshal value to void"});
@@ -431,7 +450,11 @@ std::expected<Value, FFICallError> FFIEngine::unmarshalValue(void* result, CType
             return Value(Text(str));
         }
 
-        case CType::Ptr: {
+        case CType::Ptr:
+        case CType::Struct:
+        case CType::Array:
+        case CType::Callback:
+        case CType::CString: {
             void* ptr = *static_cast<void**>(result);
             // Create a PtrInstance for proper pointer handling
             auto ptr_instance = std::make_shared<ffi::PtrInstance>(ptr);

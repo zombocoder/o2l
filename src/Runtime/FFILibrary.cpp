@@ -23,6 +23,7 @@
 #include "../Common/Exceptions.hpp"
 
 #include <filesystem>
+#include <cstring>
 #include <iostream>
 
 namespace o2l {

@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cstring>
 #include "../Value.hpp"
 
 namespace o2l::ffi {
