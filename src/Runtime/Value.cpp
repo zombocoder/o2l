@@ -98,6 +98,12 @@ std::string valueToString(const Value& value) {
                 return v->toString();
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
                 return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CStructInstance>>) {
+                return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CArrayInstance>>) {
+                return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CCallbackInstance>>) {
+                return v->toString();
             } else {
                 return "UnknownValue";
             }
@@ -156,6 +162,12 @@ std::string getTypeName(const Value& value) {
                 return "Ptr<Void>";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
                 return "CBuffer";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CStructInstance>>) {
+                return "CStruct";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CArrayInstance>>) {
+                return "CArray";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CCallbackInstance>>) {
+                return "CCallback";
             } else {
                 return "Unknown";
             }

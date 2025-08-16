@@ -49,6 +49,9 @@ class TypeConversionTest : public ::testing::Test {
         } else if (std::holds_alternative<Float>(object_value)) {
             Float float_value = std::get<Float>(object_value);
             return evaluateFloatMethod(float_value, method_name, args);
+        } else if (std::holds_alternative<Double>(object_value)) {
+            Double double_value = std::get<Double>(object_value);
+            return evaluateDoubleMethod(double_value, method_name, args);
         } else if (std::holds_alternative<Bool>(object_value)) {
             Bool bool_value = std::get<Bool>(object_value);
             return evaluateBoolMethod(bool_value, method_name, args);
@@ -270,6 +273,67 @@ class TypeConversionTest : public ::testing::Test {
         }
 
         throw EvaluationError("Unknown method '" + method_name + "' on Float type", *context);
+    }
+
+    // Simulate Double method evaluation
+    Value evaluateDoubleMethod(const Double& double_value, const std::string& method_name,
+                               const std::vector<Value>& args) {
+        if (method_name == "toString") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.toString() takes no arguments", *context);
+            }
+            return Text(std::to_string(double_value));
+        } else if (method_name == "toInt") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.toInt() takes no arguments", *context);
+            }
+            if (std::isnan(double_value) || std::isinf(double_value)) {
+                throw EvaluationError("Cannot convert NaN or Infinity to Int", *context);
+            }
+            if (double_value > std::numeric_limits<int>::max() ||
+                double_value < std::numeric_limits<int>::min()) {
+                throw EvaluationError("Double value out of range for Int conversion", *context);
+            }
+            return Int(static_cast<int>(double_value));
+        } else if (method_name == "toLong") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.toLong() takes no arguments", *context);
+            }
+            if (std::isnan(double_value) || std::isinf(double_value)) {
+                throw EvaluationError("Cannot convert NaN or Infinity to Long", *context);
+            }
+            return Long(static_cast<long long>(double_value));
+        } else if (method_name == "toFloat") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.toFloat() takes no arguments", *context);
+            }
+            return Float(static_cast<float>(double_value));
+        } else if (method_name == "toBool") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.toBool() takes no arguments", *context);
+            }
+            if (std::isnan(double_value)) {
+                return Bool(false);
+            }
+            return Bool(double_value != 0.0);
+        } else if (method_name == "isNaN") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.isNaN() takes no arguments", *context);
+            }
+            return Bool(std::isnan(double_value));
+        } else if (method_name == "isInfinite") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.isInfinite() takes no arguments", *context);
+            }
+            return Bool(std::isinf(double_value));
+        } else if (method_name == "isFinite") {
+            if (!args.empty()) {
+                throw EvaluationError("Double.isFinite() takes no arguments", *context);
+            }
+            return Bool(std::isfinite(double_value));
+        }
+
+        throw EvaluationError("Unknown method '" + method_name + "' on Double type", *context);
     }
 
     // Simulate Bool method evaluation
@@ -679,6 +743,173 @@ TEST_F(TypeConversionTest, FloatSpecialMethods) {
     result = callMethodOnValue(Float(std::numeric_limits<float>::quiet_NaN()), "isFinite");
     ASSERT_TRUE(std::holds_alternative<Bool>(result));
     EXPECT_FALSE(std::get<Bool>(result));
+}
+
+//=============================================================================
+// Double Conversion Tests  
+//=============================================================================
+
+TEST_F(TypeConversionTest, DoubleToStringConversion) {
+    Value result = callMethodOnValue(Double(3.14159), "toString");
+    ASSERT_TRUE(std::holds_alternative<Text>(result));
+    // Note: toString output format may vary, just check it contains expected digits
+    std::string result_str = std::get<Text>(result);
+    EXPECT_FALSE(result_str.empty());
+    EXPECT_TRUE(result_str.find("3.14") != std::string::npos);
+
+    result = callMethodOnValue(Double(-2.71828), "toString");
+    ASSERT_TRUE(std::holds_alternative<Text>(result));
+    result_str = std::get<Text>(result);
+    EXPECT_FALSE(result_str.empty());
+    EXPECT_TRUE(result_str.find("-2.7") != std::string::npos);
+
+    // Test zero
+    result = callMethodOnValue(Double(0.0), "toString");
+    ASSERT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "0.000000");
+}
+
+TEST_F(TypeConversionTest, DoubleToIntConversion) {
+    // Basic conversion (truncates)
+    Value result = callMethodOnValue(Double(3.14159), "toInt");
+    ASSERT_TRUE(std::holds_alternative<Int>(result));
+    EXPECT_EQ(std::get<Int>(result), 3);
+
+    result = callMethodOnValue(Double(-2.71828), "toInt");
+    ASSERT_TRUE(std::holds_alternative<Int>(result));
+    EXPECT_EQ(std::get<Int>(result), -2);
+
+    // Whole number
+    result = callMethodOnValue(Double(42.0), "toInt");
+    ASSERT_TRUE(std::holds_alternative<Int>(result));
+    EXPECT_EQ(std::get<Int>(result), 42);
+
+    // Large value within int range
+    result = callMethodOnValue(Double(1000000.0), "toInt");
+    ASSERT_TRUE(std::holds_alternative<Int>(result));
+    EXPECT_EQ(std::get<Int>(result), 1000000);
+}
+
+TEST_F(TypeConversionTest, DoubleToIntConversionErrors) {
+    // NaN conversion should fail
+    EXPECT_THROW(callMethodOnValue(Double(std::numeric_limits<double>::quiet_NaN()), "toInt"),
+                 EvaluationError);
+
+    // Infinity conversion should fail
+    EXPECT_THROW(callMethodOnValue(Double(std::numeric_limits<double>::infinity()), "toInt"),
+                 EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(-std::numeric_limits<double>::infinity()), "toInt"),
+                 EvaluationError);
+
+    // Out of range
+    Double large_double = static_cast<Double>(std::numeric_limits<int>::max()) * 2.0;
+    EXPECT_THROW(callMethodOnValue(large_double, "toInt"), EvaluationError);
+}
+
+TEST_F(TypeConversionTest, DoubleToLongConversion) {
+    Value result = callMethodOnValue(Double(3.14159), "toLong");
+    ASSERT_TRUE(std::holds_alternative<Long>(result));
+    EXPECT_EQ(std::get<Long>(result), 3LL);
+
+    // Large double value
+    result = callMethodOnValue(Double(9876543210.123), "toLong");
+    ASSERT_TRUE(std::holds_alternative<Long>(result));
+    EXPECT_EQ(std::get<Long>(result), 9876543210LL);
+
+    // NaN and infinity should fail
+    EXPECT_THROW(callMethodOnValue(Double(std::numeric_limits<double>::quiet_NaN()), "toLong"),
+                 EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(std::numeric_limits<double>::infinity()), "toLong"),
+                 EvaluationError);
+}
+
+TEST_F(TypeConversionTest, DoubleToFloatConversion) {
+    Value result = callMethodOnValue(Double(3.14159), "toFloat");
+    ASSERT_TRUE(std::holds_alternative<Float>(result));
+    EXPECT_NEAR(std::get<Float>(result), 3.14159f, 0.00001f);
+
+    // Test precision loss for very small values
+    result = callMethodOnValue(Double(0.123456789), "toFloat");
+    ASSERT_TRUE(std::holds_alternative<Float>(result));
+    EXPECT_NEAR(std::get<Float>(result), 0.123456789f, 0.000001f);
+}
+
+TEST_F(TypeConversionTest, DoubleToBoolConversion) {
+    // Non-zero is true
+    Value result = callMethodOnValue(Double(3.14159), "toBool");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(-2.71828), "toBool");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    // Very small non-zero value is still true
+    result = callMethodOnValue(Double(0.0000001), "toBool");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    // Zero is false
+    result = callMethodOnValue(Double(0.0), "toBool");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+
+    // NaN is false
+    result = callMethodOnValue(Double(std::numeric_limits<double>::quiet_NaN()), "toBool");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+}
+
+TEST_F(TypeConversionTest, DoubleSpecialMethods) {
+    // isNaN
+    Value result = callMethodOnValue(Double(3.14159), "isNaN");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(std::numeric_limits<double>::quiet_NaN()), "isNaN");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    // isInfinite
+    result = callMethodOnValue(Double(3.14159), "isInfinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(std::numeric_limits<double>::infinity()), "isInfinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(-std::numeric_limits<double>::infinity()), "isInfinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    // isFinite
+    result = callMethodOnValue(Double(3.14159), "isFinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_TRUE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(std::numeric_limits<double>::infinity()), "isFinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+
+    result = callMethodOnValue(Double(std::numeric_limits<double>::quiet_NaN()), "isFinite");
+    ASSERT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_FALSE(std::get<Bool>(result));
+}
+
+TEST_F(TypeConversionTest, DoubleMethodArgumentValidation) {
+    // Double methods should not accept arguments
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "toString", {Int(1)}), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "toInt", {Text("extra")}), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "isNaN", {Bool(true)}), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "isInfinite", {Float(1.0f)}), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "isFinite", {Long(1)}), EvaluationError);
+}
+
+TEST_F(TypeConversionTest, DoubleUnknownMethodErrors) {
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "unknownMethod"), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "invalidMethod"), EvaluationError);
+    EXPECT_THROW(callMethodOnValue(Double(3.14), "badMethod"), EvaluationError);
 }
 
 //=============================================================================

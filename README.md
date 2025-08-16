@@ -1,11 +1,12 @@
 # 🌟 O²L Programming Language
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-338%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-48-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-445%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-48-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
 
 **O²L** is a modern object-oriented programming language that balances pure object-oriented design with practical programming constructs. Built with C++23, O²L eliminates primitives and null values while providing essential control flow like while loops, comprehensive arithmetic operations, and extensive string manipulation capabilities for real-world programming needs.
 
 ### 🆕 **Latest Features**
 
+- **🔗 Enhanced Foreign Function Interface (FFI)**: Complete FFI system with advanced type support, SQLite integration, and comprehensive C library interoperability
 - **🌐 HTTP Client Library**: Complete `http.client` library with 30+ methods, multipart file upload, platform-specific implementations (Windows/Linux/macOS), and cross-platform libcurl fallback
 - **🔄 JSON Library**: Revolutionary `json` library with 30+ methods including auto-detection parsing, fixed path navigation bug, and seamless native Map/List integration
 - **🌐 URL Library**: Complete `url` library with 26 methods for URL parsing, construction, manipulation, and validation
@@ -2494,6 +2495,253 @@ Object UtilsDemo {
   - `RepeatIterator.getCurrentCount(): Int` - Get current iteration index
   - `RepeatIterator.getTotalCount(): Int` - Get total iteration count
 
+### **Foreign Function Interface (FFI) Library**
+
+O²L provides a comprehensive Foreign Function Interface (FFI) system that enables seamless integration with C libraries and native code. The FFI system is built on libffi and supports advanced type marshaling, including structs, arrays, callbacks, and pointer conversions.
+
+#### **Basic FFI Usage**
+
+```obq
+import ffi
+import system.io
+
+Object FFIExample {
+    @external method basicExample(): Int {
+        # Load a shared library
+        libResult: Result<Value, Error> = ffi.load("/usr/lib/libm.so")
+        if (!libResult.isSuccess()) {
+            io.print("Failed to load math library")
+            return 1
+        }
+        
+        lib: Value = libResult.getResult()
+        
+        # Get a function symbol
+        sqrtResult: Result<Value, Error> = lib.symbol("sqrt", "f64->f64")
+        if (!sqrtResult.isSuccess()) {
+            io.print("Failed to get sqrt function")
+            return 1
+        }
+        
+        sqrtFunc: Value = sqrtResult.getResult()
+        
+        # Call the function
+        callResult: Result<Value, Error> = sqrtFunc.call(25.0)
+        if (!callResult.isSuccess()) {
+            io.print("Function call failed")
+            return 1
+        }
+        
+        result: Value = callResult.getResult()
+        io.print("sqrt(25.0) = %s", result.toString())
+        
+        return 0
+    }
+}
+```
+
+#### **Enhanced FFI Types**
+
+The FFI system supports advanced types for complex C library integration:
+
+```obq
+import ffi
+import system.io
+
+Object AdvancedFFIExample {
+    @external method demonstrateAdvancedTypes(): Int {
+        # Create C strings
+        cstrResult: Result<Value, Error> = ffi.cstring("Hello, C World!")
+        cstr: Value = cstrResult.getResult()
+        
+        # Create structs
+        structResult: Result<Value, Error> = ffi.struct(32)  # 32-byte struct
+        struct: Value = structResult.getResult()
+        
+        # Add fields to struct
+        struct.addField("id", "i32", 0)
+        struct.addField("name", "ptr", 8)
+        struct.addField("score", "f64", 16)
+        
+        # Set field values
+        struct.setField("id", 42)
+        struct.setField("name", cstr)
+        struct.setField("score", 95.5)
+        
+        # Create arrays
+        arrayResult: Result<Value, Error> = ffi.array("i32", 5)
+        array: Value = arrayResult.getResult()
+        
+        # Set array elements
+        i: Int = 0
+        while (i < 5) {
+            array.set(i, i * 10)
+            i = i + 1
+        }
+        
+        # Access array elements
+        firstElement: Value = array.get(0)
+        io.print("First array element: %s", firstElement.toString())
+        
+        return 0
+    }
+}
+```
+
+#### **Pointer Conversions**
+
+O²L FFI provides safe pointer conversion functions:
+
+```obq
+import ffi
+import system.io
+
+Object PointerExample {
+    @external method demonstratePointerConversions(): Int {
+        # Get a pointer from C function call
+        lib: Value = ffi.load("/usr/lib/libc.so").getResult()
+        mallocFunc: Value = lib.symbol("malloc", "u64->ptr").getResult()
+        
+        # Allocate memory
+        ptr: Value = mallocFunc.call(64).getResult()
+        
+        # Convert pointer to different types
+        stringResult: Result<Value, Error> = ffi.ptrToString(ptr)
+        intResult: Result<Value, Error> = ffi.ptrToInt(ptr)
+        doubleResult: Result<Value, Error> = ffi.ptrToDouble(ptr)
+        
+        if (stringResult.isSuccess()) {
+            text: Value = stringResult.getResult()
+            io.print("Pointer as string: %s", text)
+        }
+        
+        if (intResult.isSuccess()) {
+            number: Value = intResult.getResult()
+            io.print("Pointer as int: %s", number.toString())
+        }
+        
+        return 0
+    }
+}
+```
+
+#### **SQLite Integration Example**
+
+The FFI system enables seamless database integration:
+
+```obq
+import ffi
+import system.io
+
+Object SQLiteExample {
+    @external method sqliteDemo(): Int {
+        # Load SQLite library
+        lib: Value = ffi.load("/opt/homebrew/lib/libsqlite3.dylib").getResult()
+        
+        # Open database
+        openFunc: Value = lib.symbol("sqlite3_open", "ptr,ptr->i32").getResult()
+        dbPath: Value = ffi.cstring(":memory:").getResult()
+        dbHandleArray: Value = ffi.array("ptr", 1).getResult()
+        
+        openResult: Int = openFunc.call(dbPath, dbHandleArray).getResult().toInt()
+        if (openResult != 0) {
+            io.print("Failed to open database")
+            return 1
+        }
+        
+        dbHandle: Value = dbHandleArray.get(0)
+        
+        # Execute SQL
+        execFunc: Value = lib.symbol("sqlite3_exec", "ptr,ptr,ptr,ptr,ptr->i32").getResult()
+        createSQL: Value = ffi.cstring("CREATE TABLE users (id INTEGER, name TEXT)").getResult()
+        
+        execResult: Int = execFunc.call(dbHandle, createSQL, ffi.nullPtr(), ffi.nullPtr(), ffi.nullPtr()).getResult().toInt()
+        if (execResult == 0) {
+            io.print("Table created successfully")
+        }
+        
+        # Close database
+        closeFunc: Value = lib.symbol("sqlite3_close", "ptr->i32").getResult()
+        closeFunc.call(dbHandle)
+        
+        return 0
+    }
+}
+```
+
+#### **FFI Core Functions**
+
+**Library Management:**
+- `ffi.load(path: Text): Result<Value, Error>` - Load shared library
+- `library.symbol(name: Text, signature: Text): Result<Value, Error>` - Get function symbol
+- `function.call(...args): Result<Value, Error>` - Call C function
+
+**Type Creation:**
+- `ffi.cstring(text: Text): Result<Value, Error>` - Create null-terminated C string
+- `ffi.struct(size: Int): Result<Value, Error>` - Create struct with specified size
+- `ffi.array(type: Text, count: Int): Result<Value, Error>` - Create typed array
+- `ffi.nullPtr(): Value` - Create null pointer
+
+**Enhanced Type Operations:**
+- `struct.addField(name: Text, type: Text, offset: Int): Bool` - Add field to struct
+- `struct.setField(name: Text, value: Value): Bool` - Set field value
+- `struct.getField(name: Text): Value` - Get field value
+- `array.set(index: Int, value: Value): Bool` - Set array element
+- `array.get(index: Int): Value` - Get array element
+
+**Pointer Conversions:**
+- `ffi.ptrToString(ptr: Value): Result<Value, Error>` - Convert pointer to string
+- `ffi.ptrToInt(ptr: Value): Result<Value, Error>` - Convert pointer to integer
+- `ffi.ptrToDouble(ptr: Value): Result<Value, Error>` - Convert pointer to double
+- `ffi.ptrToFloat(ptr: Value): Result<Value, Error>` - Convert pointer to float
+- `ffi.ptrToBool(ptr: Value): Result<Value, Error>` - Convert pointer to boolean
+
+#### **Type Signatures**
+
+FFI functions use C-style type signatures:
+
+**Basic Types:**
+- `i8`, `i16`, `i32`, `i64` - Signed integers
+- `u8`, `u16`, `u32`, `u64` - Unsigned integers
+- `f32`, `f64` - Floating point
+- `ptr` - Pointer
+- `void` - No return value
+
+**Function Signatures:**
+- `"i32,i32->i32"` - Takes two int32, returns int32
+- `"ptr,f64->ptr"` - Takes pointer and double, returns pointer
+- `"->i32"` - No parameters, returns int32
+- `"ptr,ptr,i32,ptr,ptr->i32"` - Multiple parameters
+
+#### **Memory Management**
+
+The FFI system provides automatic memory management for O²L-created objects:
+
+- **Automatic Cleanup**: CBufferInstance, CArrayInstance, and CStructInstance objects are automatically cleaned up
+- **Safe Pointers**: PtrInstance objects provide safe pointer handling with null checking
+- **Result Types**: All FFI operations return Result<T, Error> for safe error handling
+- **Type Safety**: Enhanced types provide bounds checking and type validation
+
+#### **SQLite Library Integration**
+
+O²L includes a complete SQLite wrapper library (`lib/sqlite/`) demonstrating real-world FFI usage:
+
+```bash
+# Example SQLite library files
+lib/sqlite/
+├── test_sqlite_basic.obq       # Basic SQLite operations
+├── sqlite_wrapper.obq         # High-level wrapper functions
+├── fixed_wrapper.obq          # Production-ready wrapper
+└── test_ptr_conversions.obq    # Pointer conversion examples
+```
+
+The SQLite integration demonstrates:
+- Dynamic library loading and symbol resolution
+- Complex function calls with multiple parameters
+- Proper resource management and cleanup
+- String and pointer handling
+- Error handling and result processing
+
 ### **Complete System Import Example**
 
 ```obq
@@ -3425,7 +3673,7 @@ Immutable objects eliminate entire categories of bugs:
 ### **Planned Features**
 
 - 📦 **Module System**: Package management and namespaces
-- 🔗 **FFI Bindings**: Call C++/Java code from O²L
+- ✅ **Enhanced FFI System**: Complete Foreign Function Interface with libffi integration, advanced type support, and SQLite integration
 - 🧪 **Built-in Testing**: Integrated test framework
 - ⚡ **Bytecode Compiler**: Improve performance
 - 🌐 **WebAssembly**: Run O²L in browsers
@@ -3467,10 +3715,12 @@ cd build/tests
 ./o2l_tests --gtest_filter="ParserTest.*"          # Parser and AST tests
 ./o2l_tests --gtest_filter="RegexpLibraryTest.*"   # Regular expression tests
 ./o2l_tests --gtest_filter="UrlLibraryTest.*"      # URL library tests
+./o2l_tests --gtest_filter="FFISimplifiedTest.*"     # FFI basic types and operations tests
+./o2l_tests --gtest_filter="FFILibraryTest.*"        # FFI library functions and integrations tests
 ./o2l_tests --gtest_filter="ElseIfAndLengthTest.*" # else if and Text.length() tests
 
 # Test coverage summary:
-# ✅ 390 total tests - All passing
+# ✅ 445 total tests - All passing (including 14 FFI tests)
 # 📝 27 Lexer tests - Token parsing, keywords, operators
 # 🌳 29 Parser tests - AST generation, syntax validation
 # ⚡ 44 Runtime tests - Value types, collections, iterators

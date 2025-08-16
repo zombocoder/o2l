@@ -30,6 +30,9 @@ class ResultInstance;
 namespace ffi {
 class PtrInstance;
 class CBufferInstance;
+class CStructInstance;
+class CArrayInstance;
+class CCallbackInstance;
 }
 
 // Built-in immutable types
@@ -81,7 +84,9 @@ struct Value
                           std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
                           std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
                           std::shared_ptr<ResultInstance>, std::shared_ptr<ffi::PtrInstance>,
-                          std::shared_ptr<ffi::CBufferInstance>, ValueList, ValueMap, ValueOptional> {
+                          std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
+                          std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
+                          ValueList, ValueMap, ValueOptional> {
     using variant::variant;
 };
 

@@ -19,6 +19,7 @@
 #include "../Runtime/ResultInstance.hpp"
 #include "../Runtime/SetInstance.hpp"
 #include "../Runtime/SetIterator.hpp"
+#include "../Runtime/FFI/FFITypes.hpp"
 
 namespace o2l {
 
@@ -544,6 +545,146 @@ Value MethodCallNode::evaluate(Context& context) {
             } else {
                 throw EvaluationError("Unknown method '" + method_name_ + "' on Error type",
                                       context);
+            }
+        }
+
+        // Check if it's a CStructInstance
+        if (std::holds_alternative<std::shared_ptr<ffi::CStructInstance>>(object_value)) {
+            auto struct_instance = std::get<std::shared_ptr<ffi::CStructInstance>>(object_value);
+
+            if (method_name_ == "addField") {
+                if (arg_values.size() != 3 || !std::holds_alternative<Text>(arg_values[0]) ||
+                    !std::holds_alternative<Text>(arg_values[1]) || !std::holds_alternative<Int>(arg_values[2])) {
+                    throw EvaluationError("CStruct.addField() requires (name: Text, type: Text, offset: Int)", context);
+                }
+                std::string field_name = std::get<Text>(arg_values[0]);
+                std::string type_str = std::get<Text>(arg_values[1]);
+                Int offset = std::get<Int>(arg_values[2]);
+                
+                try {
+                    ffi::CType field_type = ffi::stringToCType(type_str);
+                    struct_instance->addField(field_name, field_type, static_cast<size_t>(offset));
+                    return Bool(true);
+                } catch (const std::exception&) {
+                    throw EvaluationError("Invalid field type: " + type_str, context);
+                }
+            } else if (method_name_ == "getField") {
+                if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
+                    throw EvaluationError("CStruct.getField() requires (name: Text)", context);
+                }
+                std::string field_name = std::get<Text>(arg_values[0]);
+                return struct_instance->getField(field_name);
+            } else if (method_name_ == "setField") {
+                if (arg_values.size() != 2 || !std::holds_alternative<Text>(arg_values[0])) {
+                    throw EvaluationError("CStruct.setField() requires (name: Text, value: Value)", context);
+                }
+                std::string field_name = std::get<Text>(arg_values[0]);
+                bool success = struct_instance->setField(field_name, arg_values[1]);
+                return Bool(success);
+            } else if (method_name_ == "size") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CStruct.size() takes no arguments", context);
+                }
+                return Int(static_cast<Int>(struct_instance->size()));
+            } else if (method_name_ == "toString") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CStruct.toString() takes no arguments", context);
+                }
+                return Text(struct_instance->toString());
+            } else {
+                throw EvaluationError("Unknown method '" + method_name_ + "' on CStruct type", context);
+            }
+        }
+
+        // Check if it's a CArrayInstance
+        if (std::holds_alternative<std::shared_ptr<ffi::CArrayInstance>>(object_value)) {
+            auto array_instance = std::get<std::shared_ptr<ffi::CArrayInstance>>(object_value);
+
+            if (method_name_ == "get") {
+                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("CArray.get() requires (index: Int)", context);
+                }
+                Int index = std::get<Int>(arg_values[0]);
+                return array_instance->getElement(static_cast<size_t>(index));
+            } else if (method_name_ == "set") {
+                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("CArray.set() requires (index: Int, value: Value)", context);
+                }
+                Int index = std::get<Int>(arg_values[0]);
+                bool success = array_instance->setElement(static_cast<size_t>(index), arg_values[1]);
+                return Bool(success);
+            } else if (method_name_ == "length") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CArray.length() takes no arguments", context);
+                }
+                return Int(static_cast<Int>(array_instance->element_count()));
+            } else if (method_name_ == "toList") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CArray.toList() takes no arguments", context);
+                }
+                auto values = array_instance->toList();
+                auto list_instance = std::make_shared<ListInstance>("Value");
+                for (const auto& value : values) {
+                    list_instance->add(value);
+                }
+                return Value(list_instance);
+            } else if (method_name_ == "fromList") {
+                if (arg_values.size() != 1) {
+                    throw EvaluationError("CArray.fromList() requires (list: List)", context);
+                }
+                // TODO: Convert O²L List to std::vector<Value>
+                throw EvaluationError("CArray.fromList() not yet implemented", context);
+            } else if (method_name_ == "toString") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CArray.toString() takes no arguments", context);
+                }
+                return Text(array_instance->toString());
+            } else {
+                throw EvaluationError("Unknown method '" + method_name_ + "' on CArray type", context);
+            }
+        }
+
+        // Check if it's a CCallbackInstance
+        if (std::holds_alternative<std::shared_ptr<ffi::CCallbackInstance>>(object_value)) {
+            auto callback_instance = std::get<std::shared_ptr<ffi::CCallbackInstance>>(object_value);
+
+            if (method_name_ == "getFunctionPtr") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CCallback.getFunctionPtr() takes no arguments", context);
+                }
+                void* ptr = callback_instance->getFunctionPtr();
+                return Value(std::make_shared<ffi::PtrInstance>(ptr));
+            } else if (method_name_ == "isValid") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CCallback.isValid() takes no arguments", context);
+                }
+                return Bool(callback_instance->isValid());
+            } else if (method_name_ == "toString") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CCallback.toString() takes no arguments", context);
+                }
+                return Text(callback_instance->toString());
+            } else {
+                throw EvaluationError("Unknown method '" + method_name_ + "' on CCallback type", context);
+            }
+        }
+
+        // Check if it's a CBufferInstance
+        if (std::holds_alternative<std::shared_ptr<ffi::CBufferInstance>>(object_value)) {
+            auto buffer_instance = std::get<std::shared_ptr<ffi::CBufferInstance>>(object_value);
+
+            if (method_name_ == "size") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CBuffer.size() takes no arguments", context);
+                }
+                return Int(static_cast<Int>(buffer_instance->size()));
+            } else if (method_name_ == "toString") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("CBuffer.toString() takes no arguments", context);
+                }
+                return Text(buffer_instance->toString());
+            } else {
+                throw EvaluationError("Unknown method '" + method_name_ + "' on CBuffer type", context);
             }
         }
 

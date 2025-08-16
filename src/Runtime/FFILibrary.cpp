@@ -60,6 +60,43 @@ std::shared_ptr<ObjectInstance> FFILibrary::createFFIObject() {
         return ffi_nullPtr(args, ctx);
     }, true);  // external
     
+    // Enhanced FFI types
+    ffi_obj->addMethod("struct", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_struct(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("array", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_array(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("callback", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_callback(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("cstring", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_cstring(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("ptrToString", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_ptrToString(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("ptrToInt", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_ptrToInt(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("ptrToDouble", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_ptrToDouble(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("ptrToFloat", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_ptrToFloat(args, ctx);
+    }, true);  // external
+    
+    ffi_obj->addMethod("ptrToBool", [](const std::vector<Value>& args, Context& ctx) -> Value {
+        return ffi_ptrToBool(args, ctx);
+    }, true);  // external
+    
     return ffi_obj;
 }
 
@@ -359,6 +396,268 @@ ffi::Signature FFILibrary::parseSignature(const std::string& signature_str) {
     }
     
     return ffi::Signature(arg_types, ret_type);
+}
+
+Value FFILibrary::ffi_struct(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // ffi.struct(size) - creates a struct with the specified byte size
+    if (args.size() != 1 || !std::holds_alternative<Int>(args[0])) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected Int size argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    Int size = std::get<Int>(args[0]);
+    if (size <= 0) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Struct size must be positive");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    auto struct_instance = std::make_shared<ffi::CStructInstance>(static_cast<size_t>(size));
+    auto result_instance = std::make_shared<ResultInstance>(Value(struct_instance), "Value", "Error");
+    return Value(result_instance);
+}
+
+Value FFILibrary::ffi_array(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // ffi.array(type, count) - creates an array of specified type and count
+    if (args.size() != 2 || !std::holds_alternative<Text>(args[0]) || !std::holds_alternative<Int>(args[1])) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected Text type and Int count arguments");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    std::string type_str = std::get<Text>(args[0]);
+    Int count = std::get<Int>(args[1]);
+    
+    if (count <= 0) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Array count must be positive");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    try {
+        ffi::CType element_type = ffi::stringToCType(type_str);
+        auto array_instance = std::make_shared<ffi::CArrayInstance>(element_type, static_cast<size_t>(count));
+        auto result_instance = std::make_shared<ResultInstance>(Value(array_instance), "Value", "Error");
+        return Value(result_instance);
+    } catch (const std::exception& e) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_TYPE", "Invalid array element type: " + type_str);
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+}
+
+Value FFILibrary::ffi_callback(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // ffi.callback(function, signature) - creates a callback wrapper
+    if (args.size() != 2 || !std::holds_alternative<Text>(args[1])) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected function and Text signature arguments");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    Value o2l_function = args[0];
+    std::string signature_str = std::get<Text>(args[1]);
+    
+    try {
+        ffi::Signature signature = parseSignature(signature_str);
+        auto callback_instance = std::make_shared<ffi::CCallbackInstance>(o2l_function, signature);
+        auto result_instance = std::make_shared<ResultInstance>(Value(callback_instance), "Value", "Error");
+        return Value(result_instance);
+    } catch (const std::exception& e) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_SIGNATURE", "Invalid callback signature: " + signature_str);
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+}
+
+Value FFILibrary::ffi_cstring(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // ffi.cstring(text) - creates a C string with proper UTF-8 handling
+    if (args.size() != 1 || !std::holds_alternative<Text>(args[0])) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected Text argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    std::string text = std::get<Text>(args[0]);
+    
+    // Create a CBuffer containing the UTF-8 string + null terminator
+    auto buffer_instance = std::make_shared<ffi::CBufferInstance>(text.length() + 1);
+    std::memcpy(buffer_instance->mutable_data(), text.c_str(), text.length() + 1);
+    
+    auto result_instance = std::make_shared<ResultInstance>(Value(buffer_instance), "Value", "Error");
+    return Value(result_instance);
+}
+
+Value FFILibrary::ffi_ptrToString(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // ffi.ptrToString(ptr) - converts a C string pointer to O²L Text
+    if (args.size() != 1) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected exactly one argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    // Handle different pointer types
+    if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&args[0])) {
+        void* ptr = (*ptr_inst)->get();
+        if (!ptr) {
+            // Null pointer returns empty string
+            auto result_instance = std::make_shared<ResultInstance>(Value(Text("")), "Value", "Error");
+            return Value(result_instance);
+        }
+        
+        // Cast to char* and create O²L Text
+        const char* cstr = static_cast<const char*>(ptr);
+        std::string text(cstr);
+        
+        auto result_instance = std::make_shared<ResultInstance>(Value(Text(text)), "Value", "Error");
+        return Value(result_instance);
+    }
+    
+    // Also handle direct Value that might contain a pointer representation
+    if (auto obj = std::get_if<std::shared_ptr<ObjectInstance>>(&args[0])) {
+        // This might be another type of pointer representation
+        auto error = std::make_shared<ErrorInstance>("UNSUPPORTED_TYPE", "Unsupported pointer type for string conversion");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    auto error = std::make_shared<ErrorInstance>("TYPE_MISMATCH", "Expected pointer argument");
+    return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+}
+
+Value FFILibrary::ffi_ptrToInt(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (args.size() != 1) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected exactly one argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&args[0])) {
+        void* ptr = (*ptr_inst)->get();
+        if (!ptr) {
+            auto error = std::make_shared<ErrorInstance>("NULL_POINTER", "Cannot dereference null pointer");
+            return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+        }
+        
+        // Cast to int* and dereference
+        const int32_t* int_ptr = static_cast<const int32_t*>(ptr);
+        Int value = static_cast<Int>(*int_ptr);
+        
+        auto result_instance = std::make_shared<ResultInstance>(Value(value), "Value", "Error");
+        return Value(result_instance);
+    }
+    
+    auto error = std::make_shared<ErrorInstance>("TYPE_MISMATCH", "Expected pointer argument");
+    return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+}
+
+Value FFILibrary::ffi_ptrToDouble(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (args.size() != 1) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected exactly one argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&args[0])) {
+        void* ptr = (*ptr_inst)->get();
+        if (!ptr) {
+            auto error = std::make_shared<ErrorInstance>("NULL_POINTER", "Cannot dereference null pointer");
+            return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+        }
+        
+        // Cast to double* and dereference
+        const double* double_ptr = static_cast<const double*>(ptr);
+        Double value = *double_ptr;
+        
+        auto result_instance = std::make_shared<ResultInstance>(Value(value), "Value", "Error");
+        return Value(result_instance);
+    }
+    
+    auto error = std::make_shared<ErrorInstance>("TYPE_MISMATCH", "Expected pointer argument");
+    return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+}
+
+Value FFILibrary::ffi_ptrToFloat(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (args.size() != 1) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected exactly one argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&args[0])) {
+        void* ptr = (*ptr_inst)->get();
+        if (!ptr) {
+            auto error = std::make_shared<ErrorInstance>("NULL_POINTER", "Cannot dereference null pointer");
+            return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+        }
+        
+        // Cast to float* and dereference
+        const float* float_ptr = static_cast<const float*>(ptr);
+        Float value = static_cast<Float>(*float_ptr);
+        
+        auto result_instance = std::make_shared<ResultInstance>(Value(value), "Value", "Error");
+        return Value(result_instance);
+    }
+    
+    auto error = std::make_shared<ErrorInstance>("TYPE_MISMATCH", "Expected pointer argument");
+    return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+}
+
+Value FFILibrary::ffi_ptrToBool(const std::vector<Value>& args, Context& context) {
+    if (!ffi_enabled_) {
+        auto error = std::make_shared<ErrorInstance>("FFI_DISABLED", "FFI is disabled");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (args.size() != 1) {
+        auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected exactly one argument");
+        return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+    }
+    
+    if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&args[0])) {
+        void* ptr = (*ptr_inst)->get();
+        if (!ptr) {
+            auto error = std::make_shared<ErrorInstance>("NULL_POINTER", "Cannot dereference null pointer");
+            return Value(ResultInstance::createError(Value(error), "Value", "Error"));
+        }
+        
+        // Cast to bool* and dereference
+        const uint8_t* bool_ptr = static_cast<const uint8_t*>(ptr);
+        Bool value = (*bool_ptr != 0);
+        
+        auto result_instance = std::make_shared<ResultInstance>(Value(value), "Value", "Error");
+        return Value(result_instance);
+    }
+    
+    auto error = std::make_shared<ErrorInstance>("TYPE_MISMATCH", "Expected pointer argument");
+    return Value(ResultInstance::createError(Value(error), "Value", "Error"));
 }
 
 }  // namespace o2l

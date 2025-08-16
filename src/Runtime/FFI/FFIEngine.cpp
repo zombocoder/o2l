@@ -333,9 +333,48 @@ std::expected<void*, FFICallError> FFIEngine::marshalValue(
         }
 
         case CType::Ptr: {
-            // Handle PtrInstance
+            // Handle CBufferInstance (C string buffers)
+            if (auto buffer = std::get_if<std::shared_ptr<ffi::CBufferInstance>>(&value)) {
+                auto temp = std::make_unique<uint8_t[]>(sizeof(void*));
+                void* buffer_ptr = const_cast<void*>(static_cast<const void*>((*buffer)->data()));
+                std::memcpy(temp.get(), &buffer_ptr, sizeof(void*));
+                void* ptr = temp.get();
+                storage.push_back(std::move(temp));
+                return ptr;
+            }
+            
+            // Handle CArrayInstance (typed arrays)
+            if (auto array = std::get_if<std::shared_ptr<ffi::CArrayInstance>>(&value)) {
+                auto temp = std::make_unique<uint8_t[]>(sizeof(void*));
+                void* array_ptr = const_cast<void*>(static_cast<const void*>((*array)->data()));
+                std::memcpy(temp.get(), &array_ptr, sizeof(void*));
+                void* ptr = temp.get();
+                storage.push_back(std::move(temp));
+                return ptr;
+            }
+            
+            // Handle CStructInstance 
+            if (auto struct_ptr = std::get_if<std::shared_ptr<ffi::CStructInstance>>(&value)) {
+                auto temp = std::make_unique<uint8_t[]>(sizeof(void*));
+                void* struct_data_ptr = const_cast<void*>(static_cast<const void*>((*struct_ptr)->data()));
+                std::memcpy(temp.get(), &struct_data_ptr, sizeof(void*));
+                void* ptr = temp.get();
+                storage.push_back(std::move(temp));
+                return ptr;
+            }
+            
+            // Handle PtrInstance (including nullPtr)
+            if (auto ptr_inst = std::get_if<std::shared_ptr<ffi::PtrInstance>>(&value)) {
+                auto temp = std::make_unique<uint8_t[]>(sizeof(void*));
+                void* actual_ptr = (*ptr_inst)->get();
+                std::memcpy(temp.get(), &actual_ptr, sizeof(void*));
+                void* ptr = temp.get();
+                storage.push_back(std::move(temp));
+                return ptr;
+            }
+            
+            // Handle generic ObjectInstance
             if (auto obj = std::get_if<std::shared_ptr<ObjectInstance>>(&value)) {
-                // This would need to be a PtrInstance - we'll implement this later
                 // For now, allocate storage for null pointer
                 auto temp = std::make_unique<uint8_t[]>(sizeof(void*));
                 void* null_ptr = nullptr;
@@ -394,14 +433,9 @@ std::expected<Value, FFICallError> FFIEngine::unmarshalValue(void* result, CType
 
         case CType::Ptr: {
             void* ptr = *static_cast<void**>(result);
-            // Create a PtrInstance - we'll implement this when we add the new types
-            // For now, convert to string representation
-            if (!ptr) {
-                return Value(Text("null"));
-            }
-            char buffer[32];
-            snprintf(buffer, sizeof(buffer), "ptr:%p", ptr);
-            return Value(Text(buffer));
+            // Create a PtrInstance for proper pointer handling
+            auto ptr_instance = std::make_shared<ffi::PtrInstance>(ptr);
+            return Value(ptr_instance);
         }
 
         case CType::Void:

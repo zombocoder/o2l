@@ -39,14 +39,41 @@ set(TEST_SOURCES_LIST
     test_type_conversions.cpp
     test_protocol_signature_validation.cpp
     test_o2l_fmt.cpp
+    test_ffi_simplified.cpp
+    test_ffi_library.cpp
     test_main.cpp
 )
 
 # Create test executable
 add_executable(o2l_tests ${TEST_SOURCES_LIST} ${TEST_SOURCES} ../tools/o2l-fmt/formatter.cpp)
 
+# Find and link required dependencies
+find_package(PkgConfig)
+if(PkgConfig_FOUND)
+    pkg_check_modules(FFI libffi)
+endif()
+
 # Link against Google Test
 target_link_libraries(o2l_tests GTest::gtest GTest::gtest_main)
+
+# Link FFI and system libraries for FFI tests
+if(FFI_FOUND)
+    target_link_libraries(o2l_tests ${FFI_LIBRARIES})
+    target_include_directories(o2l_tests PRIVATE ${FFI_INCLUDE_DIRS})
+endif()
+
+# Link dynamic loading libraries
+if(APPLE)
+    target_link_libraries(o2l_tests ${CMAKE_DL_LIBS})
+elseif(UNIX)
+    target_link_libraries(o2l_tests ${CMAKE_DL_LIBS})
+endif()
+
+# Link SQLite for SQLite integration tests
+find_library(SQLITE3_LIBRARY sqlite3)
+if(SQLITE3_LIBRARY)
+    target_link_libraries(o2l_tests ${SQLITE3_LIBRARY})
+endif()
 
 # Set C++23 standard for tests
 target_compile_features(o2l_tests PRIVATE cxx_std_23)
@@ -79,3 +106,5 @@ add_test(NAME http_server_library_tests COMMAND o2l_tests --gtest_filter="HttpSe
 add_test(NAME type_conversion_tests COMMAND o2l_tests --gtest_filter="TypeConversionTest.*")
 add_test(NAME protocol_signature_validation_tests COMMAND o2l_tests --gtest_filter="ProtocolSignatureValidationTest.*")
 add_test(NAME o2l_fmt_tests COMMAND o2l_tests --gtest_filter="O2LFmtTest.*")
+add_test(NAME ffi_simplified_tests COMMAND o2l_tests --gtest_filter="FFISimplifiedTest.*")
+add_test(NAME ffi_library_tests COMMAND o2l_tests --gtest_filter="FFILibraryTest.*")

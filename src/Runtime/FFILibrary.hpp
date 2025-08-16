@@ -91,6 +91,17 @@ public:
     static Value ffi_ptr(const std::vector<Value>& args, Context& context);
     static Value ffi_nullPtr(const std::vector<Value>& args, Context& context);
     
+    // Enhanced FFI types
+    static Value ffi_struct(const std::vector<Value>& args, Context& context);
+    static Value ffi_array(const std::vector<Value>& args, Context& context);
+    static Value ffi_callback(const std::vector<Value>& args, Context& context);
+    static Value ffi_cstring(const std::vector<Value>& args, Context& context);
+    static Value ffi_ptrToString(const std::vector<Value>& args, Context& context);
+    static Value ffi_ptrToInt(const std::vector<Value>& args, Context& context);
+    static Value ffi_ptrToDouble(const std::vector<Value>& args, Context& context);
+    static Value ffi_ptrToFloat(const std::vector<Value>& args, Context& context);
+    static Value ffi_ptrToBool(const std::vector<Value>& args, Context& context);
+    
     // Library methods
     static Value library_symbol(const std::vector<Value>& args, Context& context);
     static Value library_close(const std::vector<Value>& args, Context& context);
