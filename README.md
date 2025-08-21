@@ -13,6 +13,7 @@
 - **🔄 Regular Expressions**: Complete `regexp` library with 12 methods for pattern matching, text searching, and string manipulation
 - **🔀 Control Flow Enhancement**: `else if` syntax support for complex conditional logic with proper AST chaining
 - **🛑 Break Statements**: `break` statement for early exit from while loops, enabling search patterns and safety limits
+- **⏭️ Continue Statements**: `continue` statement for skipping iterations in while loops, perfect for filtering and validation
 - **📏 Text Length Method**: `Text.length()` method for string length calculation with full type integration
 - **📐 Math Library**: Comprehensive mathematical functions library with 40+ methods including trigonometry, logarithms, statistics, and constants (`import math`)
 - **✨ Comprehensive Text Methods**: 48 string manipulation methods including case conversion, search, validation, formatting, and advanced utilities
@@ -800,6 +801,79 @@ Object BreakDemo {
 - ✅ **Safety Limits**: Prevents infinite loops with max iteration checks
 - ✅ **Nested Loops**: Only exits the immediate while loop (not outer loops)
 - ✅ **Iterator Compatible**: Works seamlessly with all iterator types
+
+### **Continue Statements in While Loops**
+
+The `continue` statement skips the rest of the current iteration and jumps to the next iteration of the while loop, enabling efficient filtering, validation, and conditional processing patterns.
+
+```obq
+import system.io
+
+Object ContinueDemo {
+    @external method basicContinueExample(): Int {
+        # Skip even numbers, process only odd numbers
+        sum: Int = 0
+        i: Int = 0
+        
+        while (i < 10) {
+            i = i + 1
+            remainder: Int = i % 2
+            if (remainder == 0) {
+                continue  # Skip even numbers
+            }
+            sum = sum + i
+        }
+        return sum  # Returns 25 (1+3+5+7+9)
+    }
+    
+    @external method filteringExample(): Int {
+        # Filter list, skip negative numbers
+        numbers: List<Int> = [1, -2, 3, -4, 5, -6, 7, -8, 9, -10]
+        positive_sum: Int = 0
+        
+        iter: ListIterator = numbers.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            
+            if (value < 0) {
+                continue  # Skip negative numbers
+            }
+            
+            positive_sum = positive_sum + value
+        }
+        return positive_sum  # Returns 25 (1+3+5+7+9)
+    }
+    
+    @external method validationExample(): Int {
+        # Process data with validation, skip invalid entries
+        data: List<Int> = [0, 15, -3, 8, 25, -1, 12, 30, 7, -5]
+        valid_count: Int = 0
+        
+        iter: ListIterator = data.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            
+            # Skip values outside valid range (1-20)
+            if (value < 1) {
+                continue
+            }
+            if (value > 20) {
+                continue
+            }
+            
+            valid_count = valid_count + 1
+        }
+        return valid_count  # Returns 4 (15, 8, 12, 7)
+    }
+}
+```
+
+**Key Continue Statement Features:**
+- ✅ **Skip Current Iteration**: Jumps to next loop iteration immediately
+- ✅ **Filtering Patterns**: Perfect for processing subsets of data
+- ✅ **Validation Logic**: Skip invalid data while continuing processing
+- ✅ **Condition Chains**: Multiple continue conditions for complex filtering
+- ✅ **Combined with Break**: Use together for sophisticated control flow
 
 ### **Generic Sets (Set<T>) with Iterators**
 
@@ -3390,6 +3464,7 @@ try {
 | `if`, `else if`, `else`   | Conditional logic with chaining    |
 | `while`                   | Control flow loop                  |
 | `break`                   | Exit from while loop               |
+| `continue`                | Skip to next iteration of while loop |
 | `throw`                   | Throw user-defined errors          |
 | `try`, `catch`, `finally` | Structured exception handling      |
 | `Result`, `Error`         | Error handling types               |
@@ -3913,6 +3988,7 @@ Immutable objects eliminate entire categories of bugs:
 - ✅ **Comprehensive Type System**: Int, Long, Float, Double with automatic promotion
 - ✅ **While Loops**: Practical iteration with ListIterator and RepeatIterator support
 - ✅ **Break Statements**: Early exit from while loops for search patterns and safety limits
+- ✅ **Continue Statements**: Skip iterations in while loops for filtering and validation patterns
 - ✅ **Modulo Operator**: Full arithmetic completeness with `%` operator for all numeric types
 - ✅ **System Utilities**: `system.utils` module with RepeatIterator for controlled repetition
 - ✅ **Error Handling System**: Complete `throw`/`try`/`catch`/`finally` with `Result<T,E>` and `Error` types

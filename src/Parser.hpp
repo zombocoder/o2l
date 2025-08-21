@@ -68,6 +68,7 @@ class Parser {
     ASTNodePtr parseIfStatement();
     ASTNodePtr parseWhileStatement();
     ASTNodePtr parseBreakStatement();
+    ASTNodePtr parseContinueStatement();
     ASTNodePtr parseEnumDeclaration();
     ASTNodePtr parseRecordDeclaration();
     ASTNodePtr parseProtocolDeclaration();

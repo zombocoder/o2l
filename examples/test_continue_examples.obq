@@ -1,0 +1,226 @@
+import system.io
+
+Object ContinueExamples {
+    @external method basicContinueExample(): Int {
+        io.print("=== Basic Continue Example ===")
+        io.print("Processing numbers 1-10, skipping even numbers")
+        
+        sum: Int = 0
+        i: Int = 0
+        
+        while (i < 10) {
+            i = i + 1
+            
+            remainder: Int = i % 2
+            if (remainder == 0) {
+                io.print("Skipping even number: %d", i)
+                continue
+            }
+            
+            io.print("Processing odd number: %d", i)
+            sum = sum + i
+        }
+        
+        io.print("Sum of odd numbers: %d", sum)
+        return sum
+    }
+    
+    @external method filteringExample(): Int {
+        io.print("=== Filtering Example ===")
+        io.print("Processing list, skipping negative numbers")
+        
+        numbers: List<Int> = [1, -2, 3, -4, 5, -6, 7, -8, 9, -10]
+        positive_sum: Int = 0
+        processed_count: Int = 0
+        
+        io.print("Numbers: %s", numbers)
+        
+        iter: ListIterator = numbers.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            
+            if (value < 0) {
+                io.print("Skipping negative number: %d", value)
+                continue
+            }
+            
+            io.print("Processing positive number: %d", value)
+            positive_sum = positive_sum + value
+            processed_count = processed_count + 1
+        }
+        
+        io.print("Processed %d positive numbers", processed_count)
+        io.print("Sum of positive numbers: %d", positive_sum)
+        return positive_sum
+    }
+    
+    @external method validationExample(): Int {
+        io.print("=== Validation Example ===")
+        io.print("Processing data, skipping invalid entries")
+        
+        data: List<Int> = [0, 15, -3, 8, 25, -1, 12, 30, 7, -5]
+        valid_count: Int = 0
+        valid_sum: Int = 0
+        
+        io.print("Data: %s", data)
+        io.print("Valid range: 1-20")
+        
+        iter: ListIterator = data.iterator()
+        while (iter.hasNext()) {
+            value: Int = iter.next()
+            
+            # Skip values outside valid range (1-20)
+            if (value < 1) {
+                io.print("Skipping invalid (too low): %d", value)
+                continue
+            }
+            
+            if (value > 20) {
+                io.print("Skipping invalid (too high): %d", value)
+                continue
+            }
+            
+            io.print("Processing valid value: %d", value)
+            valid_sum = valid_sum + value
+            valid_count = valid_count + 1
+        }
+        
+        io.print("Found %d valid entries", valid_count)
+        io.print("Sum of valid values: %d", valid_sum)
+        return valid_count
+    }
+    
+    @external method searchWithContinueExample(): Int {
+        io.print("=== Search with Continue Example ===")
+        io.print("Finding multiples of 3 in range 1-30")
+        
+        multiples: List<Int> = []
+        i: Int = 0
+        
+        while (i < 30) {
+            i = i + 1
+            
+            remainder: Int = i % 3
+            if (remainder != 0) {
+                continue  # Skip numbers that are not multiples of 3
+            }
+            
+            # Also skip multiples that are greater than 20
+            if (i > 20) {
+                io.print("Skipping large multiple: %d", i)
+                continue
+            }
+            
+            io.print("Found multiple of 3: %d", i)
+            multiples.add(i)
+        }
+        
+        io.print("Multiples of 3 (1-20): %s", multiples)
+        return multiples.size()
+    }
+    
+    @external method batchProcessingExample(): Int {
+        io.print("=== Batch Processing Example ===")
+        io.print("Processing batches, skipping empty ones")
+        
+        batch_sizes: List<Int> = [5, 0, 3, 0, 8, 2, 0, 6, 1, 0]
+        total_processed: Int = 0
+        batch_count: Int = 0
+        
+        io.print("Batch sizes: %s", batch_sizes)
+        
+        iter: ListIterator = batch_sizes.iterator()
+        while (iter.hasNext()) {
+            batch_size: Int = iter.next()
+            batch_count = batch_count + 1
+            
+            if (batch_size == 0) {
+                io.print("Batch %d: Empty, skipping", batch_count)
+                continue
+            }
+            
+            io.print("Batch %d: Processing %d items", batch_count, batch_size)
+            total_processed = total_processed + batch_size
+        }
+        
+        io.print("Total items processed: %d", total_processed)
+        return total_processed
+    }
+    
+    @external method continueWithBreakExample(): Int {
+        io.print("=== Continue with Break Example ===")
+        io.print("Processing until error threshold, skipping warnings")
+        
+        error_codes: List<Int> = [0, 1, 0, 2, 1, 0, 3, 1, 2, 5]
+        processed: Int = 0
+        error_count: Int = 0
+        max_errors: Int = 3
+        
+        io.print("Error codes: %s", error_codes)
+        io.print("0=Success, 1=Warning, 2=Error, 3=Error, 5=Critical")
+        io.print("Max errors allowed: %d", max_errors)
+        
+        iter: ListIterator = error_codes.iterator()
+        while (iter.hasNext()) {
+            code: Int = iter.next()
+            processed = processed + 1
+            
+            if (code == 0) {
+                io.print("Item %d: Success", processed)
+                continue  # Skip successful items
+            }
+            
+            if (code == 1) {
+                io.print("Item %d: Warning (ignored)", processed)
+                continue  # Skip warnings
+            }
+            
+            # Count errors (code >= 2)
+            error_count = error_count + 1
+            io.print("Item %d: Error (code %d), total errors: %d", processed, code, error_count)
+            
+            if (error_count >= max_errors) {
+                io.print("Error threshold reached, stopping processing")
+                break
+            }
+        }
+        
+        io.print("Processed %d items with %d errors", processed, error_count)
+        return processed
+    }
+    
+    @external method runAllExamples(): Int {
+        io.print("Continue Statement Examples")
+        io.print("===========================")
+        io.print("")
+        
+        this.basicContinueExample()
+        io.print("")
+        
+        this.filteringExample()
+        io.print("")
+        
+        this.validationExample()
+        io.print("")
+        
+        this.searchWithContinueExample()
+        io.print("")
+        
+        this.batchProcessingExample()
+        io.print("")
+        
+        this.continueWithBreakExample()
+        
+        io.print("")
+        io.print("All continue statement examples completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        examples: ContinueExamples = new ContinueExamples()
+        return examples.runAllExamples()
+    }
+}

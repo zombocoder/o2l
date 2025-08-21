@@ -158,6 +158,16 @@ public:
     }
 };
 
+// Special exception for handling continue statements - not an error, but control flow
+class ContinueException : public std::exception {
+public:
+    ContinueException() = default;
+    
+    const char* what() const noexcept override {
+        return "Continue statement executed (not an error)";
+    }
+};
+
 // Exception for user-thrown errors via throw statements
 class UserException : public o2lException {
 private:
