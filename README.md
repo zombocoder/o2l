@@ -49,9 +49,33 @@ Rather than thinking in terms of data structures and algorithms, O²L encourages
 
 ## 🚀 Quick Start
 
+### macOS Installation (Homebrew)
+
+The easiest way to install O²L on macOS:
+
+```bash
+# Add the O²L tap
+brew tap zombocoder/o2l
+
+# Install O²L
+brew install o2l
+
+# Verify installation
+o2l --version
+
+# Create your first project
+mkdir my-project && cd my-project
+o2l-pkg init
+o2l run src/main.obq
+```
+
+### Manual Installation
+
+For other platforms or if you want to build from source:
+
 Looking at your `CMakeLists.txt`, the only **external dependency** you need to install is **libffi** (with `pkg-config` support).
 
-### Required Libraries
+#### Required Libraries
 
 - **libffi** → Used for the Foreign Function Interface (`src/Runtime/FFI/...`).
 
@@ -85,12 +109,12 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
     pacman -S mingw-w64-x86_64-libffi pkg-config
     ```
 
-### Optional / System-Provided
+#### Optional / System-Provided
 
 - `dl` (dynamic linking) → usually provided by `CMAKE_DL_LIBS` on Linux/macOS.
 - `ws2_32`, `wininet` → provided by Windows SDK, no need to install separately.
 
-### Build Dependencies
+#### Build Dependencies
 
 - A **C++23-capable compiler**:
 
@@ -100,7 +124,7 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
 
 - **CMake ≥ 3.20**
 
-### Installation
+#### Build from Source
 
 ```bash
 # Clone the repository
