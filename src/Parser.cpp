@@ -37,6 +37,7 @@
 #include "AST/ConstDeclarationNode.hpp"
 #include "AST/IfStatementNode.hpp"
 #include "AST/WhileStatementNode.hpp"
+#include "AST/BreakNode.hpp"
 #include "AST/ComparisonNode.hpp"
 #include "AST/LogicalNode.hpp"
 #include "AST/UnaryNode.hpp"
@@ -1016,6 +1017,11 @@ ASTNodePtr Parser::parseStatement() {
         return parseWhileStatement();
     }
     
+    // Check for break statements
+    if (token.type == TokenType::BREAK) {
+        return parseBreakStatement();
+    }
+    
     // Check for throw statements
     if (token.type == TokenType::THROW) {
         return parseThrowStatement();
@@ -1650,6 +1656,16 @@ ASTNodePtr Parser::parseWhileStatement() {
     SourceLocation location(filename_, while_token.line, while_token.column);
     while_statement->setSourceLocation(location);
     return while_statement;
+}
+
+ASTNodePtr Parser::parseBreakStatement() {
+    Token break_token = consume(TokenType::BREAK, "Expected 'break'");
+    
+    auto break_node = std::make_unique<BreakNode>();
+    SourceLocation break_location(filename_, break_token.line, break_token.column);
+    break_node->setSourceLocation(break_location);
+    
+    return break_node;
 }
 
 std::string Parser::parseTypeName() {

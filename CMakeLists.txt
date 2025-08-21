@@ -82,6 +82,7 @@ set(SOURCES
     src/AST/ReturnNode.cpp
     src/AST/IfStatementNode.cpp
     src/AST/WhileStatementNode.cpp
+    src/AST/BreakNode.cpp
     src/AST/ComparisonNode.cpp
     src/AST/LogicalNode.cpp
     src/AST/UnaryNode.cpp
@@ -159,6 +160,7 @@ set(HEADERS
     src/AST/ReturnNode.hpp
     src/AST/IfStatementNode.hpp
     src/AST/WhileStatementNode.hpp
+    src/AST/BreakNode.hpp
     src/AST/ComparisonNode.hpp
     src/AST/LogicalNode.hpp
     src/AST/UnaryNode.hpp
