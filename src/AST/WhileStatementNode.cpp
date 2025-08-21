@@ -48,6 +48,9 @@ Value WhileStatementNode::evaluate(Context& context) {
         } catch (const BreakException&) {
             // Break statement was executed, exit the while loop
             break;
+        } catch (const ContinueException&) {
+            // Continue statement was executed, skip to next iteration
+            continue;
         }
     }
 

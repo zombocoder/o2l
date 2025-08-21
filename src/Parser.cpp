@@ -38,6 +38,7 @@
 #include "AST/IfStatementNode.hpp"
 #include "AST/WhileStatementNode.hpp"
 #include "AST/BreakNode.hpp"
+#include "AST/ContinueNode.hpp"
 #include "AST/ComparisonNode.hpp"
 #include "AST/LogicalNode.hpp"
 #include "AST/UnaryNode.hpp"
@@ -1022,6 +1023,11 @@ ASTNodePtr Parser::parseStatement() {
         return parseBreakStatement();
     }
     
+    // Check for continue statements
+    if (token.type == TokenType::CONTINUE) {
+        return parseContinueStatement();
+    }
+    
     // Check for throw statements
     if (token.type == TokenType::THROW) {
         return parseThrowStatement();
@@ -1666,6 +1672,16 @@ ASTNodePtr Parser::parseBreakStatement() {
     break_node->setSourceLocation(break_location);
     
     return break_node;
+}
+
+ASTNodePtr Parser::parseContinueStatement() {
+    Token continue_token = consume(TokenType::CONTINUE, "Expected 'continue'");
+    
+    auto continue_node = std::make_unique<ContinueNode>();
+    SourceLocation continue_location(filename_, continue_token.line, continue_token.column);
+    continue_node->setSourceLocation(continue_location);
+    
+    return continue_node;
 }
 
 std::string Parser::parseTypeName() {

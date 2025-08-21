@@ -42,6 +42,7 @@ set(TEST_SOURCES_LIST
     test_ffi_simplified.cpp
     test_ffi_library.cpp
     test_break_statement.cpp
+    test_continue_statement.cpp
     test_main.cpp
 )
 
@@ -110,3 +111,4 @@ add_test(NAME o2l_fmt_tests COMMAND o2l_tests --gtest_filter="O2LFmtTest.*")
 add_test(NAME ffi_simplified_tests COMMAND o2l_tests --gtest_filter="FFISimplifiedTest.*")
 add_test(NAME ffi_library_tests COMMAND o2l_tests --gtest_filter="FFILibraryTest.*")
 add_test(NAME break_statement_tests COMMAND o2l_tests --gtest_filter="BreakStatementTest.*")
+add_test(NAME continue_statement_tests COMMAND o2l_tests --gtest_filter="ContinueStatementTest.*")

@@ -36,6 +36,7 @@ enum class TokenType {
     ELSE,
     WHILE,
     BREAK,
+    CONTINUE,
     RETURN,
     THIS,
     TRUE,

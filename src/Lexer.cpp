@@ -243,6 +243,7 @@ TokenType Lexer::getKeywordType(const std::string& identifier) const {
     if (identifier == "else") return TokenType::ELSE;
     if (identifier == "while") return TokenType::WHILE;
     if (identifier == "break") return TokenType::BREAK;
+    if (identifier == "continue") return TokenType::CONTINUE;
     if (identifier == "return") return TokenType::RETURN;
     if (identifier == "this") return TokenType::THIS;
     if (identifier == "true") return TokenType::TRUE;
