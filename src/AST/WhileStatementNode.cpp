@@ -43,10 +43,12 @@ Value WhileStatementNode::evaluate(Context& context) {
         }
 
         // Execute the body
-        result = body_->evaluate(context);
-
-        // Note: In a more sophisticated implementation, we might want to handle
-        // break/continue statements here, but for now we keep it simple
+        try {
+            result = body_->evaluate(context);
+        } catch (const BreakException&) {
+            // Break statement was executed, exit the while loop
+            break;
+        }
     }
 
     return result;  // Return the last result from the body

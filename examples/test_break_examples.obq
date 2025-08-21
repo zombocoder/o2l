@@ -1,0 +1,176 @@
+import system.io
+
+Object BreakExamples {
+    @external method basicBreakExample(): Int {
+        io.print("=== Basic Break Example ===")
+        
+        i: Int = 1
+        while (i <= 10) {
+            io.print("Iteration: %d", i)
+            if (i == 5) {
+                io.print("Breaking at iteration 5")
+                break
+            }
+            i = i + 1
+        }
+        
+        io.print("Final value of i: %d", i)
+        return i
+    }
+    
+    @external method findFirstEvenExample(): Int {
+        io.print("=== Find First Even Number Example ===")
+        
+        numbers: List<Int> = [1, 3, 7, 8, 9, 10, 11]
+        io.print("Numbers: %s", numbers)
+        
+        iter: ListIterator = numbers.iterator()
+        found: Int = -1
+        
+        while (iter.hasNext()) {
+            current: Int = iter.next()
+            io.print("Checking number: %d", current)
+            
+            remainder: Int = current % 2
+            if (remainder == 0) {
+                io.print("Found first even number: %d", current)
+                found = current
+                break
+            }
+        }
+        
+        if (found == -1) {
+            io.print("No even number found")
+        }
+        
+        return found
+    }
+    
+    @external method searchWithLimitExample(): Int {
+        io.print("=== Search with Limit Example ===")
+        
+        target: Int = 42
+        attempt: Int = 0
+        max_attempts: Int = 5
+        found: Bool = false
+        
+        # Simulate searching for a target value
+        search_values: List<Int> = [10, 25, 42, 15, 8]
+        iter: ListIterator = search_values.iterator()
+        
+        io.print("Searching for: %d", target)
+        io.print("Max attempts: %d", max_attempts)
+        
+        while (iter.hasNext()) {
+            attempt = attempt + 1
+            current: Int = iter.next()
+            
+            io.print("Attempt %d: checking %d", attempt, current)
+            
+            if (current == target) {
+                io.print("Target found!")
+                found = true
+                break
+            }
+            
+            if (attempt >= max_attempts) {
+                io.print("Maximum attempts reached")
+                break
+            }
+        }
+        
+        if (found) {
+            io.print("Search successful in %d attempts", attempt)
+            return attempt
+        } else {
+            io.print("Search failed after %d attempts", attempt)
+            return -1
+        }
+    }
+    
+    @external method sumUntilThresholdExample(): Int {
+        io.print("=== Sum Until Threshold Example ===")
+        
+        threshold: Int = 50
+        sum: Int = 0
+        i: Int = 1
+        
+        io.print("Adding numbers until sum exceeds %d", threshold)
+        
+        while (true) {
+            sum = sum + i
+            io.print("Added %d, sum is now %d", i, sum)
+            
+            if (sum > threshold) {
+                io.print("Threshold exceeded, breaking")
+                break
+            }
+            
+            i = i + 1
+        }
+        
+        io.print("Final sum: %d", sum)
+        return sum
+    }
+    
+    @external method nestedLoopBreakExample(): Int {
+        io.print("=== Nested Loop Break Example ===")
+        
+        # This demonstrates that break only exits the innermost while loop
+        outer_count: Int = 0
+        total_operations: Int = 0
+        
+        while (outer_count < 3) {
+            outer_count = outer_count + 1
+            io.print("Outer loop iteration: %d", outer_count)
+            
+            inner_count: Int = 0
+            while (inner_count < 10) {
+                inner_count = inner_count + 1
+                total_operations = total_operations + 1
+                
+                io.print("  Inner loop iteration: %d", inner_count)
+                
+                if (inner_count == 3) {
+                    io.print("  Breaking inner loop at count 3")
+                    break
+                }
+            }
+        }
+        
+        io.print("Total operations: %d", total_operations)
+        return total_operations
+    }
+    
+    @external method runAllExamples(): Int {
+        io.print("Break Statement Examples")
+        io.print("========================")
+        io.print("")
+        
+        this.basicBreakExample()
+        io.print("")
+        
+        this.findFirstEvenExample()
+        io.print("")
+        
+        this.searchWithLimitExample()
+        io.print("")
+        
+        this.sumUntilThresholdExample()
+        io.print("")
+        
+        this.nestedLoopBreakExample()
+        
+        io.print("")
+        io.print("All break statement examples completed!")
+        
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        examples: BreakExamples = new BreakExamples()
+        return examples.runAllExamples()
+    }
+}

@@ -148,6 +148,16 @@ public:
     }
 };
 
+// Special exception for handling break statements - not an error, but control flow
+class BreakException : public std::exception {
+public:
+    BreakException() = default;
+    
+    const char* what() const noexcept override {
+        return "Break statement executed (not an error)";
+    }
+};
+
 // Exception for user-thrown errors via throw statements
 class UserException : public o2lException {
 private:

@@ -12,6 +12,7 @@
 - **🌐 URL Library**: Complete `url` library with 26 methods for URL parsing, construction, manipulation, and validation
 - **🔄 Regular Expressions**: Complete `regexp` library with 12 methods for pattern matching, text searching, and string manipulation
 - **🔀 Control Flow Enhancement**: `else if` syntax support for complex conditional logic with proper AST chaining
+- **🛑 Break Statements**: `break` statement for early exit from while loops, enabling search patterns and safety limits
 - **📏 Text Length Method**: `Text.length()` method for string length calculation with full type integration
 - **📐 Math Library**: Comprehensive mathematical functions library with 40+ methods including trigonometry, logarithms, statistics, and constants (`import math`)
 - **✨ Comprehensive Text Methods**: 48 string manipulation methods including case conversion, search, validation, formatting, and advanced utilities
@@ -732,6 +733,73 @@ Object IterationDemo {
     }
 }
 ```
+
+### **Break Statements in While Loops**
+
+The `break` statement provides early exit from while loops, enabling powerful control flow patterns for search, filtering, and conditional processing.
+
+```obq
+import system.io
+
+Object BreakDemo {
+    @external method basicBreakExample(): Int {
+        # Exit loop when condition is met
+        i: Int = 1
+        while (i <= 10) {
+            io.print("Iteration: %d", i)
+            if (i == 5) {
+                io.print("Breaking at iteration 5")
+                break
+            }
+            i = i + 1
+        }
+        io.print("Final value: %d", i)  # Output: 5
+        return i
+    }
+    
+    @external method findFirstMatch(): Int {
+        # Search through list and exit when target found
+        numbers: List<Int> = [1, 3, 7, 8, 9, 10, 11]
+        iter: ListIterator = numbers.iterator()
+        found: Int = -1
+        
+        while (iter.hasNext()) {
+            current: Int = iter.next()
+            remainder: Int = current % 2
+            if (remainder == 0) {
+                io.print("Found first even number: %d", current)
+                found = current
+                break  # Exit immediately when found
+            }
+        }
+        return found  # Returns 8
+    }
+    
+    @external method limitedSearch(): Int {
+        # Break after maximum attempts
+        attempt: Int = 0
+        max_attempts: Int = 5
+        
+        while (true) {  # Infinite loop with break condition
+            attempt = attempt + 1
+            io.print("Attempt: %d", attempt)
+            
+            if (attempt >= max_attempts) {
+                io.print("Maximum attempts reached")
+                break
+            }
+        }
+        return attempt
+    }
+}
+```
+
+**Key Break Statement Features:**
+- ✅ **Immediate Exit**: Exits the innermost while loop instantly
+- ✅ **Search Patterns**: Perfect for find-first operations
+- ✅ **Safety Limits**: Prevents infinite loops with max iteration checks
+- ✅ **Nested Loops**: Only exits the immediate while loop (not outer loops)
+- ✅ **Iterator Compatible**: Works seamlessly with all iterator types
 
 ### **Generic Sets (Set<T>) with Iterators**
 
@@ -3321,6 +3389,7 @@ try {
 | `import`                  | Import system modules              |
 | `if`, `else if`, `else`   | Conditional logic with chaining    |
 | `while`                   | Control flow loop                  |
+| `break`                   | Exit from while loop               |
 | `throw`                   | Throw user-defined errors          |
 | `try`, `catch`, `finally` | Structured exception handling      |
 | `Result`, `Error`         | Error handling types               |
@@ -3843,6 +3912,7 @@ Immutable objects eliminate entire categories of bugs:
 - ✅ **128-bit Integer Support**: Long type with extended precision
 - ✅ **Comprehensive Type System**: Int, Long, Float, Double with automatic promotion
 - ✅ **While Loops**: Practical iteration with ListIterator and RepeatIterator support
+- ✅ **Break Statements**: Early exit from while loops for search patterns and safety limits
 - ✅ **Modulo Operator**: Full arithmetic completeness with `%` operator for all numeric types
 - ✅ **System Utilities**: `system.utils` module with RepeatIterator for controlled repetition
 - ✅ **Error Handling System**: Complete `throw`/`try`/`catch`/`finally` with `Result<T,E>` and `Error` types
