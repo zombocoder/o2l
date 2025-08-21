@@ -49,6 +49,52 @@ Rather than thinking in terms of data structures and algorithms, O²L encourages
 
 ## 🚀 Quick Start
 
+Looking at your `CMakeLists.txt`, the only **external dependency** you need to install is **libffi** (with `pkg-config` support).
+
+### Required Libraries
+
+* **libffi** → Used for the Foreign Function Interface (`src/Runtime/FFI/...`).
+
+  * On **Ubuntu/Debian**:
+
+    ```bash
+    sudo apt-get install libffi-dev pkg-config
+    ```
+  * On **Fedora**:
+
+    ```bash
+    sudo dnf install libffi-devel pkg-config
+    ```
+  * On **Arch Linux**:
+
+    ```bash
+    sudo pacman -S libffi pkgconf
+    ```
+  * On **macOS (Homebrew)**:
+
+    ```bash
+    brew install libffi pkg-config
+    ```
+  * On **Windows (MSYS2/MinGW)**:
+
+    ```bash
+    pacman -S mingw-w64-x86_64-libffi pkg-config
+    ```
+
+### Optional / System-Provided
+
+* `dl` (dynamic linking) → usually provided by `CMAKE_DL_LIBS` on Linux/macOS.
+* `ws2_32`, `wininet` → provided by Windows SDK, no need to install separately.
+
+### Build Dependencies
+
+* A **C++23-capable compiler**:
+
+  * GCC ≥ 12
+  * Clang ≥ 15
+  * MSVC ≥ 19.35 (Visual Studio 2022 17.5)
+* **CMake ≥ 3.20**
+
 ### Installation
 
 ```bash
