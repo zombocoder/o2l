@@ -301,6 +301,10 @@ TEST_F(ContinueStatementTest, ContinueCounterPattern) {
     // Should sum numbers 1,2,3,5,6,7,9,10,11 = 54, but let's calculate what it actually produces
     // Let me trace through: i starts at 1, we do 10 iterations
     // Skip multiples of 4: iterations that hit 4,8 will skip
-    // Expected: sum of 1,2,3,5,6,7,9,10,11 but my logic might be different
+    // The loop runs for 10 iterations (iterations = 1 to 10).
+    // On each iteration, if i is divisible by 4, we increment i and continue (skip summing).
+    // Otherwise, we add i to sum and increment i.
+    // The values of i that are summed are: 1,2,3,5,6,7,9,10,11 (i=4 and i=8 are skipped).
+    // The total sum is 1+2+3+5+6+7+9+10+11 = 43.
     EXPECT_EQ(std::get<Int>(result), 43);
 }
