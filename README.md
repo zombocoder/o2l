@@ -53,29 +53,33 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
 
 ### Required Libraries
 
-* **libffi** → Used for the Foreign Function Interface (`src/Runtime/FFI/...`).
+- **libffi** → Used for the Foreign Function Interface (`src/Runtime/FFI/...`).
 
-  * On **Ubuntu/Debian**:
+  - On **Ubuntu/Debian**:
 
     ```bash
     sudo apt-get install libffi-dev pkg-config
     ```
-  * On **Fedora**:
+
+  - On **Fedora**:
 
     ```bash
     sudo dnf install libffi-devel pkg-config
     ```
-  * On **Arch Linux**:
+
+  - On **Arch Linux**:
 
     ```bash
     sudo pacman -S libffi pkgconf
     ```
-  * On **macOS (Homebrew)**:
+
+  - On **macOS (Homebrew)**:
 
     ```bash
     brew install libffi pkg-config
     ```
-  * On **Windows (MSYS2/MinGW)**:
+
+  - On **Windows (MSYS2/MinGW)**:
 
     ```bash
     pacman -S mingw-w64-x86_64-libffi pkg-config
@@ -83,17 +87,18 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
 
 ### Optional / System-Provided
 
-* `dl` (dynamic linking) → usually provided by `CMAKE_DL_LIBS` on Linux/macOS.
-* `ws2_32`, `wininet` → provided by Windows SDK, no need to install separately.
+- `dl` (dynamic linking) → usually provided by `CMAKE_DL_LIBS` on Linux/macOS.
+- `ws2_32`, `wininet` → provided by Windows SDK, no need to install separately.
 
 ### Build Dependencies
 
-* A **C++23-capable compiler**:
+- A **C++23-capable compiler**:
 
-  * GCC ≥ 12
-  * Clang ≥ 15
-  * MSVC ≥ 19.35 (Visual Studio 2022 17.5)
-* **CMake ≥ 3.20**
+  - GCC ≥ 12
+  - Clang ≥ 15
+  - MSVC ≥ 19.35 (Visual Studio 2022 17.5)
+
+- **CMake ≥ 3.20**
 
 ### Installation
 
@@ -109,6 +114,103 @@ make
 
 # Run your first O²L program
 ./o2l run ../examples/hello_world.obq
+```
+
+### Creating a New O²L Project
+
+O²L provides a powerful package manager tool `o2l-pkg` to scaffold and manage projects:
+
+```bash
+# Create project directory
+mkdir my-project
+cd my-project
+
+# Initialize the O²L project
+o2l-pkg init
+
+# Run your project
+o2l run src/main.obq
+```
+
+#### Project Structure
+
+The `o2l-pkg init` command generates a complete project structure:
+
+```
+my-project/
+├── .o2l/                     # Package manager directory
+│   ├── lib/                  # Downloaded libraries
+│   └── cache/                # Build cache
+├── src/
+│   ├── calc/
+│   │   └── Calculator.obq    # Calculator module
+│   ├── greeters/
+│   │   └── BasicGreeter.obq  # Greeter module
+│   ├── tests/
+│   │   ├── calc/
+│   │   │   └── CalculatorTest.obq
+│   │   ├── greeters/
+│   │   │   └── GreeterTest.obq
+│   │   └── main_test.obq     # Test runner
+│   └── main.obq              # Entry point
+├── o2l.toml                  # Project configuration
+└── .gitignore                # Git ignore rules
+```
+
+#### Package Manager Commands
+
+```bash
+# Initialize new project in current directory
+o2l-pkg init
+
+# Create new objects with namespace structure
+o2l-pkg create com.mycompany.utils Utils
+o2l-pkg create data.models User
+
+# List installed libraries
+o2l-pkg list
+
+# Clean cache directory
+o2l-pkg clean
+
+# Show help
+o2l-pkg help
+```
+
+#### Running Your Project
+
+Use the standard `o2l` command to run your programs:
+
+```bash
+# Run main program
+o2l run src/main.obq
+
+# Run all tests
+o2l run src/tests/main_test.obq
+
+# Run specific tests
+o2l run src/tests/calc/CalculatorTest.obq
+o2l run src/tests/greeters/GreeterTest.obq
+
+# Run with arguments
+o2l run src/main.obq arg1 arg2
+```
+
+#### Project Configuration (o2l.toml)
+
+The initialization process creates an interactive configuration:
+
+```toml
+[package]
+name = "my-project"
+version = "0.1.0"
+description = "An O²L project"
+authors = ["Your Name <your.email@example.com>"]
+
+[dependencies]
+# Libraries added with o2l-pkg add will appear here
+# collections = "latest"
+# com.example.math = "1.2.0"
 ```
 
 ### Your First Program
@@ -2559,28 +2661,28 @@ Object FFIExample {
             io.print("Failed to load math library")
             return 1
         }
-        
+
         lib: Value = libResult.getResult()
-        
+
         # Get a function symbol
         sqrtResult: Result<Value, Error> = lib.symbol("sqrt", "f64->f64")
         if (!sqrtResult.isSuccess()) {
             io.print("Failed to get sqrt function")
             return 1
         }
-        
+
         sqrtFunc: Value = sqrtResult.getResult()
-        
+
         # Call the function
         callResult: Result<Value, Error> = sqrtFunc.call(25.0)
         if (!callResult.isSuccess()) {
             io.print("Function call failed")
             return 1
         }
-        
+
         result: Value = callResult.getResult()
         io.print("sqrt(25.0) = %s", result.toString())
-        
+
         return 0
     }
 }
@@ -2599,36 +2701,36 @@ Object AdvancedFFIExample {
         # Create C strings
         cstrResult: Result<Value, Error> = ffi.cstring("Hello, C World!")
         cstr: Value = cstrResult.getResult()
-        
+
         # Create structs
         structResult: Result<Value, Error> = ffi.struct(32)  # 32-byte struct
         struct: Value = structResult.getResult()
-        
+
         # Add fields to struct
         struct.addField("id", "i32", 0)
         struct.addField("name", "ptr", 8)
         struct.addField("score", "f64", 16)
-        
+
         # Set field values
         struct.setField("id", 42)
         struct.setField("name", cstr)
         struct.setField("score", 95.5)
-        
+
         # Create arrays
         arrayResult: Result<Value, Error> = ffi.array("i32", 5)
         array: Value = arrayResult.getResult()
-        
+
         # Set array elements
         i: Int = 0
         while (i < 5) {
             array.set(i, i * 10)
             i = i + 1
         }
-        
+
         # Access array elements
         firstElement: Value = array.get(0)
         io.print("First array element: %s", firstElement.toString())
-        
+
         return 0
     }
 }
@@ -2647,25 +2749,25 @@ Object PointerExample {
         # Get a pointer from C function call
         lib: Value = ffi.load("/usr/lib/libc.so").getResult()
         mallocFunc: Value = lib.symbol("malloc", "u64->ptr").getResult()
-        
+
         # Allocate memory
         ptr: Value = mallocFunc.call(64).getResult()
-        
+
         # Convert pointer to different types
         stringResult: Result<Value, Error> = ffi.ptrToString(ptr)
         intResult: Result<Value, Error> = ffi.ptrToInt(ptr)
         doubleResult: Result<Value, Error> = ffi.ptrToDouble(ptr)
-        
+
         if (stringResult.isSuccess()) {
             text: Value = stringResult.getResult()
             io.print("Pointer as string: %s", text)
         }
-        
+
         if (intResult.isSuccess()) {
             number: Value = intResult.getResult()
             io.print("Pointer as int: %s", number.toString())
         }
-        
+
         return 0
     }
 }
@@ -2683,33 +2785,33 @@ Object SQLiteExample {
     @external method sqliteDemo(): Int {
         # Load SQLite library
         lib: Value = ffi.load("/opt/homebrew/lib/libsqlite3.dylib").getResult()
-        
+
         # Open database
         openFunc: Value = lib.symbol("sqlite3_open", "ptr,ptr->i32").getResult()
         dbPath: Value = ffi.cstring(":memory:").getResult()
         dbHandleArray: Value = ffi.array("ptr", 1).getResult()
-        
+
         openResult: Int = openFunc.call(dbPath, dbHandleArray).getResult().toInt()
         if (openResult != 0) {
             io.print("Failed to open database")
             return 1
         }
-        
+
         dbHandle: Value = dbHandleArray.get(0)
-        
+
         # Execute SQL
         execFunc: Value = lib.symbol("sqlite3_exec", "ptr,ptr,ptr,ptr,ptr->i32").getResult()
         createSQL: Value = ffi.cstring("CREATE TABLE users (id INTEGER, name TEXT)").getResult()
-        
+
         execResult: Int = execFunc.call(dbHandle, createSQL, ffi.nullPtr(), ffi.nullPtr(), ffi.nullPtr()).getResult().toInt()
         if (execResult == 0) {
             io.print("Table created successfully")
         }
-        
+
         # Close database
         closeFunc: Value = lib.symbol("sqlite3_close", "ptr->i32").getResult()
         closeFunc.call(dbHandle)
-        
+
         return 0
     }
 }
@@ -2718,17 +2820,20 @@ Object SQLiteExample {
 #### **FFI Core Functions**
 
 **Library Management:**
+
 - `ffi.load(path: Text): Result<Value, Error>` - Load shared library
 - `library.symbol(name: Text, signature: Text): Result<Value, Error>` - Get function symbol
 - `function.call(...args): Result<Value, Error>` - Call C function
 
 **Type Creation:**
+
 - `ffi.cstring(text: Text): Result<Value, Error>` - Create null-terminated C string
 - `ffi.struct(size: Int): Result<Value, Error>` - Create struct with specified size
 - `ffi.array(type: Text, count: Int): Result<Value, Error>` - Create typed array
 - `ffi.nullPtr(): Value` - Create null pointer
 
 **Enhanced Type Operations:**
+
 - `struct.addField(name: Text, type: Text, offset: Int): Bool` - Add field to struct
 - `struct.setField(name: Text, value: Value): Bool` - Set field value
 - `struct.getField(name: Text): Value` - Get field value
@@ -2736,6 +2841,7 @@ Object SQLiteExample {
 - `array.get(index: Int): Value` - Get array element
 
 **Pointer Conversions:**
+
 - `ffi.ptrToString(ptr: Value): Result<Value, Error>` - Convert pointer to string
 - `ffi.ptrToInt(ptr: Value): Result<Value, Error>` - Convert pointer to integer
 - `ffi.ptrToDouble(ptr: Value): Result<Value, Error>` - Convert pointer to double
@@ -2747,6 +2853,7 @@ Object SQLiteExample {
 FFI functions use C-style type signatures:
 
 **Basic Types:**
+
 - `i8`, `i16`, `i32`, `i64` - Signed integers
 - `u8`, `u16`, `u32`, `u64` - Unsigned integers
 - `f32`, `f64` - Floating point
@@ -2754,6 +2861,7 @@ FFI functions use C-style type signatures:
 - `void` - No return value
 
 **Function Signatures:**
+
 - `"i32,i32->i32"` - Takes two int32, returns int32
 - `"ptr,f64->ptr"` - Takes pointer and double, returns pointer
 - `"->i32"` - No parameters, returns int32
@@ -2782,6 +2890,7 @@ lib/sqlite/
 ```
 
 The SQLite integration demonstrates:
+
 - Dynamic library loading and symbol resolution
 - Complex function calls with multiple parameters
 - Proper resource management and cleanup
