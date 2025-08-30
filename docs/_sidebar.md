@@ -23,6 +23,9 @@
 - **Standard Library**
   - [📋 Library Overview](standard-library.md)
 
+- **Developer Tools**
+  - [📦 o2l-pkg Package Manager](tools/o2l-pkg.md)
+
 - **Core Types**
   - [🔤 Text](api-reference/core/Text.md)
   - [📋 List](api-reference/core/List.md)
