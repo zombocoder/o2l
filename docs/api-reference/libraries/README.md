@@ -13,6 +13,9 @@ O²L provides a comprehensive set of libraries for common programming tasks incl
 - **[HTTP Client](http-client.md)** - HTTP client for making web requests
 - **[HTTP Server](http-server.md)** - HTTP server for building web applications
 
+### Interoperability Libraries
+- **[FFI](ffi.md)** - Foreign Function Interface for calling native libraries
+
 ## Import Statements
 
 ```obq
