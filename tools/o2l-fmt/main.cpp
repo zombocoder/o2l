@@ -26,7 +26,71 @@
 
 namespace fs = std::filesystem;
 
+struct FormattingConfig {
+    int indent_size = 4;
+};
+
 class O2LFmtTool {
+private:
+    FormattingConfig load_config_from_toml(const std::string& project_dir) {
+        FormattingConfig config;
+        fs::path toml_path = fs::path(project_dir) / "o2l.toml";
+        
+        if (!fs::exists(toml_path)) {
+            return config; // Return default config
+        }
+        
+        std::ifstream file(toml_path);
+        if (!file.is_open()) {
+            return config;
+        }
+        
+        std::string line;
+        bool in_formatting_section = false;
+        
+        while (std::getline(file, line)) {
+            // Trim whitespace
+            line.erase(line.find_last_not_of(" \t\r\n") + 1);
+            line.erase(0, line.find_first_not_of(" \t\r\n"));
+            
+            if (line.empty() || line[0] == '#') continue;
+            
+            if (line == "[formatting]") {
+                in_formatting_section = true;
+                continue;
+            }
+            
+            if (line[0] == '[' && line != "[formatting]") {
+                in_formatting_section = false;
+                continue;
+            }
+            
+            if (in_formatting_section) {
+                auto eq_pos = line.find('=');
+                if (eq_pos != std::string::npos) {
+                    std::string key = line.substr(0, eq_pos);
+                    std::string value = line.substr(eq_pos + 1);
+                    
+                    // Trim key and value
+                    key.erase(key.find_last_not_of(" \t") + 1);
+                    key.erase(0, key.find_first_not_of(" \t"));
+                    value.erase(value.find_last_not_of(" \t") + 1);
+                    value.erase(0, value.find_first_not_of(" \t"));
+                    
+                    if (key == "indent_size") {
+                        try {
+                            config.indent_size = std::stoi(value);
+                        } catch (...) {
+                            // Keep default if parsing fails
+                        }
+                    }
+                }
+            }
+        }
+        
+        return config;
+    }
+
 public:
     void show_help() {
         std::cout << "O²L Code Formatter v0.1.0\n";
@@ -134,7 +198,8 @@ private:
             input += line + "\n";
         }
         
-        O2LFormatter formatter;
+        // Use default 4-space indentation for stdin (no project context)
+        O2LFormatter formatter(4);
         std::string formatted = formatter.format_code(input);
         std::cout << formatted;
         
@@ -159,6 +224,20 @@ private:
             return 0;
         }
         
+        // Load formatting config from project directory
+        fs::path current_path = fs::absolute(file_path).parent_path();
+        fs::path project_dir = current_path;
+        
+        // Walk up to find o2l.toml
+        while (project_dir != project_dir.root_path()) {
+            if (fs::exists(project_dir / "o2l.toml")) {
+                break;
+            }
+            project_dir = project_dir.parent_path();
+        }
+        
+        FormattingConfig config = load_config_from_toml(project_dir.string());
+        
         // Read file content
         std::ifstream file(file_path);
         if (!file.is_open()) {
@@ -173,8 +252,8 @@ private:
         }
         file.close();
         
-        // Format the code
-        O2LFormatter formatter;
+        // Format the code with config
+        O2LFormatter formatter(config.indent_size);
         std::string formatted = formatter.format_code(content);
         
         // Check if file needs formatting (handle trailing newlines consistently)

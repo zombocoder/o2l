@@ -27,10 +27,14 @@
 class O2LFormatter {
 private:
     int indent_level = 0;
-    const std::string indent_str = "    "; // 4 spaces
+    std::string indent_str = "    "; // 4 spaces default
     bool in_block_comment = false;
     
 public:
+    O2LFormatter(int indent_size = 4) {
+        indent_str = std::string(indent_size, ' ');
+    }
+    
     std::string format_code(const std::string& input);
     std::string format_code_with_validation(const std::string& input);
     

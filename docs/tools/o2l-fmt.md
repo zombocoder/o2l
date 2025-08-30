@@ -56,7 +56,7 @@ cat file.obq | o2l-fmt -s
 The formatter applies these standardized formatting rules:
 
 ### Indentation
-- **4-space indentation** for all code blocks
+- **Configurable indentation** (default: 4 spaces, configurable via `o2l.toml`)
 - Consistent nesting levels
 
 ### Spacing
@@ -73,6 +73,37 @@ The formatter applies these standardized formatting rules:
 ### Brace Placement
 - **Consistent brace placement** with proper line breaks
 - **Balanced braces** (validates and throws errors for unmatched braces)
+
+## Configuration
+
+The formatter can be configured per-project using the `o2l.toml` file in your project root.
+
+### Supported Configuration Options
+
+```toml
+[formatting]
+indent_size = 2  # Number of spaces for indentation (default: 4)
+```
+
+### Configuration Resolution
+
+The formatter automatically searches for `o2l.toml` configuration files:
+
+1. **For file formatting**: Walks up from the file's directory to find `o2l.toml`
+2. **For stdin formatting**: Uses default settings (4-space indentation)
+3. **Default fallback**: 4-space indentation if no config found
+
+### Example Project Structure
+```
+my-project/
+├── o2l.toml           # Project configuration
+├── src/
+│   ├── main.obq       # Will use config from o2l.toml
+│   └── utils/
+│       └── helper.obq # Will also use config from o2l.toml
+└── tests/
+    └── test.obq       # Will also use config from o2l.toml
+```
 
 ## Examples
 
