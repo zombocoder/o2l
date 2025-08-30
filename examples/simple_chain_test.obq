@@ -1,6 +1,6 @@
 import system.io
 
-record Point {
+Record Point {
     x: Int
     y: Int
 }

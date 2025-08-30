@@ -1,6 +1,6 @@
 import system.io
 
-record UserInfo {
+Record UserInfo {
     name: Text
     age: Int
 }

@@ -1,13 +1,13 @@
 import system.io
 import system.os
 
-enum Status {
+Enum Status {
     PENDING,
     ACTIVE = 10,
     COMPLETED
 }
 
-record UserInfo {
+Record UserInfo {
     name: Text
     status: Status
 }

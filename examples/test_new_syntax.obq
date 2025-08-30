@@ -37,7 +37,7 @@ Object Main {
         test: TestObject = new TestObject()
         test.showInfo()
         
-        # Test enum comparison
+        # Test Enum comparison
         currentStatus: Status = Status.COMPLETED
         if (currentStatus == Status.COMPLETED) {
             io.print("Status is completed!")

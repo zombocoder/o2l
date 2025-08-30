@@ -19,8 +19,10 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
 #include <algorithm>
 #include <regex>
+#include <stdexcept>
 
 class O2LFormatter {
 private:
@@ -30,6 +32,7 @@ private:
     
 public:
     std::string format_code(const std::string& input);
+    std::string format_code_with_validation(const std::string& input);
     
 private:
     std::string format_line(const std::string& line);

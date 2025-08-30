@@ -25,6 +25,7 @@
 
 - **Developer Tools**
   - [📦 o2l-pkg Package Manager](tools/o2l-pkg.md)
+  - [✨ o2l-fmt Code Formatter](tools/o2l-fmt.md)
 
 - **Core Types**
   - [🔤 Text](api-reference/core/Text.md)

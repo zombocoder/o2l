@@ -1,6 +1,6 @@
 import system.io
 
-# Define an enum for age info
+# Define an Enum for age info
 Enum PersonalInfoAge {
     YOUNG = 1,
     MIDDLE = 2,

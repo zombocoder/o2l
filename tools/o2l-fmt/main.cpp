@@ -52,6 +52,9 @@ public:
         std::cout << "    • Space after keywords (Object, method, if, etc.)\n";
         std::cout << "    • Consistent brace placement\n";
         std::cout << "    • Proper type annotation spacing (name: Type)\n";
+        std::cout << "    • 3 newlines after import blocks\n";
+        std::cout << "    • 1 newline between Object methods\n";
+        std::cout << "    • 1 newline after Object property blocks\n";
     }
     
     int run(int argc, char* argv[]) {

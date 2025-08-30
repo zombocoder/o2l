@@ -2,14 +2,14 @@ import system.io
 import system.os
 
 # Enum with custom values
-enum Priority {
+Enum Priority {
     LOW,
     MEDIUM = 5,
     HIGH = 10
 }
 
 # Record with multiple fields
-record Task {
+Record Task {
     name: Text
     priority: Priority
     completed: Bool

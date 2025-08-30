@@ -1,13 +1,13 @@
 import system.io
 import system.os
 
-enum Status {
+Enum Status {
     PENDING,
     ACTIVE = 10,
     COMPLETED
 }
 
-record UserData {
+Record UserData {
     name: Text
     id: Int
 }
@@ -48,7 +48,7 @@ Object Main {
         # Test @external method access
         this.testObj.showStatus()
         
-        # Test record creation
+        # Test Record creation
         userData: UserData = UserData(name="Bob", id=123)
         io.print("Record user: %s with ID: %d", userData.name, userData.id)
         
@@ -56,7 +56,7 @@ Object Main {
         const MAX_USERS: Int = 100
         io.print("Max users allowed: %d", MAX_USERS)
         
-        # Test enum values  
+        # Test Enum values  
         currentStatus: Status = Status.COMPLETED
         io.print("Current status: %o", currentStatus)
         

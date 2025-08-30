@@ -1,12 +1,12 @@
 import system.io
 import system.os
 
-enum PersonalInfoAge {
+Enum PersonalInfoAge {
     OLD = 1,
     YOUNG = 2
 }
 
-record PersonalInfoDTO {
+Record PersonalInfoDTO {
     ###
         Some comments about this Record
     ###

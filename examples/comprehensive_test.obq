@@ -5,13 +5,13 @@ Multi-line comments work perfectly
 This demonstrates most implemented features
 ###
 
-enum Status {
+Enum Status {
     PENDING,
     RUNNING = 10,
     COMPLETED
 }
 
-record Point {
+Record Point {
     x: Int
     y: Int
 }
