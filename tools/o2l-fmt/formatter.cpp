@@ -51,15 +51,15 @@ std::string O2LFormatter::format_code(const std::string& input) {
         result.pop_back();
     }
     
-    // Apply document-level spacing rules
-    // 3 newlines after import blocks
-    result = std::regex_replace(result, std::regex("(import[^\\n]*\\n)\\n*(Object|Record|Enum|Protocol)"), "$1\n\n$2");
-    // 1 newline between top-level declarations (Object, Enum, Record, Protocol)
-    result = std::regex_replace(result, std::regex("\\}\\n(Object|Record|Enum|Protocol)"), "}\n\n$1");
-    // 1 newline between Object methods  
-    result = std::regex_replace(result, std::regex("\\}\\n(\\s*)(@?\\w*\\s*method)"), "}\n\n$1$2");
-    // 1 newline after Object property blocks
-    result = std::regex_replace(result, std::regex("(property[^\\n]*\\n)(\\s*)(method|constructor)"), "$1\n$2$3");
+    // Apply document-level spacing rules (idempotent)
+    // 3 newlines after import blocks (only if not already 3)
+    result = std::regex_replace(result, std::regex("(import[^\\n]*\\n)(?!\\n\\n)(\\n*)(Object|Record|Enum|Protocol)"), "$1\n\n$3");
+    // 1 newline between top-level declarations (only if not already present)
+    result = std::regex_replace(result, std::regex("\\}(?!\\n\\n)\\n?(Object|Record|Enum|Protocol)"), "}\n\n$1");
+    // 1 newline between Object methods (only if not already present)
+    result = std::regex_replace(result, std::regex("\\}(?!\\n\\n)\\n?(\\s*)(@?\\w*\\s*method)"), "}\n\n$1$2");
+    // 1 newline after Object property blocks (only if not already present)
+    result = std::regex_replace(result, std::regex("(property[^\\n]*\\n)(?!\\n)(\\s*)(method|constructor)"), "$1\n$2$3");
     
     return result;
 }
@@ -268,13 +268,15 @@ std::string O2LFormatter::break_up_oneliners(const std::string& line) {
     result = std::regex_replace(result, std::regex("([^\\n])\\s*\\}"), "$1\n}");
     
     // Step 3: Break after closing braces followed by any word character (including Object, method, etc.)
-    result = std::regex_replace(result, std::regex("\\}\\s*(\\w)"), "}\n$1");
+    // But preserve "} else" patterns
+    result = std::regex_replace(result, std::regex("\\}\\s*(?!else)(\\w)"), "}\n$1");
     
     // Step 4: Break multiple consecutive closing braces
     result = std::regex_replace(result, std::regex("\\}\\s*\\}"), "}\n}");
     
     // Step 5: Apply brace breaking again to catch any patterns created by previous steps
-    result = std::regex_replace(result, std::regex("\\}\\s*(\\w)"), "}\n$1");
+    // But preserve "} else" patterns
+    result = std::regex_replace(result, std::regex("\\}\\s*(?!else)(\\w)"), "}\n$1");
     
     // Step 6: Clean up excessive newlines (multiple passes)
     result = std::regex_replace(result, std::regex("\\n\\s*\\n\\s*\\n+"), "\n\n");

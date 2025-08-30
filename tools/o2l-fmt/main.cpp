@@ -37,6 +37,7 @@ public:
         std::cout << "    -w, --write      Write result to (source) file instead of stdout\n";
         std::cout << "    -d, --diff       Display diffs instead of rewriting files\n";
         std::cout << "    -l, --list       List files whose formatting differs from o2l-fmt's\n";
+        std::cout << "    -c, --check      Exit with non-zero status if formatting is needed (CI mode)\n";
         std::cout << "    -r, --recursive  Process directories recursively\n";
         std::cout << "    -s, --stdin      Read from stdin (default if no files given)\n";
         std::cout << "    -h, --help       Show this help message\n\n";
@@ -45,7 +46,8 @@ public:
         std::cout << "    o2l-fmt -w file.obq             # Format file.obq in place\n";
         std::cout << "    o2l-fmt -r src/                 # Format all .obq files in src/\n";
         std::cout << "    o2l-fmt -d file.obq             # Show diff of changes\n";
-        std::cout << "    o2l-fmt -l .                    # List files that need formatting\n\n";
+        std::cout << "    o2l-fmt -l .                    # List files that need formatting\n";
+        std::cout << "    o2l-fmt -c src/                 # Check if formatting needed (CI)\n\n";
         std::cout << "FORMATTING RULES:\n";
         std::cout << "    • 4-space indentation\n";
         std::cout << "    • Spaces around operators (=, +, -, *, /, ==, etc.)\n";
@@ -61,6 +63,7 @@ public:
         bool write_files = false;
         bool show_diff = false;
         bool list_only = false;
+        bool check_mode = false;
         bool recursive = false;
         bool use_stdin = false;
         std::vector<std::string> files;
@@ -78,6 +81,8 @@ public:
                 show_diff = true;
             } else if (arg == "-l" || arg == "--list") {
                 list_only = true;
+            } else if (arg == "-c" || arg == "--check") {
+                check_mode = true;
             } else if (arg == "-r" || arg == "--recursive") {
                 recursive = true;
             } else if (arg == "-s" || arg == "--stdin") {
@@ -102,19 +107,22 @@ public:
         }
         
         // Process each file/directory
+        int exit_code = 0;
         for (const auto& path : files) {
             if (fs::is_directory(path)) {
                 if (recursive) {
-                    process_directory(path, write_files, show_diff, list_only);
+                    int dir_exit = process_directory(path, write_files, show_diff, list_only, check_mode);
+                    if (dir_exit != 0) exit_code = dir_exit;
                 } else {
                     std::cerr << "Skipping directory: " << path << " (use -r for recursive)\n";
                 }
             } else {
-                process_file(path, write_files, show_diff, list_only);
+                int file_exit = process_file(path, write_files, show_diff, list_only, check_mode);
+                if (file_exit != 0) exit_code = file_exit;
             }
         }
         
-        return 0;
+        return exit_code;
     }
     
 private:
@@ -133,26 +141,29 @@ private:
         return 0;
     }
     
-    void process_directory(const std::string& dir_path, bool write_files, bool show_diff, bool list_only) {
+    int process_directory(const std::string& dir_path, bool write_files, bool show_diff, bool list_only, bool check_mode) {
+        int exit_code = 0;
         for (const auto& entry : fs::recursive_directory_iterator(dir_path)) {
             if (entry.is_regular_file() && entry.path().extension() == ".obq") {
-                process_file(entry.path().string(), write_files, show_diff, list_only);
+                int file_exit = process_file(entry.path().string(), write_files, show_diff, list_only, check_mode);
+                if (file_exit != 0) exit_code = file_exit;
             }
         }
+        return exit_code;
     }
     
-    void process_file(const std::string& file_path, bool write_files, bool show_diff, bool list_only) {
+    int process_file(const std::string& file_path, bool write_files, bool show_diff, bool list_only, bool check_mode) {
         // Check if file has .obq extension
         if (!file_path.ends_with(".obq")) {
             std::cerr << "Skipping non-O²L file: " << file_path << std::endl;
-            return;
+            return 0;
         }
         
         // Read file content
         std::ifstream file(file_path);
         if (!file.is_open()) {
             std::cerr << "Error: Cannot open file " << file_path << std::endl;
-            return;
+            return 1;
         }
         
         std::string content;
@@ -166,21 +177,33 @@ private:
         O2LFormatter formatter;
         std::string formatted = formatter.format_code(content);
         
-        // Check if file needs formatting
-        bool needs_formatting = (content != formatted);
+        // Check if file needs formatting (handle trailing newlines consistently)
+        std::string content_no_trailing = content;
+        if (!content_no_trailing.empty() && content_no_trailing.back() == '\n') {
+            content_no_trailing.pop_back();
+        }
+        bool needs_formatting = (content_no_trailing != formatted);
         
         if (list_only) {
             if (needs_formatting) {
                 std::cout << file_path << std::endl;
             }
-            return;
+            return 0;
         }
         
         if (show_diff) {
             if (needs_formatting) {
                 show_file_diff(file_path, content, formatted);
             }
-            return;
+            return 0;
+        }
+        
+        if (check_mode) {
+            if (needs_formatting) {
+                std::cerr << "File needs formatting: " << file_path << std::endl;
+                return 1;
+            }
+            return 0;
         }
         
         if (write_files) {
@@ -192,11 +215,14 @@ private:
                     std::cout << "Formatted: " << file_path << std::endl;
                 } else {
                     std::cerr << "Error: Cannot write to file " << file_path << std::endl;
+                    return 1;
                 }
             }
         } else {
             std::cout << formatted;
         }
+        
+        return 0;
     }
     
     void show_file_diff(const std::string& file_path, const std::string& original, const std::string& formatted) {
@@ -205,21 +231,31 @@ private:
         
         std::istringstream orig_stream(original);
         std::istringstream fmt_stream(formatted);
-        std::string orig_line, fmt_line;
-        int line_num = 1;
+        std::vector<std::string> orig_lines, fmt_lines;
+        std::string line;
         
-        while (std::getline(orig_stream, orig_line) || std::getline(fmt_stream, fmt_line)) {
+        // Read all lines from both streams
+        while (std::getline(orig_stream, line)) {
+            orig_lines.push_back(line);
+        }
+        while (std::getline(fmt_stream, line)) {
+            fmt_lines.push_back(line);
+        }
+        
+        // Compare line by line
+        size_t max_lines = std::max(orig_lines.size(), fmt_lines.size());
+        for (size_t i = 0; i < max_lines; i++) {
+            std::string orig_line = (i < orig_lines.size()) ? orig_lines[i] : "";
+            std::string fmt_line = (i < fmt_lines.size()) ? fmt_lines[i] : "";
+            
             if (orig_line != fmt_line) {
-                if (!orig_line.empty()) {
-                    std::cout << "-" << line_num << ": " << orig_line << std::endl;
+                if (i < orig_lines.size()) {
+                    std::cout << "-" << (i + 1) << ": " << orig_line << std::endl;
                 }
-                if (!fmt_line.empty()) {
-                    std::cout << "+" << line_num << ": " << fmt_line << std::endl;
+                if (i < fmt_lines.size()) {
+                    std::cout << "+" << (i + 1) << ": " << fmt_line << std::endl;
                 }
             }
-            line_num++;
-            orig_line.clear();
-            fmt_line.clear();
         }
     }
 };

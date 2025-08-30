@@ -119,7 +119,7 @@ TEST_F(O2LFmtTest, WildcardImports) {
 // Test multiple top-level declarations
 TEST_F(O2LFmtTest, MultipleTopLevelDeclarations) {
     std::string input = "Record User{name:Text age:Int}Enum Color{RED GREEN BLUE}Object Main{method main():Text{return\"test\"}}";
-    std::string expected = "Record User {\n    name: Text age: Int\n}\nEnum Color {\n    RED GREEN BLUE\n}\nObject Main {\n    method main(): Text {\n        return \"test\"\n    }\n}";
+    std::string expected = "Record User {\n    name: Text age: Int\n}\n\nEnum Color {\n    RED GREEN BLUE\n}\n\nObject Main {\n    method main(): Text {\n        return \"test\"\n    }\n}";
     
     std::string result = format(input);
     EXPECT_EQ(expected, result);
@@ -155,7 +155,7 @@ TEST_F(O2LFmtTest, NestedIndentation) {
 // Test type annotations
 TEST_F(O2LFmtTest, TypeAnnotations) {
     std::string input = "Object Test{property value:Int\nmethod setValue(v:Int):Text{this.value=v\nreturn\"set\"}}";
-    std::string expected = "Object Test {\n    property value: Int\n    method setValue(v: Int): Text {\n        this.value = v\n        return \"set\"\n    }\n}";
+    std::string expected = "Object Test {\n    property value: Int\n\n    method setValue(v: Int): Text {\n        this.value = v\n        return \"set\"\n    }\n}";
     
     std::string result = format(input);
     EXPECT_EQ(expected, result);

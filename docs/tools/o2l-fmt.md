@@ -24,6 +24,11 @@ o2l-fmt -d file.obq
 o2l-fmt -l .
 ```
 
+### Check formatting (CI mode)
+```bash
+o2l-fmt -c src/
+```
+
 ### Process directories recursively
 ```bash
 o2l-fmt -r src/
@@ -41,6 +46,7 @@ cat file.obq | o2l-fmt -s
 | `-w, --write` | Write result to source file instead of stdout |
 | `-d, --diff` | Display diffs instead of rewriting files |
 | `-l, --list` | List files whose formatting differs from standard |
+| `-c, --check` | Exit with non-zero status if formatting needed (CI mode) |
 | `-r, --recursive` | Process directories recursively |
 | `-s, --stdin` | Read from stdin |
 | `-h, --help` | Show help message |
@@ -134,11 +140,14 @@ done
 ```yaml
 # GitHub Actions example
 - name: Check O²L formatting
+  run: o2l-fmt -c -r .
+
+# Alternative with detailed output
+- name: Check O²L formatting (detailed)
   run: |
-    o2l-fmt -l . > unformatted_files.txt
-    if [ -s unformatted_files.txt ]; then
-      echo "Files need formatting:"
-      cat unformatted_files.txt
+    if ! o2l-fmt -c -r .; then
+      echo "Files need formatting. Run 'o2l-fmt -w -r .' to fix."
+      o2l-fmt -l -r .
       exit 1
     fi
 ```
@@ -176,9 +185,15 @@ The formatter validates:
 ## Best Practices
 
 - **Format before committing** to maintain consistent code style
-- **Use in CI/CD** to catch formatting issues early
+- **Use `--check` in CI/CD** to catch formatting issues early
 - **Configure editor integration** for automatic formatting
 - **Run on entire codebase** periodically to maintain consistency
+
+### CI/CD Best Practices
+
+- Use `o2l-fmt -c -r .` in CI to fail builds on unformatted code
+- Combine with `o2l-fmt -l -r .` to show which files need formatting
+- Consider auto-formatting in CI with `o2l-fmt -w -r .` and auto-commit
 
 ## File Support
 
