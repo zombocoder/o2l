@@ -47,6 +47,8 @@ jobs:
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
+          # Force uninstall cmake if present, then install from homebrew/core
+          brew uninstall --ignore-dependencies cmake || true
           brew install cmake ninja googletest libffi pkg-config
 
       - name: Install dependencies (Windows)
