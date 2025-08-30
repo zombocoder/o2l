@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>O²L Programming Language Documentation</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Comprehensive documentation for the O²L programming language">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    :root {
+      --base-color: #0366d6;
+      --theme-color: #0366d6;
+      --sidebar-width: 300px;
+    }
+    
+    .app-name-link img {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    
+    .markdown-section code {
+      background-color: #f6f8fa;
+      border-radius: 3px;
+      color: #476582;
+      font-family: 'Roboto Mono', Monaco, courier, monospace;
+      font-size: 0.8rem;
+      margin: 0 2px;
+      padding: 3px 5px;
+      white-space: pre-wrap;
+    }
+    
+    .markdown-section pre > code {
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      color: #24292e;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      padding: 16px;
+    }
+    
+    .markdown-section .method-signature {
+      background: #e6f3ff;
+      border: 1px solid #b3d9ff;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 16px 0;
+      font-family: 'Roboto Mono', Monaco, courier, monospace;
+      font-size: 0.9em;
+    }
+    
+    .markdown-section table {
+      border-collapse: collapse;
+      margin: 16px 0;
+      width: 100%;
+    }
+    
+    .markdown-section table th,
+    .markdown-section table td {
+      border: 1px solid #e1e4e8;
+      padding: 6px 13px;
+      text-align: left;
+    }
+    
+    .markdown-section table th {
+      background: #f6f8fa;
+      font-weight: 600;
+    }
+    
+    .markdown-section table tr:nth-child(2n) {
+      background: #f6f8fa;
+    }
+    
+    .o2l-highlight {
+      background: #f8f8ff;
+      border-left: 4px solid var(--theme-color);
+      padding: 16px;
+      margin: 16px 0;
+      border-radius: 0 6px 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">Loading O²L Documentation...</div>
+  <script>
+    window.$docsify = {
+      name: 'O²L Programming Language',
+      repo: 'https://github.com/zombocoder/o2l',
+      homepage: 'README.md',
+      loadSidebar: true,
+      loadNavbar: true,
+      subMaxLevel: 3,
+      auto2top: true,
+      search: {
+        maxAge: 86400000, // Expiration time, the default one day
+        paths: 'auto',
+        placeholder: 'Search O²L documentation...',
+        noData: 'No results found.',
+        depth: 6,
+        hideOtherSidebarContent: false
+      },
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/.*/_navbar.md': '/_navbar.md'
+      },
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next',
+        crossChapter: true,
+        crossChapterText: true
+      },
+      copyCode: {
+        buttonText: 'Copy',
+        errorText: 'Error',
+        successText: 'Copied!'
+      },
+      tabs: {
+        persist: true,
+        sync: true,
+        theme: 'classic',
+        tabComments: true,
+        tabHeadings: true
+      }
+    }
+  </script>
+  <!-- Docsify v4 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- Search plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <!-- Syntax highlighting -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-core.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/plugins/autoloader/prism-autoloader.min.js"></script>
+  <!-- Pagination -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-pagination/dist/docsify-pagination.min.js"></script>
+  <!-- Copy code -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <!-- Tabs -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+  <!-- Zoom image -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+</body>
+</html>
