@@ -24,6 +24,7 @@ import datetime
 import json
 import http          # HTTP client
 import http.server   # HTTP server
+import ffi           # Foreign Function Interface
 ```
 
 ## Quick Reference

@@ -50,6 +50,9 @@
   - [🌐 HTTP Client](api-reference/libraries/http-client.md)
   - [🚀 HTTP Server](api-reference/libraries/http-server.md)
 
+- **Interoperability Libraries**
+  - [🔗 FFI](api-reference/libraries/ffi.md)
+
 - **Reference**
   - [📖 Language Reference](language-reference.md)
   - [Core Types Index](api-reference/core/README.md)
