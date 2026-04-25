@@ -408,3 +408,37 @@ Object PrecedenceComplete {
     }
 }
 ```
+
+## Generic Types
+
+O²L provides a robust generic type system for collections and result types.
+
+### Syntax
+Generic types use angle brackets `<T>` for single parameters and `<K, V>` for multiple parameters.
+
+### Nested Generics
+O²L supports recursive nested generics, allowing for complex data structures:
+
+```o2l
+# Map where values are lists of integers
+complex_data: Map<Text, List<Int>> = {
+    "group1": [1, 2, 3],
+    "group2": [4, 5, 6]
+}
+
+# Nested result types
+operation: Result<List<Text>, Error> = Result.success(["ok", "done"])
+```
+
+### Type Parsing
+The parser handles nested generics in all declaration contexts:
+- Variable declarations: `x: List<List<Int>> = [[1]]`
+- Property declarations: `property cache: Map<Text, Any>`
+- Record fields: `Record Data { items: Set<Text> }`
+- Protocol signatures: `method process(data: List<Map<Text, Int>>): Bool`
+- New expressions: `list = new List<Text>()`
+
+### Benefits
+- **Type Safety**: Ensures collections only contain expected types.
+- **Self-Documentation**: Code clearly expresses the structure of data.
+- **Expressiveness**: Easily model complex domain objects without losing type information.

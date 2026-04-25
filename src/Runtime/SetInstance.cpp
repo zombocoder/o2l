@@ -18,6 +18,8 @@
 
 #include <sstream>
 
+#include "ListInstance.hpp"
+
 namespace o2l {
 
 SetInstance::SetInstance(const std::string& element_type) : element_type_name_(element_type) {}
@@ -38,6 +40,82 @@ void SetInstance::clear() {
     elements_.clear();
 }
 
+int SetInstance::addAll(const SetInstance& other) {
+    int added = 0;
+    for (const auto& element : other.elements_) {
+        if (elements_.insert(element).second) ++added;
+    }
+    return added;
+}
+
+std::shared_ptr<SetInstance> SetInstance::setUnion(const SetInstance& other) const {
+    auto result = std::make_shared<SetInstance>(element_type_name_);
+    for (const auto& element : elements_) {
+        result->add(element);
+    }
+    for (const auto& element : other.elements_) {
+        result->add(element);
+    }
+    return result;
+}
+
+std::shared_ptr<SetInstance> SetInstance::setIntersection(const SetInstance& other) const {
+    auto result = std::make_shared<SetInstance>(element_type_name_);
+    for (const auto& element : elements_) {
+        if (other.contains(element)) {
+            result->add(element);
+        }
+    }
+    return result;
+}
+
+std::shared_ptr<SetInstance> SetInstance::setDifference(const SetInstance& other) const {
+    auto result = std::make_shared<SetInstance>(element_type_name_);
+    for (const auto& element : elements_) {
+        if (!other.contains(element)) {
+            result->add(element);
+        }
+    }
+    return result;
+}
+
+std::shared_ptr<SetInstance> SetInstance::setSymmetricDifference(const SetInstance& other) const {
+    auto result = std::make_shared<SetInstance>(element_type_name_);
+    for (const auto& element : elements_) {
+        if (!other.contains(element)) {
+            result->add(element);
+        }
+    }
+    for (const auto& element : other.elements_) {
+        if (!this->contains(element)) {
+            result->add(element);
+        }
+    }
+    return result;
+}
+
+bool SetInstance::isSubsetOf(const SetInstance& other) const {
+    for (const auto& element : elements_) {
+        if (!other.contains(element)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool SetInstance::isSupersetOf(const SetInstance& other) const {
+    return other.isSubsetOf(*this);
+}
+
+bool SetInstance::isDisjointFrom(const SetInstance& other) const {
+    for (const auto& element : elements_) {
+        if (other.contains(element)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::vector<Value> SetInstance::elements() const {
     std::vector<Value> result;
     result.reserve(elements_.size());
@@ -45,6 +123,22 @@ std::vector<Value> SetInstance::elements() const {
         result.push_back(element);
     }
     return result;
+}
+
+std::shared_ptr<ListInstance> SetInstance::toList() const {
+    auto result = std::make_shared<ListInstance>(element_type_name_);
+    for (const auto& element : elements_) {
+        result->add(element);
+    }
+    return result;
+}
+
+int SetInstance::removeAll(const SetInstance& other) {
+    int removed = 0;
+    for (const auto& element : other.elements_) {
+        removed += static_cast<int>(elements_.erase(element));
+    }
+    return removed;
 }
 
 size_t SetInstance::size() const {

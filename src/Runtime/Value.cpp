@@ -240,4 +240,70 @@ bool valuesEqual(const Value& a, const Value& b) {
         a, b);
 }
 
+bool valuesLess(const Value& a, const Value& b) {
+    // If types are different, order by variant index
+    if (a.index() != b.index()) {
+        return a.index() < b.index();
+    }
+
+    return std::visit(
+        [](const auto& lhs, const auto& rhs) -> bool {
+            using T = std::decay_t<decltype(lhs)>;
+            using U = std::decay_t<decltype(rhs)>;
+
+            if constexpr (std::is_same_v<T, U>) {
+                if constexpr (std::is_same_v<T, std::shared_ptr<ObjectInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<EnumInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<RecordType>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<RecordInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ListInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ListIterator>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<RepeatIterator>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<MapInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<MapIterator>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<SetInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<SetIterator>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<MapObject>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ErrorInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::PtrInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CStructInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CArrayInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CCallbackInstance>>) {
+                    return lhs.get() < rhs.get();
+                } else if constexpr (std::is_same_v<T, ValueList>) {
+                    return lhs < rhs;
+                } else if constexpr (std::is_same_v<T, ValueMap>) {
+                    return lhs < rhs;
+                } else if constexpr (std::is_same_v<T, ValueOptional>) {
+                    return lhs < rhs;
+                } else {
+                    return lhs < rhs;
+                }
+            } else {
+                return false; // Should be handled by index check
+            }
+        },
+        a, b);
+}
+
 }  // namespace o2l

@@ -112,4 +112,11 @@ std::string getTypeName(const Value& value);
 bool valuesEqual(const Value& a, const Value& b);
 bool valuesLess(const Value& a, const Value& b);
 
+// Custom comparator for Value types for use in std::set and std::map
+struct ValueComparator {
+    bool operator()(const Value& a, const Value& b) const {
+        return valuesLess(a, b);
+    }
+};
+
 }  // namespace o2l

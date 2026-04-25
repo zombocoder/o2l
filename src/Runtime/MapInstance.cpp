@@ -18,6 +18,8 @@
 
 #include <sstream>
 
+#include "SetInstance.hpp"
+
 #include "../Common/Exceptions.hpp"
 #include "Value.hpp"
 
@@ -26,8 +28,11 @@ namespace o2l {
 MapInstance::MapInstance(const std::string& key_type, const std::string& value_type)
     : key_type_name_(key_type), value_type_name_(value_type) {}
 
-void MapInstance::put(const Value& key, const Value& value) {
+Value MapInstance::put(const Value& key, const Value& value) {
+    auto it = entries_.find(key);
+    Value old = (it != entries_.end()) ? it->second : Value(Int(0));
     entries_[key] = value;
+    return old;
 }
 
 Value MapInstance::get(const Value& key) const {
@@ -38,16 +43,45 @@ Value MapInstance::get(const Value& key) const {
     return it->second;
 }
 
+Value MapInstance::getOrDefault(const Value& key, const Value& default_value) const {
+    auto it = entries_.find(key);
+    if (it == entries_.end()) {
+        return default_value;
+    }
+    return it->second;
+}
+
 bool MapInstance::contains(const Value& key) const {
     return entries_.find(key) != entries_.end();
 }
 
-void MapInstance::remove(const Value& key) {
+bool MapInstance::containsValue(const Value& value) const {
+    for (const auto& pair : entries_) {
+        if (o2l::valuesEqual(pair.second, value)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+Value MapInstance::remove(const Value& key) {
     auto it = entries_.find(key);
     if (it == entries_.end()) {
         throw EvaluationError("Key not found in map");
     }
+    Value removed = it->second;
     entries_.erase(it);
+    return removed;
+}
+
+void MapInstance::merge(const MapInstance& other) {
+    putAll(other);
+}
+
+void MapInstance::putAll(const MapInstance& other) {
+    for (const auto& pair : other.entries_) {
+        entries_[pair.first] = pair.second;
+    }
 }
 
 void MapInstance::clear() {
@@ -68,6 +102,15 @@ std::vector<Value> MapInstance::values() const {
     result.reserve(entries_.size());
     for (const auto& pair : entries_) {
         result.push_back(pair.second);
+    }
+    return result;
+}
+
+std::shared_ptr<SetInstance> MapInstance::entrySet() const {
+    auto result = std::make_shared<SetInstance>("Text");
+    for (const auto& pair : entries_) {
+        std::string entry_str = valueToString(pair.first) + ":" + valueToString(pair.second);
+        result->add(Text(entry_str));
     }
     return result;
 }

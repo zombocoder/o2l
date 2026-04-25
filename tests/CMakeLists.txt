@@ -34,6 +34,8 @@ set(TEST_SOURCES_LIST
     test_else_if_length.cpp
     test_url_library.cpp
     test_json_library.cpp
+    test_collection_extensions.cpp
+    test_nested_generics.cpp
     test_http_client_library.cpp
     test_http_server_library.cpp
     test_type_conversions.cpp
@@ -103,6 +105,8 @@ add_test(NAME regexp_library_tests COMMAND o2l_tests --gtest_filter="RegexpLibra
 add_test(NAME else_if_length_tests COMMAND o2l_tests --gtest_filter="ElseIfAndLengthTest.*")
 add_test(NAME url_library_tests COMMAND o2l_tests --gtest_filter="UrlLibraryTest.*")
 add_test(NAME json_library_tests COMMAND o2l_tests --gtest_filter="JsonLibraryTest.*")
+add_test(NAME collection_extensions_tests COMMAND o2l_tests --gtest_filter="CollectionExtensionsTest.*")
+add_test(NAME nested_generics_tests COMMAND o2l_tests --gtest_filter="NestedGenericsTest.*")
 add_test(NAME http_client_library_tests COMMAND o2l_tests --gtest_filter="HttpClientLibraryTest.*")
 add_test(NAME http_server_library_tests COMMAND o2l_tests --gtest_filter="HttpServerLibraryTest.*")
 add_test(NAME type_conversion_tests COMMAND o2l_tests --gtest_filter="TypeConversionTest.*")

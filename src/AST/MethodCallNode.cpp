@@ -141,17 +141,68 @@ Value MethodCallNode::evaluate(Context& context) {
                 }
                 list_instance->clear();
                 return Value{};  // Return void/empty value
+            } else if (method_name_ == "set") {
+                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("List.set() requires Int index and Value argument", context);
+                }
+                size_t index = static_cast<size_t>(std::get<Int>(arg_values[0]));
+                list_instance->set(index, arg_values[1]);
+                return Value{};
+            } else if (method_name_ == "addAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<ListInstance>>(arg_values[0])) {
+                    throw EvaluationError("List.addAll() requires exactly one List argument", context);
+                }
+                auto other = std::get<std::shared_ptr<ListInstance>>(arg_values[0]);
+                list_instance->addAll(*other);
+                return Value{};
+            } else if (method_name_ == "sort") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("List.sort() takes no arguments", context);
+                }
+                list_instance->sort();
+                return Value{};
+            } else if (method_name_ == "sortDescending") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("List.sortDescending() takes no arguments", context);
+                }
+                list_instance->sortDescending();
+                return Value{};
+            } else if (method_name_ == "slice") {
+                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0]) || !std::holds_alternative<Int>(arg_values[1])) {
+                    throw EvaluationError("List.slice() requires two Int arguments (start, end)", context);
+                }
+                size_t start = static_cast<size_t>(std::get<Int>(arg_values[0]));
+                size_t end = static_cast<size_t>(std::get<Int>(arg_values[1]));
+                return list_instance->slice(start, end);
+            } else if (method_name_ == "copy") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("List.copy() takes no arguments", context);
+                }
+                return Value(list_instance->copy());
+            } else if (method_name_ == "removeAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<ListInstance>>(arg_values[0])) {
+                    throw EvaluationError("List.removeAll() requires exactly one List argument", context);
+                }
+                auto other = std::get<std::shared_ptr<ListInstance>>(arg_values[0]);
+                list_instance->removeAll(*other);
+                return Value();
+            } else if (method_name_ == "retainAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<ListInstance>>(arg_values[0])) {
+                    throw EvaluationError("List.retainAll() requires exactly one List argument", context);
+                }
+                auto other = std::get<std::shared_ptr<ListInstance>>(arg_values[0]);
+                list_instance->retainAll(*other);
+                return Value();
+            } else if (method_name_ == "lastIndexOf") {
+                if (arg_values.size() != 1) {
+                    throw EvaluationError("List.lastIndexOf() requires exactly one argument", context);
+                }
+                return Int(static_cast<Int>(list_instance->lastIndexOf(arg_values[0])));
             } else if (method_name_ == "contains") {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("List.contains() requires exactly one argument", context);
                 }
-                const auto& elements = list_instance->getElements();
-                for (const auto& element : elements) {
-                    if (o2l::valuesEqual(element, arg_values[0])) {
-                        return Bool(true);
-                    }
-                }
-                return Bool(false);
+                return Bool(list_instance->contains(arg_values[0]));
             } else if (method_name_ == "indexOf") {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("List.indexOf() requires exactly one argument", context);
@@ -278,12 +329,22 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("Map.get() requires exactly one argument (key)", context);
                 }
                 return map_instance->get(arg_values[0]);
+            } else if (method_name_ == "getOrDefault") {
+                if (arg_values.size() != 2) {
+                    throw EvaluationError("Map.getOrDefault() requires two arguments (key, default)", context);
+                }
+                return map_instance->getOrDefault(arg_values[0], arg_values[1]);
             } else if (method_name_ == "contains") {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("Map.contains() requires exactly one argument (key)",
                                           context);
                 }
                 return Bool(map_instance->contains(arg_values[0]));
+            } else if (method_name_ == "containsValue") {
+                if (arg_values.size() != 1) {
+                    throw EvaluationError("Map.containsValue() requires exactly one argument (value)", context);
+                }
+                return Bool(map_instance->containsValue(arg_values[0]));
             } else if (method_name_ == "remove") {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("Map.remove() requires exactly one argument (key)",
@@ -330,6 +391,25 @@ Value MethodCallNode::evaluate(Context& context) {
                     list_instance->add(value);
                 }
                 return Value(list_instance);
+            } else if (method_name_ == "merge") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<MapInstance>>(arg_values[0])) {
+                    throw EvaluationError("Map.merge() requires exactly one Map argument", context);
+                }
+                auto other = std::get<std::shared_ptr<MapInstance>>(arg_values[0]);
+                map_instance->merge(*other);
+                return Value();
+            } else if (method_name_ == "putAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<MapInstance>>(arg_values[0])) {
+                    throw EvaluationError("Map.putAll() requires exactly one Map argument", context);
+                }
+                auto other = std::get<std::shared_ptr<MapInstance>>(arg_values[0]);
+                map_instance->putAll(*other);
+                return Value();
+            } else if (method_name_ == "entrySet") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Map.entrySet() takes no arguments", context);
+                }
+                return Value(map_instance->entrySet());
             } else if (method_name_ == "iterator") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Map.iterator() takes no arguments", context);
@@ -469,6 +549,67 @@ Value MethodCallNode::evaluate(Context& context) {
                     list_instance->add(element);
                 }
                 return Value(list_instance);
+            } else if (method_name_ == "union") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.union() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Value(set_instance->setUnion(*other));
+            } else if (method_name_ == "intersection") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.intersection() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Value(set_instance->setIntersection(*other));
+            } else if (method_name_ == "difference") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.difference() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Value(set_instance->setDifference(*other));
+            } else if (method_name_ == "symmetricDifference") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.symmetricDifference() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Value(set_instance->setSymmetricDifference(*other));
+            } else if (method_name_ == "isSubsetOf") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.isSubsetOf() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Bool(set_instance->isSubsetOf(*other));
+            } else if (method_name_ == "isSupersetOf") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.isSupersetOf() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Bool(set_instance->isSupersetOf(*other));
+            } else if (method_name_ == "isDisjointFrom") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.isDisjointFrom() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                return Bool(set_instance->isDisjointFrom(*other));
+            } else if (method_name_ == "addAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.addAll() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                set_instance->addAll(*other);
+                return Value();
+            } else if (method_name_ == "toList") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Set.toList() takes no arguments", context);
+                }
+                return Value(set_instance->toList());
+            } else if (method_name_ == "removeAll") {
+                if (arg_values.size() != 1 || !std::holds_alternative<std::shared_ptr<SetInstance>>(arg_values[0])) {
+                    throw EvaluationError("Set.removeAll() requires exactly one Set argument", context);
+                }
+                auto other = std::get<std::shared_ptr<SetInstance>>(arg_values[0]);
+                set_instance->removeAll(*other);
+                return Value();
             } else if (method_name_ == "iterator") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Set.iterator() takes no arguments", context);
@@ -822,6 +963,15 @@ Value MethodCallNode::evaluate(Context& context) {
                 std::string substring = std::get<Text>(arg_values[0]);
                 size_t pos = text_value.find(substring);
                 return Int(pos == std::string::npos ? -1 : static_cast<Int>(pos));
+            } else if (method_name_ == "contains") {
+                // Text.contains(substring) -> Bool
+                // Returns true if the text contains the given substring
+                if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
+                    throw EvaluationError("Text.contains() requires exactly one Text argument",
+                                          context);
+                }
+                std::string substring = std::get<Text>(arg_values[0]);
+                return Bool(text_value.find(substring) != std::string::npos);
             } else if (method_name_ == "rfind") {
                 if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
                     throw EvaluationError("Text.rfind() requires exactly one Text argument",
@@ -1033,9 +1183,9 @@ Value MethodCallNode::evaluate(Context& context) {
                     }
                 }
                 return Bool(has_cased_char);
-            } else if (method_name_ == "strip") {
+            } else if (method_name_ == "strip" || method_name_ == "trim") {
                 if (!arg_values.empty()) {
-                    throw EvaluationError("Text.strip() takes no arguments", context);
+                    throw EvaluationError("Text." + method_name_ + "() takes no arguments", context);
                 }
                 std::string result = text_value;
                 // Left trim
@@ -1048,18 +1198,18 @@ Value MethodCallNode::evaluate(Context& context) {
                                  .base(),
                              result.end());
                 return Text(result);
-            } else if (method_name_ == "lstrip") {
+            } else if (method_name_ == "lstrip" || method_name_ == "trimStart") {
                 if (!arg_values.empty()) {
-                    throw EvaluationError("Text.lstrip() takes no arguments", context);
+                    throw EvaluationError("Text." + method_name_ + "() takes no arguments", context);
                 }
                 std::string result = text_value;
                 result.erase(result.begin(),
                              std::find_if(result.begin(), result.end(),
                                           [](unsigned char ch) { return !std::isspace(ch); }));
                 return Text(result);
-            } else if (method_name_ == "rstrip") {
+            } else if (method_name_ == "rstrip" || method_name_ == "trimEnd") {
                 if (!arg_values.empty()) {
-                    throw EvaluationError("Text.rstrip() takes no arguments", context);
+                    throw EvaluationError("Text." + method_name_ + "() takes no arguments", context);
                 }
                 std::string result = text_value;
                 result.erase(std::find_if(result.rbegin(), result.rend(),
@@ -1085,6 +1235,51 @@ Value MethodCallNode::evaluate(Context& context) {
                     }
                 }
                 return Text(result);
+            } else if (method_name_ == "substring") {
+                // Text.substring(start, end) -> Text
+                // Returns substring from start (inclusive) to end (exclusive).
+                // Follows Python slice semantics: negative indices count from end.
+                if (arg_values.size() != 2) {
+                    throw EvaluationError("Text.substring() requires exactly 2 arguments (start, end)", context);
+                }
+                if (!std::holds_alternative<Int>(arg_values[0]) || !std::holds_alternative<Int>(arg_values[1])) {
+                    throw EvaluationError("Text.substring() arguments must be Int", context);
+                }
+                auto raw_start = std::get<Int>(arg_values[0]);
+                auto raw_end = std::get<Int>(arg_values[1]);
+                auto len = static_cast<Int>(text_value.length());
+
+                // Resolve negative indices
+                Int start = raw_start < 0 ? std::max(Int(0), len + raw_start) : raw_start;
+                Int end = raw_end < 0 ? std::max(Int(0), len + raw_end) : raw_end;
+
+                // Clamp to bounds
+                start = std::max(Int(0), std::min(start, len));
+                end = std::max(Int(0), std::min(end, len));
+
+                if (start >= end) {
+                    return Text("");
+                }
+                return Text(text_value.substr(static_cast<size_t>(start),
+                                              static_cast<size_t>(end - start)));
+            } else if (method_name_ == "charAt") {
+                // Text.charAt(index) -> Text (single character)
+                // Returns the character at the given index as a single-char Text.
+                // Negative indices count from end.
+                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("Text.charAt() requires exactly 1 Int argument", context);
+                }
+                auto raw_idx = std::get<Int>(arg_values[0]);
+                auto len = static_cast<Int>(text_value.length());
+
+                // Resolve negative index
+                Int idx = raw_idx < 0 ? len + raw_idx : raw_idx;
+
+                if (idx < 0 || idx >= len) {
+                    throw EvaluationError("Text.charAt(): index " + std::to_string(raw_idx) +
+                                          " out of range for Text of length " + std::to_string(len), context);
+                }
+                return Text(std::string(1, text_value[static_cast<size_t>(idx)]));
             } else if (method_name_ == "split") {
                 if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
                     throw EvaluationError("Text.split() requires exactly one Text argument",

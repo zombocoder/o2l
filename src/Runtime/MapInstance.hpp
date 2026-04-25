@@ -35,15 +35,20 @@ class MapInstance {
     MapInstance(const std::string& key_type = "Value", const std::string& value_type = "Value");
 
     // Map operations
-    void put(const Value& key, const Value& value);
+    Value put(const Value& key, const Value& value);
     Value get(const Value& key) const;
+    Value getOrDefault(const Value& key, const Value& default_value) const;
     bool contains(const Value& key) const;
-    void remove(const Value& key);
+    bool containsValue(const Value& value) const;
+    Value remove(const Value& key);
+    void merge(const MapInstance& other);
+    void putAll(const MapInstance& other);
     void clear();
 
     // Collection operations
     std::vector<Value> keys() const;
     std::vector<Value> values() const;
+    std::shared_ptr<SetInstance> entrySet() const;
     size_t size() const;
     bool empty() const;
 
