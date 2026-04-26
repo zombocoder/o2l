@@ -69,6 +69,7 @@ using Long = __int128;
 using Long = long long;  // Fallback to 64-bit if 128-bit not available
 #define O2L_HAS_INT128 0
 #endif
+
 using Float = float;
 using Double = double;
 using Bool = bool;
@@ -109,6 +110,24 @@ struct Value
                           std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
                           std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
                           ValueList, ValueMap, ValueOptional> {
+    Value() : std::variant<Int, Long, Float, Double, Text, Bool, Char,
+                          std::shared_ptr<ObjectInstance>, std::shared_ptr<EnumInstance>,
+                          std::shared_ptr<RecordType>, std::shared_ptr<RecordInstance>,
+                          std::shared_ptr<ProtocolInstance>, std::shared_ptr<ListInstance>,
+                          std::shared_ptr<ListIterator>, std::shared_ptr<RepeatIterator>,
+                          std::shared_ptr<MapInstance>, std::shared_ptr<MapIterator>,
+                          std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
+                          std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
+                          std::shared_ptr<ResultInstance>,
+                          std::shared_ptr<CoroutineHandle>,
+                          std::shared_ptr<ChannelInstance>,
+                          std::shared_ptr<ffi::PtrInstance>,
+                          std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
+                          std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
+                          ValueList, ValueMap, ValueOptional>(static_cast<Int>(0)) {}
+
+    Value(std::nullptr_t) : Value() {}
+
     using variant::variant;
 
     // Additional flag to distinguish between Int and Long when they have the same underlying type

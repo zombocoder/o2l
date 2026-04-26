@@ -21,6 +21,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <iostream>
 
 #include "../Common/Exceptions.hpp"
 #include "../Common/StackFrameGuard.hpp"
@@ -791,8 +792,20 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("CArray.fromList() requires (list: List)", context);
                 }
-                // TODO: Convert O²L List to std::vector<Value>
-                throw EvaluationError("CArray.fromList() not yet implemented", context);
+                if (!std::holds_alternative<std::shared_ptr<ListInstance>>(arg_values[0])) {
+                    throw EvaluationError("CArray.fromList() argument must be a List", context);
+                }
+                auto src_list = std::get<std::shared_ptr<ListInstance>>(arg_values[0]);
+                const auto& elems = src_list->getElements();
+                if (elems.size() != array_instance->element_count()) {
+                    throw EvaluationError(
+                        "CArray.fromList() size mismatch: list has " + std::to_string(elems.size()) +
+                        " elements but array has " + std::to_string(array_instance->element_count()), context);
+                }
+                for (size_t i = 0; i < elems.size(); ++i) {
+                    array_instance->setElement(i, elems[i]);
+                }
+                return Bool(true);
             } else if (method_name_ == "toString") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("CArray.toString() takes no arguments", context);
@@ -1286,6 +1299,30 @@ Value MethodCallNode::evaluate(Context& context) {
                                           " out of range for Text of length " + std::to_string(len), context);
                 }
                 return Text(std::string(1, text_value[static_cast<size_t>(idx)]));
+            } else if (method_name_ == "charCodeAt") {
+                // Text.charCodeAt(index) -> Int
+                // Returns the integer character code at the given index.
+                if (arg_values.size() != 1) {
+                    throw EvaluationError("Text.charCodeAt() requires exactly 1 argument", context);
+                }
+                
+                if (!std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("Text.charCodeAt() argument must be Int", context);
+                }
+                auto raw_idx = std::get<Int>(arg_values[0]);
+                auto len = static_cast<Int>(text_value.length());
+                Int idx = raw_idx < 0 ? len + raw_idx : raw_idx;
+                if (idx < 0 || idx >= len) {
+                    throw EvaluationError("Text.charCodeAt(): index out of range", context);
+                }
+                return Int(static_cast<uint8_t>(text_value[static_cast<size_t>(idx)]));
+            } else if (method_name_ == "id") {
+                // Text.id() -> Int
+                // Returns a unique integer ID for this string (interning).
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Text.id() takes no arguments", context);
+                }
+                return Int(context.getStringId(text_value));
             } else if (method_name_ == "split") {
                 if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
                     throw EvaluationError("Text.split() requires exactly one Text argument",

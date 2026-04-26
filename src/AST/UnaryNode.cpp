@@ -55,6 +55,16 @@ Value UnaryNode::evaluate(Context& context) {
                 } else {
                     throw TypeMismatchError("Unary minus operator requires a numeric operand");
                 }
+
+            case UnaryOperator::BITWISE_NOT:
+                // Bitwise NOT: operand must be Int or Long
+                if (std::holds_alternative<Int>(operand_value)) {
+                    return Int(~std::get<Int>(operand_value));
+                } else if (std::holds_alternative<Long>(operand_value)) {
+                    return Long(~std::get<Long>(operand_value));
+                } else {
+                    throw TypeMismatchError("Bitwise NOT operator requires an Int or Long operand");
+                }
         }
 
         throw EvaluationError("Unknown unary operator");
@@ -83,6 +93,8 @@ std::string UnaryNode::operatorToString(UnaryOperator op) const {
             return "!";
         case UnaryOperator::MINUS:
             return "-";
+        case UnaryOperator::BITWISE_NOT:
+            return "~";
         default:
             return "unknown";
     }

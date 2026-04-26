@@ -44,9 +44,16 @@ class Parser {
 
     // Individual parsing methods (to be implemented)
     ASTNodePtr parseExpression();
-    ASTNodePtr parseLogicalExpression();
-    ASTNodePtr parseBinaryExpression();
+    ASTNodePtr parseLogicalOrExpression();
+    ASTNodePtr parseLogicalAndExpression();
+    ASTNodePtr parseBitwiseOrExpression();
+    ASTNodePtr parseBitwiseXorExpression();
+    ASTNodePtr parseBitwiseAndExpression();
+    ASTNodePtr parseEqualityExpression();
     ASTNodePtr parseComparisonExpression();
+    ASTNodePtr parseShiftExpression();
+    ASTNodePtr parseAdditiveExpression();
+    ASTNodePtr parseMultiplicativeExpression();
     ASTNodePtr parseUnaryExpression();
     ASTNodePtr parsePrimaryExpression();
     ASTNodePtr parseAtomicExpression();

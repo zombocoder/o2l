@@ -59,6 +59,7 @@ class ObjectInstance : public std::enable_shared_from_this<ObjectInstance> {
     std::map<std::string, Value> properties_;                   // Private properties
 
    public:
+    virtual ~ObjectInstance() = default;
     explicit ObjectInstance(const std::string& name);
 
     // Copy constructor for creating instances from class templates

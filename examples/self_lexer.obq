@@ -1,0 +1,129 @@
+// O2L Self-Lexer (Bootstrap Stage 1)
+// Exercises: Text.id(), Text.charCodeAt(), and the bit library
+
+Object O2LLexer {
+    property source: Text
+    property pos: Int
+    property length: Int
+    
+    // Interned Keywords for O(1) comparison
+    property ID_OBJECT: Int
+    property ID_METHOD: Int
+    property ID_PROPERTY: Int
+    property ID_IMPORT: Int
+
+    @external method init(src: Text): Unit {
+        this.source = src
+        this.pos = 0
+        this.length = src.length()
+        
+        // Cache interned IDs
+        this.ID_OBJECT = "Object".id()
+        this.ID_METHOD = "method".id()
+        this.ID_PROPERTY = "property".id()
+        this.ID_IMPORT = "import".id()
+    }
+
+    @external method isEOF(): Bool {
+        return this.pos >= this.length
+    }
+
+    method peek(): Int {
+        if (this.isEOF()) { return -1 }
+        return this.source.charCodeAt(this.pos)
+    }
+
+    method advance(): Int {
+        char: Int = this.peek()
+        this.pos = this.pos + 1
+        return char
+    }
+
+    @external method scanToken(): Map<Text, Value> {
+        this.skipWhitespace()
+        if (this.isEOF()) { return null }
+
+        start: Int = this.pos
+        c: Int = this.advance()
+        
+        token: Map<Text, Value> = {}
+
+        // Handle Identifiers & Keywords
+        if (this.isAlpha(c)) {
+            while (this.isAlnum(this.peek())) {
+                this.advance()
+            }
+            text: Text = this.source.substring(start, this.pos)
+            text_id: Int = text.id()
+            
+            token.put("type", "IDENTIFIER")
+            token.put("value", text)
+            token.put("id", text_id)
+
+            // High-speed keyword check using interned ID
+            if (text_id == this.ID_OBJECT) { token.put("type", "KEYWORD_OBJECT") }
+            if (text_id == this.ID_METHOD) { token.put("type", "KEYWORD_METHOD") }
+            
+            return token
+        }
+
+        // Handle Single-Character Symbols
+        token.put("type", "SYMBOL")
+        token.put("value", this.source.substring(start, this.pos))
+        token.put("id", -1)
+        return token
+    }
+
+    method skipWhitespace(): Unit {
+        while (!this.isEOF()) {
+            c: Text = this.source.charAt(this.pos)
+            if (c.isSpace()) {
+                this.advance()
+            } else {
+                return
+            }
+        }
+    }
+
+    method isAlpha(c: Int): Bool {
+        // [a-zA-Z_]
+        return (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 95
+    }
+
+    method isAlnum(c: Int): Bool {
+        // [a-zA-Z0-9_]
+        return this.isAlpha(c) || (c >= 48 && c <= 57)
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("🚀 O2L Self-Lexer Bootstrap (Stage 1)")
+        
+        // Exercise Bit Intrinsics
+        val: Int = 0x0000FFFF
+        clz: Int = bit.clz(val)
+        pop: Int = bit.popcount(val)
+        swapped: Int = bit.bswap(0x12345678)
+        
+        io.print("Bit Test: CLZ(0xFFFF) = %d, Popcount = %d", clz, pop)
+        io.print("Endian Test: BSWAP(0x12345678) = 0x%X", swapped)
+
+        // Run Lexer
+        src: Text = "Object Boot { method main() { } }"
+        lexer: O2LLexer = new O2LLexer()
+        lexer.init(src)
+        
+        io.print("\nScanning Source: %s", src)
+        
+        while (!lexer.isEOF()) {
+            t: Map<Text, Value> = lexer.scanToken()
+            if (t != null) {
+                io.print("  [Token] type: %-15s value: %-10s id: %d", 
+                    t.get("type"), t.get("value"), t.get("id"))
+            }
+        }
+        
+        return "Bootstrap Complete"
+    }
+}

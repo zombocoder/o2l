@@ -28,16 +28,32 @@
 #include "Common/Exceptions.hpp"
 #include "Runtime/ListInstance.hpp"
 #include "Runtime/ObjectInstance.hpp"
+#include "Runtime/SystemLibrary.hpp"
 #include "Runtime/FFILibrary.hpp"
+#include "Runtime/CompilerLibrary.hpp"
+#include "Runtime/BinaryLibrary.hpp"
+#include "Runtime/BitLibrary.hpp"
 
 namespace o2l {
 
 Interpreter::Interpreter() {
-    // Initialize global context with built-in objects/methods if needed
+    // Initialize global context with built-in objects/methods
+    global_context_.defineVariable("io", Value(SystemLibrary::createIOObject()));
+    global_context_.defineVariable("os", Value(SystemLibrary::createOSObject()));
+    global_context_.defineVariable("fs", Value(SystemLibrary::createFSObject()));
+    global_context_.defineVariable("compiler", Value(CompilerLibrary::createCompilerObject()));
+    global_context_.defineVariable("binary", Value(BinaryLibrary::createBinaryObject()));
+    global_context_.defineVariable("bit", Value(BitLibrary::createBitObject()));
 }
 
 Interpreter::Interpreter(const std::string& filename) : source_filename_(filename) {
-    // Initialize global context with built-in objects/methods if needed
+    // Initialize global context with built-in objects/methods
+    global_context_.defineVariable("io", Value(SystemLibrary::createIOObject()));
+    global_context_.defineVariable("os", Value(SystemLibrary::createOSObject()));
+    global_context_.defineVariable("fs", Value(SystemLibrary::createFSObject()));
+    global_context_.defineVariable("compiler", Value(CompilerLibrary::createCompilerObject()));
+    global_context_.defineVariable("binary", Value(BinaryLibrary::createBinaryObject()));
+    global_context_.defineVariable("bit", Value(BitLibrary::createBitObject()));
 }
 
 Value Interpreter::execute(const std::vector<ASTNodePtr>& nodes) {

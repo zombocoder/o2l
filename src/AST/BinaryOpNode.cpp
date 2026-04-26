@@ -57,6 +57,16 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Int(left_int % right_int);
+            case BinaryOperator::BITWISE_AND:
+                return Int(left_int & right_int);
+            case BinaryOperator::BITWISE_OR:
+                return Int(left_int | right_int);
+            case BinaryOperator::BITWISE_XOR:
+                return Int(left_int ^ right_int);
+            case BinaryOperator::LSHIFT:
+                return Int(left_int << right_int);
+            case BinaryOperator::RSHIFT:
+                return Int(left_int >> right_int);
         }
     }
 
@@ -82,6 +92,16 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Long(left_long % right_long);
+            case BinaryOperator::BITWISE_AND:
+                return Long(left_long & right_long);
+            case BinaryOperator::BITWISE_OR:
+                return Long(left_long | right_long);
+            case BinaryOperator::BITWISE_XOR:
+                return Long(left_long ^ right_long);
+            case BinaryOperator::LSHIFT:
+                return Long(left_long << right_long);
+            case BinaryOperator::RSHIFT:
+                return Long(left_long >> right_long);
         }
     }
 
@@ -162,6 +182,16 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Long(left_val_l % right_val_l);
+            case BinaryOperator::BITWISE_AND:
+                return Long(left_val_l & right_val_l);
+            case BinaryOperator::BITWISE_OR:
+                return Long(left_val_l | right_val_l);
+            case BinaryOperator::BITWISE_XOR:
+                return Long(left_val_l ^ right_val_l);
+            case BinaryOperator::LSHIFT:
+                return Long(left_val_l << right_val_l);
+            case BinaryOperator::RSHIFT:
+                return Long(left_val_l >> right_val_l);
         }
     }
 
@@ -288,6 +318,21 @@ std::string BinaryOpNode::toString() const {
             break;
         case BinaryOperator::MODULO:
             op_str = "%";
+            break;
+        case BinaryOperator::BITWISE_AND:
+            op_str = "&";
+            break;
+        case BinaryOperator::BITWISE_OR:
+            op_str = "|";
+            break;
+        case BinaryOperator::BITWISE_XOR:
+            op_str = "^";
+            break;
+        case BinaryOperator::LSHIFT:
+            op_str = "<<";
+            break;
+        case BinaryOperator::RSHIFT:
+            op_str = ">>";
             break;
     }
 

@@ -15,6 +15,7 @@
  */
 
 #include "Parser.hpp"
+#include <iostream>
 #include "Common/Exceptions.hpp"
 #include "AST/LiteralNode.hpp"
 #include "AST/ObjectNode.hpp"
@@ -140,90 +141,185 @@ std::vector<ASTNodePtr> Parser::parse() {
 }
 
 ASTNodePtr Parser::parseExpression() {
-    return parseLogicalExpression();
+    return parseLogicalOrExpression();
 }
 
-ASTNodePtr Parser::parseLogicalExpression() {
-    ASTNodePtr left = parseBinaryExpression();
+ASTNodePtr Parser::parseLogicalOrExpression() {
+    ASTNodePtr left = parseLogicalAndExpression();
     
-    // Handle logical operators (AND has higher precedence than OR)
-    while (currentToken().type == TokenType::LOGICAL_AND ||
-           currentToken().type == TokenType::LOGICAL_OR) {
-        
-        LogicalOperator op;
-        switch (currentToken().type) {
-            case TokenType::LOGICAL_AND: op = LogicalOperator::AND; break;
-            case TokenType::LOGICAL_OR: op = LogicalOperator::OR; break;
-            default: break; // Won't reach here due to while condition
-        }
-        
-        // Capture source location before consuming operator
+    while (currentToken().type == TokenType::LOGICAL_OR) {
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
-        advance(); // consume operator
-        ASTNodePtr right = parseBinaryExpression();
-        left = std::make_unique<LogicalNode>(std::move(left), op, std::move(right), opLocation);
+        advance(); 
+        ASTNodePtr right = parseLogicalAndExpression();
+        left = std::make_unique<LogicalNode>(std::move(left), LogicalOperator::OR, std::move(right), opLocation);
     }
     
     return left;
 }
 
-ASTNodePtr Parser::parseBinaryExpression() {
+ASTNodePtr Parser::parseLogicalAndExpression() {
+    ASTNodePtr left = parseBitwiseOrExpression();
+    
+    while (currentToken().type == TokenType::LOGICAL_AND) {
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseBitwiseOrExpression();
+        left = std::make_unique<LogicalNode>(std::move(left), LogicalOperator::AND, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseBitwiseOrExpression() {
+    ASTNodePtr left = parseBitwiseXorExpression();
+    
+    while (currentToken().type == TokenType::BITWISE_OR) {
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseBitwiseXorExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), BinaryOperator::BITWISE_OR, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseBitwiseXorExpression() {
+    ASTNodePtr left = parseBitwiseAndExpression();
+    
+    while (currentToken().type == TokenType::BITWISE_XOR) {
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseBitwiseAndExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), BinaryOperator::BITWISE_XOR, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseBitwiseAndExpression() {
+    ASTNodePtr left = parseEqualityExpression();
+    
+    while (currentToken().type == TokenType::BITWISE_AND) {
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseEqualityExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), BinaryOperator::BITWISE_AND, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseEqualityExpression() {
     ASTNodePtr left = parseComparisonExpression();
     
-    // Handle binary operators with left-associativity
-    while (currentToken().type == TokenType::PLUS || 
-           currentToken().type == TokenType::MINUS ||
-           currentToken().type == TokenType::MULTIPLY ||
-           currentToken().type == TokenType::DIVIDE ||
-           currentToken().type == TokenType::MODULO) {
+    while (currentToken().type == TokenType::EQUAL ||
+           currentToken().type == TokenType::NOT_EQUAL) {
         
-        BinaryOperator op;
+        ComparisonOperator op;
         switch (currentToken().type) {
-            case TokenType::PLUS: op = BinaryOperator::PLUS; break;
-            case TokenType::MINUS: op = BinaryOperator::MINUS; break;
-            case TokenType::MULTIPLY: op = BinaryOperator::MULTIPLY; break;
-            case TokenType::DIVIDE: op = BinaryOperator::DIVIDE; break;
-            case TokenType::MODULO: op = BinaryOperator::MODULO; break;
-            default: break; // Won't reach here due to while condition
+            case TokenType::EQUAL: op = ComparisonOperator::EQUAL; break;
+            case TokenType::NOT_EQUAL: op = ComparisonOperator::NOT_EQUAL; break;
+            default: break;
         }
         
-        // Capture source location before consuming operator
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
-        advance(); // consume operator
+        advance();
         ASTNodePtr right = parseComparisonExpression();
-        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right), opLocation);
+        left = std::make_unique<ComparisonNode>(std::move(left), op, std::move(right), opLocation);
     }
     
     return left;
 }
 
 ASTNodePtr Parser::parseComparisonExpression() {
-    ASTNodePtr left = parseUnaryExpression();
+    ASTNodePtr left = parseShiftExpression();
     
-    // Handle comparison operators
-    while (currentToken().type == TokenType::EQUAL ||
-           currentToken().type == TokenType::NOT_EQUAL ||
-           currentToken().type == TokenType::LESS_THAN ||
+    while (currentToken().type == TokenType::LESS_THAN ||
            currentToken().type == TokenType::GREATER_THAN ||
            currentToken().type == TokenType::LESS_EQUAL ||
            currentToken().type == TokenType::GREATER_EQUAL) {
         
         ComparisonOperator op;
         switch (currentToken().type) {
-            case TokenType::EQUAL: op = ComparisonOperator::EQUAL; break;
-            case TokenType::NOT_EQUAL: op = ComparisonOperator::NOT_EQUAL; break;
             case TokenType::LESS_THAN: op = ComparisonOperator::LESS_THAN; break;
             case TokenType::GREATER_THAN: op = ComparisonOperator::GREATER_THAN; break;
             case TokenType::LESS_EQUAL: op = ComparisonOperator::LESS_EQUAL; break;
             case TokenType::GREATER_EQUAL: op = ComparisonOperator::GREATER_EQUAL; break;
-            default: break; // Won't reach here due to while condition
+            default: break;
         }
         
-        // Capture source location before consuming operator
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
-        advance(); // consume operator
-        ASTNodePtr right = parseUnaryExpression();
+        advance();
+        ASTNodePtr right = parseShiftExpression();
         left = std::make_unique<ComparisonNode>(std::move(left), op, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseShiftExpression() {
+    ASTNodePtr left = parseAdditiveExpression();
+    
+    while (currentToken().type == TokenType::LSHIFT ||
+           currentToken().type == TokenType::RSHIFT) {
+        
+        BinaryOperator op;
+        switch (currentToken().type) {
+            case TokenType::LSHIFT: op = BinaryOperator::LSHIFT; break;
+            case TokenType::RSHIFT: op = BinaryOperator::RSHIFT; break;
+            default: break;
+        }
+        
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseAdditiveExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseAdditiveExpression() {
+    ASTNodePtr left = parseMultiplicativeExpression();
+    
+    while (currentToken().type == TokenType::PLUS || 
+           currentToken().type == TokenType::MINUS) {
+        
+        BinaryOperator op;
+        switch (currentToken().type) {
+            case TokenType::PLUS: op = BinaryOperator::PLUS; break;
+            case TokenType::MINUS: op = BinaryOperator::MINUS; break;
+            default: break;
+        }
+        
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseMultiplicativeExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right), opLocation);
+    }
+    
+    return left;
+}
+
+ASTNodePtr Parser::parseMultiplicativeExpression() {
+    ASTNodePtr left = parseUnaryExpression();
+    
+    while (currentToken().type == TokenType::MULTIPLY ||
+           currentToken().type == TokenType::DIVIDE ||
+           currentToken().type == TokenType::MODULO) {
+        
+        BinaryOperator op;
+        switch (currentToken().type) {
+            case TokenType::MULTIPLY: op = BinaryOperator::MULTIPLY; break;
+            case TokenType::DIVIDE: op = BinaryOperator::DIVIDE; break;
+            case TokenType::MODULO: op = BinaryOperator::MODULO; break;
+            default: break;
+        }
+        
+        SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
+        advance();
+        ASTNodePtr right = parseUnaryExpression();
+        left = std::make_unique<BinaryOpNode>(std::move(left), op, std::move(right), opLocation);
     }
     
     return left;
@@ -320,25 +416,26 @@ ASTNodePtr Parser::parsePrimaryExpression() {
 
 ASTNodePtr Parser::parseUnaryExpression() {
     // Handle unary operators
-    if (currentToken().type == TokenType::MINUS || currentToken().type == TokenType::LOGICAL_NOT) {
+    if (currentToken().type == TokenType::MINUS || 
+        currentToken().type == TokenType::LOGICAL_NOT ||
+        currentToken().type == TokenType::BITWISE_NOT) {
+        
         UnaryOperator op;
         switch (currentToken().type) {
             case TokenType::MINUS: op = UnaryOperator::MINUS; break;
             case TokenType::LOGICAL_NOT: op = UnaryOperator::NOT; break;
-            default: break; // Won't reach here due to if condition
+            case TokenType::BITWISE_NOT: op = UnaryOperator::BITWISE_NOT; break;
+            default: break; // Won't reach here
         }
         
-        // Capture source location before consuming operator
         SourceLocation opLocation(filename_, currentToken().line, currentToken().column);
-        advance(); // consume unary operator
+        advance(); 
         
-        // Parse the operand - now calls parsePrimaryExpression to include method calls
-        ASTNodePtr operand = parseUnaryExpression(); // Recursive call for chained unary operators
+        ASTNodePtr operand = parseUnaryExpression(); 
         
         return std::make_unique<UnaryNode>(op, std::move(operand), opLocation);
     }
     
-    // No unary operator, parse primary expression (method calls, member access, etc.)
     return parsePrimaryExpression();
 }
 
@@ -361,21 +458,22 @@ ASTNodePtr Parser::parseAtomicExpression() {
             std::string token_value = token.value; // Save token value before advancing
             advance();
             auto literal_node = [&]() -> std::unique_ptr<LiteralNode> {
-                // Parse number based on suffix and decimal point
+                // Check for hexadecimal
+                if (token_value.find("0x") == 0 || token_value.find("0X") == 0) {
+                    return std::make_unique<LiteralNode>(Int(std::stoll(token_value, nullptr, 16)));
+                }
+
+                // Check for type suffix (f for Float, d for Double, l for Long)
                 if (token_value.back() == 'f' || token_value.back() == 'F') {
-                    // Float literal with 'f' suffix
                     std::string number_part = token_value.substr(0, token_value.length() - 1);
                     return std::make_unique<LiteralNode>(Float(std::stof(number_part)));
                 } else if (token_value.back() == 'd' || token_value.back() == 'D') {
-                    // Double literal with 'd' suffix
                     std::string number_part = token_value.substr(0, token_value.length() - 1);
                     return std::make_unique<LiteralNode>(Double(std::stod(number_part)));
                 } else if (token_value.back() == 'l' || token_value.back() == 'L') {
-                    // Long literal with 'l' suffix
                     std::string number_part = token_value.substr(0, token_value.length() - 1);
                     Long long_value;
 #ifdef __SIZEOF_INT128__
-                    // Parse manually for 128-bit integers
                     long_value = 0;
                     bool negative = false;
                     size_t start = 0;
@@ -389,17 +487,15 @@ ASTNodePtr Parser::parseAtomicExpression() {
                     if (negative) long_value = -long_value;
 #else
                     long_value = std::stoll(number_part);
-                    #endif
+#endif
                     #if !O2L_HAS_INT128
                     return std::make_unique<LiteralNode>(Value(long_value, Value::LongTag{}));
                     #else
                     return std::make_unique<LiteralNode>(Value(long_value));
                     #endif
-                    } else if (token_value.find('.') != std::string::npos) {
-                    // Decimal without suffix defaults to Double
+                } else if (token_value.find('.') != std::string::npos) {
                     return std::make_unique<LiteralNode>(Double(std::stod(token_value)));
                 } else {
-                    // Integer literal
                     return std::make_unique<LiteralNode>(Int(std::stoll(token_value)));
                 }
             }();
@@ -419,6 +515,14 @@ ASTNodePtr Parser::parseAtomicExpression() {
             SourceLocation location(filename_, token.line, token.column);
             advance();
             auto literal_node = std::make_unique<LiteralNode>(Bool(false));
+            literal_node->setSourceLocation(location);
+            return literal_node;
+        }
+
+        case TokenType::NULL_TOKEN: {
+            SourceLocation location(filename_, token.line, token.column);
+            advance();
+            auto literal_node = std::make_unique<LiteralNode>(Value());
             literal_node->setSourceLocation(location);
             return literal_node;
         }
@@ -658,6 +762,42 @@ ASTNodePtr Parser::parseConstructorDeclaration() {
 }
 
 ASTNodePtr Parser::parseIdentifierExpression() {
+    // Look ahead to see if this is identifier<...>(...)
+    if (peekToken().type == TokenType::LESS_THAN) {
+        // It's a generic type instantiation (likely a constructor call or record)
+        std::string full_type_name = parseTypeName();
+        
+        // After Map<Text, Value>, we expect '('
+        consume(TokenType::LPAREN, "Expected '(' after generic type name");
+        
+        // For simplicity in this bootstrap parser, we'll treat it as a function call 
+        // with the type name as the "function" name for now, or we can improve it.
+        // O2L usually uses `new ObjectName()` but Map/List are special.
+        
+        std::vector<ASTNodePtr> arguments;
+        while (currentToken().type != TokenType::RPAREN && currentToken().type != TokenType::EOF_TOKEN) {
+            while (match(TokenType::NEWLINE)) {}
+            if (currentToken().type == TokenType::RPAREN) break;
+            
+            arguments.push_back(parseExpression());
+            
+            if (currentToken().type == TokenType::COMMA) {
+                advance();
+                while (match(TokenType::NEWLINE)) {}
+            } else if (currentToken().type == TokenType::NEWLINE) {
+                while (match(TokenType::NEWLINE)) {}
+            } else if (currentToken().type != TokenType::RPAREN) {
+                throw SyntaxError("Expected ',' or ')' in argument list");
+            }
+        }
+        consume(TokenType::RPAREN, "Expected ')' after arguments");
+        
+        SourceLocation location(filename_, currentToken().line, currentToken().column);
+        auto call_node = std::make_unique<FunctionCallNode>(full_type_name, std::move(arguments));
+        call_node->setSourceLocation(location);
+        return call_node;
+    }
+
     Token identifier_token = consume(TokenType::IDENTIFIER, "Expected identifier");
     std::string identifier = identifier_token.value;
     
@@ -1518,20 +1658,13 @@ ASTNodePtr Parser::parseMapLiteral() {
         
         entries.emplace_back(std::move(key), std::move(value));
         
-        // Skip newlines
-        while (match(TokenType::NEWLINE)) {
-            // Skip newlines
-        }
-        
+        // Handle comma between entries
         if (currentToken().type == TokenType::COMMA) {
             advance(); // consume comma
-            
-            // Skip newlines after comma
             while (match(TokenType::NEWLINE)) {
                 // Skip newlines
             }
         } else if (currentToken().type == TokenType::NEWLINE) {
-            // Allow newlines without comma
             while (match(TokenType::NEWLINE)) {
                 // Skip newlines
             }
@@ -1683,6 +1816,7 @@ std::string Parser::parseTypeName() {
     
     // Handle generic types like List<Int> and Map<Key, Value>
     if (currentToken().type == TokenType::LESS_THAN) {
+        std::string base_type = type_name;
         advance(); // consume '<'
         
         // Skip whitespace
@@ -1710,13 +1844,13 @@ std::string Parser::parseTypeName() {
             consume(TokenType::GREATER_THAN, "Expected '>' after generic type parameters");
             
             // Combine into full type name
-            type_name = type_name + "<" + first_type + ", " + second_type + ">";
+            type_name = base_type + "<" + first_type + ", " + second_type + ">";
         } else {
             // Single type parameter (List<T>)
             consume(TokenType::GREATER_THAN, "Expected '>' after generic type parameter");
             
             // Combine into full type name
-            type_name = type_name + "<" + first_type + ">";
+            type_name = base_type + "<" + first_type + ">";
         }
     }
     

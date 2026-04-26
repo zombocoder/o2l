@@ -44,15 +44,16 @@ typedef SSIZE_T ssize_t;
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #else
-// Linux
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#endif
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
-#endif
 #endif
 
 namespace o2l {
