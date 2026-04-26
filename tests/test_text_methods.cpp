@@ -134,6 +134,21 @@ TEST_F(TextMethodTest, StringSearchMethods) {
 
     // Test rindex (not found) - should throw exception
     EXPECT_THROW({ callTextMethod("Hello World", "rindex", {Text("xyz")}); }, EvaluationError);
+
+    // Test contains
+    result = callTextMethod("Hello World", "contains", {Text("World")});
+    EXPECT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_EQ(std::get<Bool>(result), true);
+
+    result = callTextMethod("Hello World", "contains", {Text("xyz")});
+    EXPECT_TRUE(std::holds_alternative<Bool>(result));
+    EXPECT_EQ(std::get<Bool>(result), false);
+
+    result = callTextMethod("Hello World", "contains", {Text("")});
+    EXPECT_EQ(std::get<Bool>(result), true);  // empty string always found
+
+    result = callTextMethod("", "contains", {Text("a")});
+    EXPECT_EQ(std::get<Bool>(result), false);
 }
 
 // Test string boolean check methods
@@ -276,6 +291,26 @@ TEST_F(TextMethodTest, StringManipulationMethods) {
     result = callTextMethod("  Hello World  ", "rstrip");
     EXPECT_TRUE(std::holds_alternative<Text>(result));
     EXPECT_EQ(std::get<Text>(result), "  Hello World");
+
+    // Test trim (alias for strip)
+    result = callTextMethod("  Hello World  ", "trim");
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "Hello World");
+
+    // Test trimStart (alias for lstrip)
+    result = callTextMethod("  Hello World  ", "trimStart");
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "Hello World  ");
+
+    // Test trimEnd (alias for rstrip)
+    result = callTextMethod("  Hello World  ", "trimEnd");
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "  Hello World");
+
+    // Test trim on all-whitespace string
+    result = callTextMethod("   \t\n  ", "trim");
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "");
 
     // Test replace
     result = callTextMethod("Hello World", "replace", {Text("World"), Text("Universe")});
@@ -428,6 +463,88 @@ TEST_F(TextMethodTest, TranslationMethods) {
     result = callTextMethod("abcdef", "translate", {Value(trans_table)});
     EXPECT_TRUE(std::holds_alternative<Text>(result));
     EXPECT_EQ(std::get<Text>(result), "xyzdef");
+}
+
+// Test substring and charAt methods
+TEST_F(TextMethodTest, SubstringAndCharAtMethods) {
+    // Test basic substring
+    Value result = callTextMethod("Hello World", "substring", {Int(0), Int(5)});
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "Hello");
+
+    // Test substring in the middle
+    result = callTextMethod("Hello World", "substring", {Int(6), Int(11)});
+    EXPECT_EQ(std::get<Text>(result), "World");
+
+    // Test substring with negative indices (Python-style)
+    result = callTextMethod("Hello World", "substring", {Int(-5), Int(-0)});
+    // -5 resolves to 6, -0 is 0 so start >= end => ""
+    // Actually -0 in Int is just 0. start=6, end=0 => start >= end => ""
+    EXPECT_EQ(std::get<Text>(result), "");
+
+    // Negative end that resolves
+    result = callTextMethod("Hello World", "substring", {Int(0), Int(-6)});
+    // -6 resolves to len(11) + (-6) = 5 => substring(0, 5) = "Hello"
+    EXPECT_EQ(std::get<Text>(result), "Hello");
+
+    // Negative start
+    result = callTextMethod("Hello World", "substring", {Int(-5), Int(11)});
+    // -5 resolves to 11 + (-5) = 6 => substring(6, 11) = "World"
+    EXPECT_EQ(std::get<Text>(result), "World");
+
+    // Both negative
+    result = callTextMethod("Hello World", "substring", {Int(-5), Int(-1)});
+    // -5 => 6, -1 => 10 => substring(6, 10) = "Worl"
+    EXPECT_EQ(std::get<Text>(result), "Worl");
+
+    // Out of bounds clamped
+    result = callTextMethod("Hello", "substring", {Int(0), Int(100)});
+    EXPECT_EQ(std::get<Text>(result), "Hello");
+
+    // start == end => empty
+    result = callTextMethod("Hello", "substring", {Int(3), Int(3)});
+    EXPECT_EQ(std::get<Text>(result), "");
+
+    // start > end => empty
+    result = callTextMethod("Hello", "substring", {Int(4), Int(2)});
+    EXPECT_EQ(std::get<Text>(result), "");
+
+    // Empty string
+    result = callTextMethod("", "substring", {Int(0), Int(0)});
+    EXPECT_EQ(std::get<Text>(result), "");
+
+    // Test substring error: wrong arg count
+    EXPECT_THROW({ callTextMethod("Hello", "substring", {Int(1)}); }, EvaluationError);
+    EXPECT_THROW({ callTextMethod("Hello", "substring", {}); }, EvaluationError);
+
+    // Test substring error: wrong arg types
+    EXPECT_THROW({ callTextMethod("Hello", "substring", {Text("a"), Int(1)}); }, EvaluationError);
+
+    // --- charAt tests ---
+
+    // Basic charAt
+    result = callTextMethod("Hello", "charAt", {Int(0)});
+    EXPECT_TRUE(std::holds_alternative<Text>(result));
+    EXPECT_EQ(std::get<Text>(result), "H");
+
+    result = callTextMethod("Hello", "charAt", {Int(4)});
+    EXPECT_EQ(std::get<Text>(result), "o");
+
+    // Negative index
+    result = callTextMethod("Hello", "charAt", {Int(-1)});
+    EXPECT_EQ(std::get<Text>(result), "o");
+
+    result = callTextMethod("Hello", "charAt", {Int(-5)});
+    EXPECT_EQ(std::get<Text>(result), "H");
+
+    // Out of range throws
+    EXPECT_THROW({ callTextMethod("Hello", "charAt", {Int(5)}); }, EvaluationError);
+    EXPECT_THROW({ callTextMethod("Hello", "charAt", {Int(-6)}); }, EvaluationError);
+    EXPECT_THROW({ callTextMethod("", "charAt", {Int(0)}); }, EvaluationError);
+
+    // Wrong arg count/type
+    EXPECT_THROW({ callTextMethod("Hello", "charAt", {}); }, EvaluationError);
+    EXPECT_THROW({ callTextMethod("Hello", "charAt", {Text("a")}); }, EvaluationError);
 }
 
 // Test error cases
