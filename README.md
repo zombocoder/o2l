@@ -1,6 +1,6 @@
 # 🌟 O²L Programming Language
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-445%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-48-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-445%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-54-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
 
 **O²L** is a modern object-oriented programming language that balances pure object-oriented design with practical programming constructs. Built with C++23, O²L eliminates primitives and null values while providing essential control flow like while loops, comprehensive arithmetic operations, and extensive string manipulation capabilities for real-world programming needs.
 
@@ -20,7 +20,7 @@
 - **⏭️ Continue Statements**: `continue` statement for skipping iterations in while loops, perfect for filtering and validation
 - **📏 Text Length Method**: `Text.length()` method for string length calculation with full type integration
 - **📐 Math Library**: Comprehensive mathematical functions library with 40+ methods including trigonometry, logarithms, statistics, and constants (`import math`)
-- **✨ Comprehensive Text Methods**: 48 string manipulation methods including case conversion, search, validation, formatting, and advanced utilities
+- **✨ Comprehensive Text Methods**: 54 string manipulation methods including case conversion, search, validation, formatting, and advanced utilities
 - **🔄 Variable Mutability**: Method-scope variables are mutable while object properties remain immutable
 - **🧠 Logical Operators**: Full `&&`, `||`, `!` support with proper precedence and short-circuit evaluation
 - **📁 Filesystem Operations**: Complete `system.fs` module for file/directory management
@@ -33,7 +33,7 @@
 
 ### **Everything is an Object**
 
-In O²L, there are no primitives. Numbers, booleans, strings—everything is an object with methods and behaviors. This creates a unified, consistent programming model where all values follow the same patterns. For example, Text objects provide 47 comprehensive methods for manipulation, validation, and formatting, treating strings as first-class objects rather than simple data.
+In O²L, there are no primitives. Numbers, booleans, strings—everything is an object with methods and behaviors. This creates a unified, consistent programming model where all values follow the same patterns. For example, Text objects provide 50 comprehensive methods for manipulation, validation, and formatting, treating strings as first-class objects rather than simple data.
 
 ### **Immutability by Design**
 
@@ -432,7 +432,7 @@ cd build/tests
 # ⚡ 44 Runtime tests - Value types, collections, iterators
 # 🔌 20 Protocol tests - Interface compliance and signature validation
 # 🚀 35 Integration tests - End-to-end execution
-# ✨ 12 Text method tests - All 48 string methods including length()
+# ✨ 12 Text method tests - All 54 string methods including length()
 # 📐 12 Math library tests - All mathematical functions and constants
 # 🔄 JSON Library - 16 comprehensive tests covering parsing, path navigation, validation, and native collection integration
 # 🌐 HTTP Client - 24 extensive tests covering all HTTP methods, authentication, file operations, and error handling

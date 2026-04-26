@@ -5,7 +5,7 @@ O²L provides a rich set of built-in types for common programming tasks. Each ty
 ## Data Types Overview
 
 ### Primitive Types
-- **[Text](Text.md)** - Unicode strings with 48+ methods for manipulation
+- **[Text](Text.md)** - Unicode strings with 54+ methods for manipulation
 - **[Int](Numeric.md#int)** - 32-bit signed integers
 - **[Long](Numeric.md#long)** - 64-bit signed integers  
 - **[Float](Numeric.md#float)** - 32-bit floating point numbers

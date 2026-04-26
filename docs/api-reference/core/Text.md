@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Text type is O²L's immutable string implementation with 48+ methods for string manipulation, validation, and formatting. All Text operations return new Text instances, maintaining immutability.
+The Text type is O²L's immutable string implementation with 54+ methods for string manipulation, validation, and formatting. All Text operations return new Text instances, maintaining immutability.
 
 ## Constructor
 
@@ -101,6 +101,16 @@ Returns the lowest index where substring is found, or -1 if not found.
 text: Text = "Hello World"
 index: Int = text.find("World")  // Returns 6
 missing: Int = text.find("xyz")  // Returns -1
+```
+
+### `contains(substring: Text) → Bool`
+
+Returns true if the text contains the given substring.
+
+```o2l
+text: Text = "Hello World"
+result: Bool = text.contains("World")  // true
+result: Bool = text.contains("xyz")    // false
 ```
 
 ### `rfind(substring: Text) → Int`
@@ -278,31 +288,34 @@ result: Bool = text.isTitle()  // Returns true
 
 ## String Manipulation
 
-### `strip() → Text`
+### `strip() → Text` / `trim() → Text`
 
-Returns a copy with leading and trailing whitespace removed.
+Returns a copy with leading and trailing whitespace removed. `trim()` is an alias for `strip()`.
 
 ```o2l
 text: Text = "  Hello World  "
 result: Text = text.strip()  // "Hello World"
+result: Text = text.trim()   // "Hello World" (alias)
 ```
 
-### `lstrip() → Text`
+### `lstrip() → Text` / `trimStart() → Text`
 
-Returns a copy with leading whitespace removed.
+Returns a copy with leading whitespace removed. `trimStart()` is an alias for `lstrip()`.
 
 ```o2l
 text: Text = "  Hello World  "
-result: Text = text.lstrip()  // "Hello World  "
+result: Text = text.lstrip()     // "Hello World  "
+result: Text = text.trimStart()  // "Hello World  " (alias)
 ```
 
-### `rstrip() → Text`
+### `rstrip() → Text` / `trimEnd() → Text`
 
-Returns a copy with trailing whitespace removed.
+Returns a copy with trailing whitespace removed. `trimEnd()` is an alias for `rstrip()`.
 
 ```o2l
 text: Text = "  Hello World  "
-result: Text = text.rstrip()  // "  Hello World"
+result: Text = text.rstrip()   // "  Hello World"
+result: Text = text.trimEnd()  // "  Hello World" (alias)
 ```
 
 ### `replace(old: Text, new: Text) → Text`
@@ -312,6 +325,27 @@ Returns a copy with all occurrences of old replaced by new.
 ```o2l
 text: Text = "Hello World"
 result: Text = text.replace("World", "Universe")  // "Hello Universe"
+```
+
+### `substring(start: Int, end: Int) → Text`
+
+Returns the substring from `start` (inclusive) to `end` (exclusive). Supports negative indices (count from end, Python-style). Out-of-bounds indices are clamped. Returns empty string if `start >= end`.
+
+```o2l
+text: Text = "Hello World"
+result: Text = text.substring(0, 5)    # "Hello"
+result2: Text = text.substring(-5, 11) # "World"  (-5 resolves to index 6)
+result3: Text = text.substring(0, -6)  # "Hello"  (-6 resolves to index 5)
+```
+
+### `charAt(index: Int) → Text`
+
+Returns the character at `index` as a single-character Text. Supports negative indices (count from end). Throws if index is out of range.
+
+```o2l
+text: Text = "Hello"
+ch: Text = text.charAt(0)   # "H"
+last: Text = text.charAt(-1) # "o"
 ```
 
 ### `split(separator: Text) → List<Text>`

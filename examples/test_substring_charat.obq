@@ -1,0 +1,135 @@
+# test_substring_charat.obq — Tests for Text.substring() and Text.charAt()
+
+import system.io
+
+Object TestSubstringCharAt {
+    property passed: Int
+    property failed: Int
+
+    constructor() {
+        this.passed = 0
+        this.failed = 0
+    }
+
+    @external method assert(name: Text, condition: Bool): Text {
+        if (condition) {
+            io.print("  PASS: %s", name)
+            this.passed = this.passed + 1
+        } else {
+            io.print("  FAIL: %s", name)
+            this.failed = this.failed + 1
+        }
+        return "ok"
+    }
+
+    # Test 1: Basic substring
+    @external method testBasicSubstring(): Text {
+        io.print("Test: Basic Substring")
+
+        text: Text = "Hello World"
+        this.assert("substring(0,5) = Hello", text.substring(0, 5) == "Hello")
+        this.assert("substring(6,11) = World", text.substring(6, 11) == "World")
+        this.assert("substring(0,11) = full string", text.substring(0, 11) == "Hello World")
+        this.assert("substring(0,1) = H", text.substring(0, 1) == "H")
+
+        return "ok"
+    }
+
+    # Test 2: Substring with negative indices
+    @external method testNegativeSubstring(): Text {
+        io.print("Test: Negative Index Substring")
+
+        text: Text = "Hello World"
+        this.assert("substring(-5,11) = World", text.substring(-5, 11) == "World")
+        this.assert("substring(0,-6) = Hello", text.substring(0, -6) == "Hello")
+        this.assert("substring(-5,-1) = Worl", text.substring(-5, -1) == "Worl")
+
+        return "ok"
+    }
+
+    # Test 3: Substring edge cases
+    @external method testSubstringEdgeCases(): Text {
+        io.print("Test: Substring Edge Cases")
+
+        text: Text = "Hello"
+        this.assert("start == end => empty", text.substring(3, 3) == "")
+        this.assert("start > end => empty", text.substring(4, 2) == "")
+        this.assert("out of bounds clamped", text.substring(0, 100) == "Hello")
+
+        empty: Text = ""
+        this.assert("empty string substring", empty.substring(0, 0) == "")
+
+        return "ok"
+    }
+
+    # Test 4: Basic charAt
+    @external method testBasicCharAt(): Text {
+        io.print("Test: Basic charAt")
+
+        text: Text = "Hello"
+        this.assert("charAt(0) = H", text.charAt(0) == "H")
+        this.assert("charAt(1) = e", text.charAt(1) == "e")
+        this.assert("charAt(4) = o", text.charAt(4) == "o")
+
+        return "ok"
+    }
+
+    # Test 5: charAt with negative indices
+    @external method testNegativeCharAt(): Text {
+        io.print("Test: Negative Index charAt")
+
+        text: Text = "Hello"
+        this.assert("charAt(-1) = o", text.charAt(-1) == "o")
+        this.assert("charAt(-5) = H", text.charAt(-5) == "H")
+        this.assert("charAt(-3) = l", text.charAt(-3) == "l")
+
+        return "ok"
+    }
+
+    # Test 6: Practical usage — parsing
+    @external method testPracticalUsage(): Text {
+        io.print("Test: Practical Usage")
+
+        path: Text = "/api/users/42"
+        # Extract "api" using substring
+        segment: Text = path.substring(1, 4)
+        this.assert("path segment extraction", segment == "api")
+
+        # First character check
+        this.assert("path starts with /", path.charAt(0) == "/")
+
+        # Last character
+        this.assert("path ends with 2", path.charAt(-1) == "2")
+
+        return "ok"
+    }
+
+    @external method printSummary(): Text {
+        io.print("")
+        io.print("Results: %d passed, %d failed", this.passed, this.failed)
+        if (this.failed == 0) {
+            io.print("All tests passed!")
+        } else {
+            io.print("SOME TESTS FAILED")
+        }
+        return "ok"
+    }
+}
+
+Object Main {
+    method main(): Int {
+        io.print("=== Text.substring() and Text.charAt() Tests ===")
+        io.print("")
+
+        t: TestSubstringCharAt = new TestSubstringCharAt()
+        t.testBasicSubstring()
+        t.testNegativeSubstring()
+        t.testSubstringEdgeCases()
+        t.testBasicCharAt()
+        t.testNegativeCharAt()
+        t.testPracticalUsage()
+        t.printSummary()
+
+        return 0
+    }
+}

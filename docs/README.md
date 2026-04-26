@@ -12,7 +12,7 @@ Welcome to the comprehensive documentation for the O²L programming language. Th
 
 ### Core Types Reference
 
-- **[Text](api-reference/core/Text.md)** - String manipulation and text processing (48+ methods)
+- **[Text](api-reference/core/Text.md)** - String manipulation and text processing (54+ methods)
 - **[List](api-reference/core/List.md)** - Dynamic arrays and list operations
 - **[Map](api-reference/core/Map.md)** - Key-value data structures
 - **[Set](api-reference/core/Set.md)** - Unique value collections
