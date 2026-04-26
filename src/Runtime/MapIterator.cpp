@@ -37,12 +37,21 @@ Value MapIterator::nextKey() {
     if (!hasNext()) {
         throw EvaluationError("MapIterator has no more keys");
     }
-    Value key = current_iterator_->first;
+    // Advance and cache the current entry so nextValue() can return it without re-advancing.
+    cached_key_ = current_iterator_->first;
+    cached_value_ = current_iterator_->second;
+    has_cached_entry_ = true;
     ++current_iterator_;
-    return key;
+    return cached_key_;
 }
 
 Value MapIterator::nextValue() {
+    if (has_cached_entry_) {
+        // Return the value cached by the preceding nextKey() call.
+        has_cached_entry_ = false;
+        return cached_value_;
+    }
+    // Standalone nextValue() without a preceding nextKey() — advance normally.
     if (!hasNext()) {
         throw EvaluationError("MapIterator has no more values");
     }
@@ -55,13 +64,10 @@ Value MapIterator::nextEntry() {
     if (!hasNext()) {
         throw EvaluationError("MapIterator has no more entries");
     }
-
-    // For now, return a simple Text representation "key:value"
-    // In a full implementation, this would return a Record type
     Value key = current_iterator_->first;
     Value value = current_iterator_->second;
     ++current_iterator_;
-
+    has_cached_entry_ = false;
     std::string entry_str = valueToString(key) + ":" + valueToString(value);
     return Text(entry_str);
 }
@@ -70,16 +76,12 @@ Value MapIterator::MapItem() {
     if (!hasNext()) {
         throw EvaluationError("MapIterator has no more items");
     }
-
-    // Get key and value from current position
     Value key = current_iterator_->first;
     Value value = current_iterator_->second;
     ++current_iterator_;
-
-    // Create MapObject with type information
+    has_cached_entry_ = false;
     auto map_object = std::make_shared<MapObject>(key, value, map_instance_->getKeyTypeName(),
                                                   map_instance_->getValueTypeName());
-
     return Value(map_object);
 }
 
@@ -87,6 +89,7 @@ void MapIterator::reset() {
     const auto& entries = map_instance_->getEntries();
     current_iterator_ = entries.begin();
     end_iterator_ = entries.end();
+    has_cached_entry_ = false;
 }
 
 size_t MapIterator::getCurrentIndex() const {

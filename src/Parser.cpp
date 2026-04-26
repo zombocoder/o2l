@@ -624,7 +624,7 @@ ASTNodePtr Parser::parseConstructorDeclaration() {
     // Skip return type if present (constructors don't return values)
     if (currentToken().type == TokenType::COLON) {
         advance(); // consume colon
-        consume(TokenType::IDENTIFIER, "Expected return type after ':'");
+        parseTypeName();
     }
     
     Token body_lbrace_token = consume(TokenType::LBRACE, "Expected '{' to start constructor body");
@@ -868,26 +868,7 @@ ASTNodePtr Parser::parseUserImportDeclaration() {
 ASTNodePtr Parser::parseNewExpression() {
     Token new_token = consume(TokenType::NEW, "Expected 'new'");
     
-    std::string object_type_name;
-    if (currentToken().type == TokenType::IDENTIFIER) {
-        Token object_type_token = consume(TokenType::IDENTIFIER, "Expected object type name after 'new'");
-        object_type_name = object_type_token.value;
-        
-        // Check for qualified type name (namespace.path.Type)
-        while (currentToken().type == TokenType::DOT) {
-            advance(); // consume dot
-            Token part_token = consume(TokenType::IDENTIFIER, "Expected identifier after '.' in type name");
-            object_type_name += "." + part_token.value;
-        }
-    } else if (currentToken().type == TokenType::ERROR) {
-        Token object_type_token = consume(TokenType::ERROR, "Expected Error type after 'new'");
-        object_type_name = object_type_token.value;
-    } else if (currentToken().type == TokenType::RESULT) {
-        Token object_type_token = consume(TokenType::RESULT, "Expected Result type after 'new'");
-        object_type_name = object_type_token.value;
-    } else {
-        throw SyntaxError("Expected object type name after 'new' at line " + std::to_string(currentToken().line));
-    }
+    std::string object_type_name = parseTypeName();
     
     consume(TokenType::LPAREN, "Expected '(' after object type name");
     
@@ -1117,8 +1098,7 @@ ASTNodePtr Parser::parsePropertyDeclaration() {
     
     consume(TokenType::COLON, "Expected ':' after property name");
     
-    Token type_name_token = consume(TokenType::IDENTIFIER, "Expected type name");
-    std::string type_name = type_name_token.value;
+    std::string type_name = parseTypeName();
     
     auto property_decl = std::make_unique<PropertyDeclarationNode>(property_name, type_name);
     SourceLocation location(filename_, property_token.line, property_token.column);
@@ -1134,8 +1114,7 @@ ASTNodePtr Parser::parseConstDeclaration() {
     
     consume(TokenType::COLON, "Expected ':' after constant name");
     
-    Token type_name_token = consume(TokenType::IDENTIFIER, "Expected type name");
-    std::string type_name = type_name_token.value;
+    std::string type_name = parseTypeName();
     
     consume(TokenType::ASSIGN, "Expected '=' after type");
     
@@ -1289,8 +1268,7 @@ ASTNodePtr Parser::parseRecordDeclaration() {
         
         consume(TokenType::COLON, "Expected ':' after field name");
         
-        Token field_type_token = consume(TokenType::IDENTIFIER, "Expected field type");
-        std::string field_type = field_type_token.value;
+        std::string field_type = parseTypeName();
         
         fields.emplace_back(field_name, field_type);
         
@@ -1355,8 +1333,7 @@ ASTNodePtr Parser::parseProtocolDeclaration() {
             
             consume(TokenType::COLON, "Expected ':' after parameter name");
             
-            Token param_type_token = consume(TokenType::IDENTIFIER, "Expected parameter type");
-            std::string param_type = param_type_token.value;
+            std::string param_type = parseTypeName();
             
             parameters.emplace_back(param_name, param_type);
             
@@ -1380,8 +1357,7 @@ ASTNodePtr Parser::parseProtocolDeclaration() {
         consume(TokenType::RPAREN, "Expected ')' after parameters");
         consume(TokenType::COLON, "Expected ':' after parameter list");
         
-        Token return_type_token = consume(TokenType::IDENTIFIER, "Expected return type");
-        std::string return_type = return_type_token.value;
+        std::string return_type = parseTypeName();
         
         // Protocol methods don't have bodies, just signatures
         method_signatures.emplace_back(method_name, std::move(parameters), return_type);
@@ -1705,44 +1681,27 @@ std::string Parser::parseTypeName() {
     if (currentToken().type == TokenType::LESS_THAN) {
         advance(); // consume '<'
         
-        // Parse first type parameter
-        std::string first_type;
-        if (currentToken().type == TokenType::IDENTIFIER) {
-            Token first_type_token = consume(TokenType::IDENTIFIER, "Expected generic type parameter");
-            first_type = first_type_token.value;
-        } else if (currentToken().type == TokenType::ERROR) {
-            Token first_type_token = consume(TokenType::ERROR, "Expected Error type parameter");
-            first_type = first_type_token.value;
-        } else if (currentToken().type == TokenType::RESULT) {
-            Token first_type_token = consume(TokenType::RESULT, "Expected Result type parameter");
-            first_type = first_type_token.value;
-        } else {
-            throw SyntaxError("Expected generic type parameter at line " + std::to_string(currentToken().line));
-        }
+        // Skip whitespace
+        while (match(TokenType::NEWLINE)) {}
+        
+        // Parse first type parameter (recursive)
+        std::string first_type = parseTypeName();
+        
+        // Skip whitespace
+        while (match(TokenType::NEWLINE)) {}
         
         // Check if this is a two-parameter generic type (Map, Result) or single-parameter (List, Set)
-        if ((type_name == "Map" || type_name == "Result") && currentToken().type == TokenType::COMMA) {
+        if (currentToken().type == TokenType::COMMA) {
             advance(); // consume ','
             
             // Skip whitespace
-            while (match(TokenType::NEWLINE)) {
-                // Skip newlines
-            }
+            while (match(TokenType::NEWLINE)) {}
             
-            // Parse second type parameter
-            std::string second_type;
-            if (currentToken().type == TokenType::IDENTIFIER) {
-                Token second_type_token = consume(TokenType::IDENTIFIER, "Expected second generic type parameter");
-                second_type = second_type_token.value;
-            } else if (currentToken().type == TokenType::ERROR) {
-                Token second_type_token = consume(TokenType::ERROR, "Expected Error type parameter");
-                second_type = second_type_token.value;
-            } else if (currentToken().type == TokenType::RESULT) {
-                Token second_type_token = consume(TokenType::RESULT, "Expected Result type parameter");
-                second_type = second_type_token.value;
-            } else {
-                throw SyntaxError("Expected second generic type parameter at line " + std::to_string(currentToken().line));
-            }
+            // Parse second type parameter (recursive)
+            std::string second_type = parseTypeName();
+            
+            // Skip whitespace
+            while (match(TokenType::NEWLINE)) {}
             
             consume(TokenType::GREATER_THAN, "Expected '>' after generic type parameters");
             

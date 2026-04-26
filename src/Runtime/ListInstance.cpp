@@ -49,6 +49,89 @@ void ListInstance::reverse() {
     std::reverse(elements_.begin(), elements_.end());
 }
 
+Value ListInstance::set(size_t index, const Value& element) {
+    if (index >= elements_.size()) {
+        throw EvaluationError("List index out of bounds");
+    }
+    Value old = elements_[index];
+    elements_[index] = element;
+    return old;
+}
+
+void ListInstance::sort() {
+    std::sort(elements_.begin(), elements_.end(), ValueComparator());
+}
+
+void ListInstance::sortDescending() {
+    std::sort(elements_.begin(), elements_.end(), [](const Value& a, const Value& b) {
+        return ValueComparator()(b, a);
+    });
+}
+
+Value ListInstance::slice(size_t start, size_t end) const {
+    if (start > elements_.size()) {
+        start = elements_.size();
+    }
+    if (end > elements_.size()) {
+        end = elements_.size();
+    }
+    if (start > end) {
+        return Value(std::make_shared<ListInstance>(element_type_name_));
+    }
+
+    auto result = std::make_shared<ListInstance>(element_type_name_);
+    for (size_t i = start; i < end; ++i) {
+        result->add(elements_[i]);
+    }
+    return Value(result);
+}
+
+int ListInstance::addAll(const ListInstance& other) {
+    for (const auto& element : other.elements_) {
+        elements_.push_back(element);
+    }
+    return static_cast<int>(elements_.size());
+}
+
+int ListInstance::removeAll(const ListInstance& other) {
+    size_t before = elements_.size();
+    elements_.erase(std::remove_if(elements_.begin(), elements_.end(),
+                                   [&other](const Value& val) { return other.contains(val); }),
+                    elements_.end());
+    return static_cast<int>(before - elements_.size());
+}
+
+int ListInstance::retainAll(const ListInstance& other) {
+    elements_.erase(std::remove_if(elements_.begin(), elements_.end(),
+                                   [&other](const Value& val) { return !other.contains(val); }),
+                    elements_.end());
+    return static_cast<int>(elements_.size());
+}
+
+int ListInstance::lastIndexOf(const Value& element) const {
+    for (int i = static_cast<int>(elements_.size()) - 1; i >= 0; --i) {
+        if (elements_[i] == element) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool ListInstance::contains(const Value& element) const {
+    for (const auto& el : elements_) {
+        if (el == element) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::shared_ptr<ListInstance> ListInstance::copy() const {
+    auto result = std::make_shared<ListInstance>(element_type_name_);
+    result->elements_ = elements_;
+    return result;
+}
+
 Value ListInstance::pop() {
     if (elements_.empty()) {
         throw EvaluationError("Cannot pop from empty list");

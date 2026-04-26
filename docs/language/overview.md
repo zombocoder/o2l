@@ -6,6 +6,8 @@ O²L is an object-oriented programming language with a focus on simplicity and c
 
 - **Object-oriented**: Everything is built around objects and methods
 - **Strong typing**: Variables must be declared with types
+- **Nested Generics**: Recursive type support for complex data structures (e.g., `Map<Text, List<Int>>`)
+- **Advanced Collections**: Rich set of methods for `List`, `Map`, and `Set`
 - **Automatic memory management**: No manual memory allocation needed
 - **Simple syntax**: Clean, readable code structure
 

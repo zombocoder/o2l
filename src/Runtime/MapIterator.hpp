@@ -35,6 +35,11 @@ class MapIterator {
     std::shared_ptr<MapInstance> map_instance_;
     std::map<Value, Value>::const_iterator current_iterator_;
     std::map<Value, Value>::const_iterator end_iterator_;
+    // Cached entry for nextKey()/nextValue() pairing — nextKey() advances and caches,
+    // nextValue() reads from cache so no double-advance occurs.
+    bool has_cached_entry_ = false;
+    Value cached_key_;
+    Value cached_value_;
 
    public:
     MapIterator(std::shared_ptr<MapInstance> map_instance);

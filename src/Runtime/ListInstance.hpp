@@ -36,7 +36,17 @@ class ListInstance {
     void add(const Value& element);
     Value get(size_t index) const;
     void remove(size_t index);
+    Value set(size_t index, const Value& element);
     void reverse();
+    void sort();
+    void sortDescending();
+    Value slice(size_t start, size_t end) const;
+    int addAll(const ListInstance& other);
+    int removeAll(const ListInstance& other);
+    int retainAll(const ListInstance& other);
+    int lastIndexOf(const Value& element) const;
+    bool contains(const Value& element) const;
+    std::shared_ptr<ListInstance> copy() const;
     Value pop();
 
     // Utility methods

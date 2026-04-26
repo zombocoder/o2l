@@ -8,6 +8,8 @@
 
 ### 🆕 **Latest Features**
 
+- **🧬 Recursive Nested Generics**: Support for complex nested types like `Map<Text, List<Int>>` in all variable, constant, property, record, and protocol declarations.
+- **📚 Enhanced Collections**: Over 30 new methods for `List`, `Map`, and `Set` including sorting, slicing, bulk operations, and advanced set theory functions (`union`, `intersection`, `difference`, etc.).
 - **🔗 Enhanced Foreign Function Interface (FFI)**: Complete FFI system with advanced type support, SQLite integration, and comprehensive C library interoperability
 - **🌐 HTTP Client Library**: Complete `http.client` library with 30+ methods, multipart file upload, platform-specific implementations (Windows/Linux/macOS), and cross-platform libcurl fallback
 - **🔄 JSON Library**: Revolutionary `json` library with 30+ methods including auto-detection parsing, fixed path navigation bug, and seamless native Map/List integration

@@ -60,6 +60,26 @@ uniqueNumbers: Set<Int> = new Set<Int>()
 categories: Set<Text> = new Set<Text>()
 ```
 
+### Nested Generics
+
+O²L supports recursive nested generics, allowing for complex and deeply structured data types:
+
+```obq
+# Map where values are lists of integers
+complex_data: Map<Text, List<Int>> = {
+    "group1": [1, 2, 3],
+    "group2": [4, 5, 6]
+}
+
+# Triple nested collections
+data_matrix: List<Map<Text, Set<Int>>> = []
+
+# Nested result types
+operation: Result<List<Text>, Error> = Result.success(["ok", "done"])
+```
+
+Nested generics are supported in all type declaration contexts, including variable declarations, object properties, record fields, and protocol method signatures.
+
 ## Object Types
 
 Objects can be used as types:

@@ -25,12 +25,7 @@
 
 namespace o2l {
 
-// Custom comparator for Value types using string representation
-struct ValueComparator {
-    bool operator()(const Value& a, const Value& b) const {
-        return valueToString(a) < valueToString(b);
-    }
-};
+class ListInstance;
 
 class SetInstance {
    private:
@@ -45,9 +40,19 @@ class SetInstance {
     bool contains(const Value& element) const;
     void remove(const Value& element);
     void clear();
+    int addAll(const SetInstance& other);
+    std::shared_ptr<SetInstance> setUnion(const SetInstance& other) const;
+    std::shared_ptr<SetInstance> setIntersection(const SetInstance& other) const;
+    std::shared_ptr<SetInstance> setDifference(const SetInstance& other) const;
+    std::shared_ptr<SetInstance> setSymmetricDifference(const SetInstance& other) const;
+    bool isSubsetOf(const SetInstance& other) const;
+    bool isSupersetOf(const SetInstance& other) const;
+    bool isDisjointFrom(const SetInstance& other) const;
 
     // Collection operations
     std::vector<Value> elements() const;
+    std::shared_ptr<ListInstance> toList() const;
+    int removeAll(const SetInstance& other);
     size_t size() const;
     bool empty() const;
 
