@@ -371,10 +371,10 @@ Value TestLibrary::assertNear(const std::vector<Value>& args, Context& context) 
     if (diff > tolerance) {
         std::string failure_msg =
             message.empty()
-                ? "Expected " + std::to_string(expected) + " ± " + std::to_string(tolerance) +
+                ? "Expected " + std::to_string(expected) + " ± " + std::to_string(tolerance) +
                       ", but got " + std::to_string(actual) +
                       " (difference: " + std::to_string(diff) + ")"
-                : message + " - Expected " + std::to_string(expected) + " ± " +
+                : message + " - Expected " + std::to_string(expected) + " ± " +
                       std::to_string(tolerance) + ", but got " + std::to_string(actual) +
                       " (difference: " + std::to_string(diff) + ")";
 
@@ -550,7 +550,7 @@ Value TestLibrary::printResults(const std::vector<Value>& args, Context& context
         std::cout << "\nFailed Tests:" << std::endl;
         for (const auto& result : suite.test_results) {
             if (!result.passed) {
-                std::cout << "  ❌ " << result.test_name << ": " << result.failure_message
+                std::cout << "  âŒ " << result.test_name << ": " << result.failure_message
                           << std::endl;
             }
         }
@@ -558,7 +558,7 @@ Value TestLibrary::printResults(const std::vector<Value>& args, Context& context
 
     std::cout << "\nTest Details:" << std::endl;
     for (const auto& result : suite.test_results) {
-        std::cout << "  " << (result.passed ? "✅" : "❌") << " " << result.test_name << " ("
+        std::cout << "  " << (result.passed ? "âœ…" : "âŒ") << " " << result.test_name << " ("
                   << std::fixed << std::setprecision(2) << result.execution_time_ms << " ms)"
                   << std::endl;
     }
@@ -730,10 +730,10 @@ Value TestLibrary::afterEach(const std::vector<Value>& args, Context& context) {
 
 // Helper function implementations
 std::string TestLibrary::valueToString(const Value& value) {
-    if (std::holds_alternative<Int>(value)) {
-        return std::to_string(std::get<Int>(value));
-    } else if (std::holds_alternative<Long>(value)) {
-        return std::to_string(static_cast<long long>(std::get<Long>(value)));
+    if (holds_Int_Value(value)) {
+        return std::to_string(get_Int_Value(value));
+    } else if (holds_Long_Value(value)) {
+        return std::to_string(static_cast<long long>(get_Long_Value(value)));
     } else if (std::holds_alternative<Float>(value)) {
         return std::to_string(std::get<Float>(value));
     } else if (std::holds_alternative<Double>(value)) {
@@ -752,10 +752,10 @@ bool TestLibrary::valuesEqual(const Value& a, const Value& b) {
         return false;  // Different types
     }
 
-    if (std::holds_alternative<Int>(a)) {
-        return std::get<Int>(a) == std::get<Int>(b);
-    } else if (std::holds_alternative<Long>(a)) {
-        return std::get<Long>(a) == std::get<Long>(b);
+    if (holds_Int_Value(a)) {
+        return get_Int_Value(a) == get_Int_Value(b);
+    } else if (holds_Long_Value(a)) {
+        return get_Long_Value(a) == get_Long_Value(b);
     } else if (std::holds_alternative<Float>(a)) {
         return std::abs(std::get<Float>(a) - std::get<Float>(b)) < 1e-7f;
     } else if (std::holds_alternative<Double>(a)) {
@@ -771,10 +771,10 @@ bool TestLibrary::valuesEqual(const Value& a, const Value& b) {
 
 double TestLibrary::extractNumericValue(const Value& value, const std::string& function_name,
                                         Context& context) {
-    if (std::holds_alternative<Int>(value)) {
-        return static_cast<double>(std::get<Int>(value));
-    } else if (std::holds_alternative<Long>(value)) {
-        return static_cast<double>(std::get<Long>(value));
+    if (holds_Int_Value(value)) {
+        return static_cast<double>(get_Int_Value(value));
+    } else if (holds_Long_Value(value)) {
+        return static_cast<double>(get_Long_Value(value));
     } else if (std::holds_alternative<Float>(value)) {
         return static_cast<double>(std::get<Float>(value));
     } else if (std::holds_alternative<Double>(value)) {

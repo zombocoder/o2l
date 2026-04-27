@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🌟 Major Milestone: Full Cross-OS Support
+- **Official Windows Support**: The O²L interpreter, tools, and LSP server now fully build and run on Windows using **Visual C++ (MSVC) 2022** and **Clang (LLVM)**.
+- **Improved Path Consistency**: All filesystem and path operations now return consistent `/` separators across Windows, Linux, and macOS using `std::filesystem::path::generic_string()`.
+- **Hardware-Agnostic Numeric Types**: Introduced `O2L_HAS_INT128` and `is_long_` value tagging to ensure 128-bit `Long` support on compatible hardware while maintaining full 64-bit fallback and type distinction on platforms like Windows (MSVC).
+- **Verified Stability**: Full test suite pass (478 tests) confirmed on all three major operating systems.
+
+### Added
+- **Windows CI Pipeline**: Added GitHub Actions workflow for `windows-latest` to ensure continuous cross-platform compatibility.
+- **MSVC Compatibility**: Resolved fundamental compilation barriers (socket handling, `ssize_t` definitions, and `popen` portability).
+- **toInt() conversion**: Added `toInt()` method to `Int` type to support uniform casting from `Long` on all platforms.
+
+### Changed
+- **GTest Discovery**: Updated CMake configuration to use `CONFIG` mode for more robust dependency discovery via `vcpkg` or manual installation.
+- **Type Promotion**: Improved `Text` to `Long` conversion using `std::stoll` for safer 64-bit conversion on Windows.
+- **Documentation**: Updated README and guides with Windows build and installation instructions.
+
+### 📦 Collection Extensions
+- **List/Map/Set Enhancements**: Added sorting, slicing, and bulk operations (`addAll`, `removeAll`) to all major collection types.
+- **Performance**: Optimized internal collection traversal and type-safe access.
+
+### 📝 Text API Extension
+- **Improved substring()**: Full Python-style slice semantics with negative indices and automatic clamping.
+- **Robust charAt()**: Added support for negative indexing and boundary protection.
+- **Improved contains()**: Standardized substring detection.
+- **New aliases**: Added `trimStart()` and `trimEnd()` for improved usability.
+
 ## [2024-12-XX] - Variable Mutability & Enhanced Language Features
 
 ### Added

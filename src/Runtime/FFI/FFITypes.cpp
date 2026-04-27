@@ -15,6 +15,7 @@
  */
 
 #include "FFITypes.hpp"
+#include <stdexcept>
 
 namespace o2l::ffi {
 
@@ -95,14 +96,14 @@ bool CStructInstance::setField(const std::string& name, const Value& value) {
             
             switch (type) {
                 case CType::Int32:
-                    if (std::holds_alternative<Int>(value)) {
-                        *reinterpret_cast<int32_t*>(field_ptr) = static_cast<int32_t>(std::get<Int>(value));
+                    if (holds_Int_Value(value)) {
+                        *reinterpret_cast<int32_t*>(field_ptr) = static_cast<int32_t>(get_Int_Value(value));
                         return true;
                     }
                     break;
                 case CType::Int64:
-                    if (std::holds_alternative<Int>(value)) {
-                        *reinterpret_cast<int64_t*>(field_ptr) = std::get<Int>(value);
+                    if (holds_Int_Value(value)) {
+                        *reinterpret_cast<int64_t*>(field_ptr) = get_Int_Value(value);
                         return true;
                     }
                     break;
@@ -188,14 +189,14 @@ bool CArrayInstance::setElement(size_t index, const Value& value) {
     
     switch (element_type_) {
         case CType::Int32:
-            if (std::holds_alternative<Int>(value)) {
-                *reinterpret_cast<int32_t*>(elem_ptr) = static_cast<int32_t>(std::get<Int>(value));
+            if (holds_Int_Value(value)) {
+                *reinterpret_cast<int32_t*>(elem_ptr) = static_cast<int32_t>(get_Int_Value(value));
                 return true;
             }
             break;
         case CType::Int64:
-            if (std::holds_alternative<Int>(value)) {
-                *reinterpret_cast<int64_t*>(elem_ptr) = std::get<Int>(value);
+            if (holds_Int_Value(value)) {
+                *reinterpret_cast<int64_t*>(elem_ptr) = get_Int_Value(value);
                 return true;
             }
             break;
@@ -224,8 +225,8 @@ bool CArrayInstance::setElement(size_t index, const Value& value) {
             }
             break;
         default:
-            if (std::holds_alternative<Int>(value)) {
-                Int val = std::get<Int>(value);
+            if (holds_Int_Value(value)) {
+                Int val = get_Int_Value(value);
                 if (val >= 0 && val <= 255) {
                     *elem_ptr = static_cast<uint8_t>(val);
                     return true;

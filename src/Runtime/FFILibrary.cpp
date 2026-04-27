@@ -211,12 +211,12 @@ Value FFILibrary::ffi_ptr(const std::vector<Value>& args, Context& context) {
         return Value(null_ptr);
     }
     
-    if (args.empty() || !std::holds_alternative<Int>(args[0])) {
+    if (args.empty() || !holds_Int_Value(args[0])) {
         auto null_ptr = std::make_shared<ffi::PtrInstance>(nullptr);
         return Value(null_ptr);
     }
     
-    Int value = std::get<Int>(args[0]);
+    Int value = get_Int_Value(args[0]);
     void* ptr = reinterpret_cast<void*>(static_cast<uintptr_t>(value));
     auto ptr_instance = std::make_shared<ffi::PtrInstance>(ptr);
     return Value(ptr_instance);
@@ -406,12 +406,12 @@ Value FFILibrary::ffi_struct(const std::vector<Value>& args, Context& context) {
     }
     
     // ffi.struct(size) - creates a struct with the specified byte size
-    if (args.size() != 1 || !std::holds_alternative<Int>(args[0])) {
+    if (args.size() != 1 || !holds_Int_Value(args[0])) {
         auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected Int size argument");
         return Value(ResultInstance::createError(Value(error), "Value", "Error"));
     }
     
-    Int size = std::get<Int>(args[0]);
+    Int size = get_Int_Value(args[0]);
     if (size <= 0) {
         auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Struct size must be positive");
         return Value(ResultInstance::createError(Value(error), "Value", "Error"));
@@ -429,13 +429,13 @@ Value FFILibrary::ffi_array(const std::vector<Value>& args, Context& context) {
     }
     
     // ffi.array(type, count) - creates an array of specified type and count
-    if (args.size() != 2 || !std::holds_alternative<Text>(args[0]) || !std::holds_alternative<Int>(args[1])) {
+    if (args.size() != 2 || !std::holds_alternative<Text>(args[0]) || !holds_Int_Value(args[1])) {
         auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Expected Text type and Int count arguments");
         return Value(ResultInstance::createError(Value(error), "Value", "Error"));
     }
     
     std::string type_str = std::get<Text>(args[0]);
-    Int count = std::get<Int>(args[1]);
+    Int count = get_Int_Value(args[1]);
     
     if (count <= 0) {
         auto error = std::make_shared<ErrorInstance>("INVALID_ARGUMENT", "Array count must be positive");

@@ -17,6 +17,9 @@
 #ifndef _WIN32
 #include <sys/wait.h>
 #include <unistd.h>
+#else
+#define popen _popen
+#define pclose _pclose
 #endif
 
 #include <cstdlib>

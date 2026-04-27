@@ -34,6 +34,8 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <arpa/inet.h>
@@ -593,7 +595,7 @@ bool HttpServer::parseHttpRequest(int client_socket, HttpServerRequest& request)
             // Read remaining body data
             while (request.body.size() < content_length) {
                 size_t remaining = content_length - request.body.size();
-                size_t to_read = std::min(remaining, sizeof(buffer) - 1);
+                size_t to_read = (std::min)(remaining, sizeof(buffer) - 1);
 
 #ifdef _WIN32
                 int bytes_received = recv(client_socket, buffer, static_cast<int>(to_read), 0);
@@ -1180,11 +1182,11 @@ Value HttpServerLibrary::nativeSetPort(const std::vector<Value>& args, Context& 
     }
 
     // Get port from the second argument
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw std::runtime_error("Port must be an integer");
     }
 
-    int port = std::get<Int>(args[1]);
+    int port = get_Int_Value(args[1]);
     if (port <= 0 || port > 65535) {
         throw std::runtime_error("Port must be between 1 and 65535");
     }
@@ -1206,11 +1208,11 @@ Value HttpServerLibrary::nativeSetWorkerThreads(const std::vector<Value>& args, 
     }
 
     // Get thread count from the second argument
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw std::runtime_error("Worker thread count must be an integer");
     }
 
-    int threads = std::get<Int>(args[1]);
+    int threads = get_Int_Value(args[1]);
     if (threads <= 0 || threads > 100) {
         throw std::runtime_error("Worker thread count must be between 1 and 100");
     }
@@ -1725,8 +1727,8 @@ RouteHandler HttpServerLibrary::createObjectMethodHandler(const Value& object_va
                         // Use as-is if it looks like JSON
                         response.body = result_text;
                     }
-                } else if (std::holds_alternative<Int>(result)) {
-                    response.body = "{\"result\": " + std::to_string(std::get<Int>(result)) + "}";
+                } else if (holds_Int_Value(result)) {
+                    response.body = "{\"result\": " + std::to_string(get_Int_Value(result)) + "}";
                 } else if (std::holds_alternative<Bool>(result)) {
                     response.body = std::string("{\"result\": ") +
                                     (std::get<Bool>(result) ? "true" : "false") + "}";
@@ -1962,10 +1964,10 @@ std::shared_ptr<ObjectInstance> HttpServerLibrary::createResponseObject(
     response_obj->addMethod(
         "setStatus",
         [&response](const std::vector<Value>& args, Context& context) {
-            if (args.empty() || !std::holds_alternative<Int>(args[0])) {
+            if (args.empty() || !holds_Int_Value(args[0])) {
                 throw std::runtime_error("setStatus() requires a status code number");
             }
-            int status = std::get<Int>(args[0]);
+            int status = get_Int_Value(args[0]);
             if (status < 100 || status >= 600) {
                 throw std::runtime_error("Invalid HTTP status code: " + std::to_string(status));
             }
@@ -2090,8 +2092,8 @@ std::shared_ptr<ObjectInstance> HttpServerLibrary::createResponseObject(
 
             // Default to 302 Found, but allow custom status code
             int status_code = 302;
-            if (args.size() > 1 && std::holds_alternative<Int>(args[1])) {
-                status_code = std::get<Int>(args[1]);
+            if (args.size() > 1 && holds_Int_Value(args[1])) {
+                status_code = get_Int_Value(args[1]);
             }
 
             response.status_code = status_code;

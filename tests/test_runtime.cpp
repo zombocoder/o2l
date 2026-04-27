@@ -94,9 +94,14 @@ TEST_F(RuntimeTest, ValueEquality) {
     EXPECT_FALSE(valuesEqual(Value(Double(2.718)), Value(Double(3.141))));
 
     // Test that different numeric types are distinct
+#if O2L_HAS_INT128
+    // On platforms with __int128, Int and Long are distinct variant alternatives.
+    // On MSVC/Windows (Long=Int=long long), direct Value(Long) calls the Int constructor;
+    // runtime Long values are tagged via LongTag in the Parser/interpreter.
     EXPECT_FALSE(valuesEqual(Value(Int(42)), Value(Long(42L))));
-    EXPECT_FALSE(valuesEqual(Value(Float(3.14f)), Value(Double(3.14))));
     EXPECT_FALSE(valuesEqual(Value(Long(42L)), Value(Float(42.0f))));
+#endif
+    EXPECT_FALSE(valuesEqual(Value(Float(3.14f)), Value(Double(3.14))));
 
     EXPECT_TRUE(valuesEqual(Value(Text("Hello")), Value(Text("Hello"))));
     EXPECT_FALSE(valuesEqual(Value(Text("Hello")), Value(Text("World"))));
@@ -108,7 +113,9 @@ TEST_F(RuntimeTest, ValueEquality) {
 // Test type names
 TEST_F(RuntimeTest, TypeNames) {
     EXPECT_EQ(getTypeName(Value(Int(42))), "Int");
+#if O2L_HAS_INT128
     EXPECT_EQ(getTypeName(Value(Long(123456789012345L))), "Long");
+#endif
     EXPECT_EQ(getTypeName(Value(Float(3.14f))), "Float");
     EXPECT_EQ(getTypeName(Value(Double(2.718))), "Double");
     EXPECT_EQ(getTypeName(Value(Text("Hello"))), "Text");

@@ -327,10 +327,10 @@ Value MathLibrary::getNan(const std::vector<Value>& args, Context& context) {
 // Helper functions
 double MathLibrary::extractNumber(const Value& value, const std::string& function_name,
                                   Context& context) {
-    if (std::holds_alternative<Int>(value)) {
-        return static_cast<double>(std::get<Int>(value));
-    } else if (std::holds_alternative<Long>(value)) {
-        return static_cast<double>(std::get<Long>(value));
+    if (holds_Int_Value(value)) {
+        return static_cast<double>(get_Int_Value(value));
+    } else if (holds_Long_Value(value)) {
+        return static_cast<double>(get_Long_Value(value));
     } else if (std::holds_alternative<Float>(value)) {
         return static_cast<double>(std::get<Float>(value));
     } else if (std::holds_alternative<Double>(value)) {
@@ -342,10 +342,10 @@ double MathLibrary::extractNumber(const Value& value, const std::string& functio
 
 Int MathLibrary::extractInteger(const Value& value, const std::string& function_name,
                                 Context& context) {
-    if (std::holds_alternative<Int>(value)) {
-        return std::get<Int>(value);
-    } else if (std::holds_alternative<Long>(value)) {
-        Long long_val = std::get<Long>(value);
+    if (holds_Int_Value(value)) {
+        return get_Int_Value(value);
+    } else if (holds_Long_Value(value)) {
+        Long long_val = get_Long_Value(value);
         if (long_val > std::numeric_limits<Int>::max() ||
             long_val < std::numeric_limits<Int>::min()) {
             throw EvaluationError("math." + function_name + "() integer argument out of range",
@@ -368,11 +368,11 @@ Value MathLibrary::nativeAbs(const std::vector<Value>& args, Context& context) {
         throw EvaluationError("math.abs() requires exactly one argument", context);
     }
 
-    if (std::holds_alternative<Int>(args[0])) {
-        Int val = std::get<Int>(args[0]);
+    if (holds_Int_Value(args[0])) {
+        Int val = get_Int_Value(args[0]);
         return Value(Int(std::abs(val)));
-    } else if (std::holds_alternative<Long>(args[0])) {
-        Long val = std::get<Long>(args[0]);
+    } else if (holds_Long_Value(args[0])) {
+        Long val = get_Long_Value(args[0]);
         return Value(Long(val >= 0 ? val : -val));
     } else if (std::holds_alternative<Float>(args[0])) {
         Float val = std::get<Float>(args[0]);

@@ -35,6 +35,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <wininet.h>
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
 #pragma comment(lib, "wininet.lib")
 #elif __APPLE__
 // Use native C API instead of Objective-C Foundation
@@ -535,7 +537,7 @@ Value HttpClientLibrary::nativeRequestWithConfig(const std::vector<Value>& args,
     HttpRequest request;
     request.method = std::get<Text>(request_obj->getProperty("method"));
     request.url = std::get<Text>(request_obj->getProperty("url"));
-    request.timeout_seconds = std::get<Int>(request_obj->getProperty("timeout_seconds"));
+    request.timeout_seconds = get_Int_Value(request_obj->getProperty("timeout_seconds"));
     request.follow_redirects = std::get<Bool>(request_obj->getProperty("follow_redirects"));
     request.verify_ssl = std::get<Bool>(request_obj->getProperty("verify_ssl"));
 
@@ -701,13 +703,13 @@ Value HttpClientLibrary::nativeSetTimeout(const std::vector<Value>& args, Contex
     }
 
     if (!std::holds_alternative<std::shared_ptr<ObjectInstance>>(args[0]) ||
-        !std::holds_alternative<Int>(args[1])) {
+        !holds_Int_Value(args[1])) {
         throw std::runtime_error(
             "setTimeout() requires HttpRequest object and timeout value (Int)");
     }
 
     auto request_obj = std::get<std::shared_ptr<ObjectInstance>>(args[0]);
-    Int timeout = std::get<Int>(args[1]);
+    Int timeout = get_Int_Value(args[1]);
 
     // Set the timeout in the request object
     request_obj->setProperty("timeout_seconds", Value(timeout));
@@ -948,11 +950,11 @@ Value HttpClientLibrary::nativeIsSuccess(const std::vector<Value>& args, Context
     // Get the status code
     Value status_code_value = response_obj->getProperty("status_code");
 
-    if (!std::holds_alternative<Int>(status_code_value)) {
+    if (!holds_Int_Value(status_code_value)) {
         return Value(Bool(false));
     }
 
-    Int status_code = std::get<Int>(status_code_value);
+    Int status_code = get_Int_Value(status_code_value);
 
     // HTTP success is status codes 200-299
     return Value(Bool(status_code >= 200 && status_code < 300));

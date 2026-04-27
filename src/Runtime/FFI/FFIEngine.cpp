@@ -259,9 +259,9 @@ std::expected<void*, FFICallError> FFIEngine::marshalValue(
     const Value& value, CType expected_type, std::vector<std::unique_ptr<uint8_t[]>>& storage) {
     switch (expected_type) {
         case CType::Int32: {
-            if (std::holds_alternative<Int>(value)) {
+            if (holds_Int_Value(value)) {
                 auto temp = std::make_unique<uint8_t[]>(sizeof(int32_t));
-                int32_t val = static_cast<int32_t>(std::get<Int>(value));
+                int32_t val = static_cast<int32_t>(get_Int_Value(value));
                 std::memcpy(temp.get(), &val, sizeof(int32_t));
                 void* ptr = temp.get();
                 storage.push_back(std::move(temp));
@@ -272,9 +272,9 @@ std::expected<void*, FFICallError> FFIEngine::marshalValue(
         }
 
         case CType::Int64: {
-            if (std::holds_alternative<Int>(value)) {
+            if (holds_Int_Value(value)) {
                 auto temp = std::make_unique<uint8_t[]>(sizeof(int64_t));
-                int64_t val = std::get<Int>(value);
+                int64_t val = get_Int_Value(value);
                 std::memcpy(temp.get(), &val, sizeof(int64_t));
                 void* ptr = temp.get();
                 storage.push_back(std::move(temp));

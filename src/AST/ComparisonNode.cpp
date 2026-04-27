@@ -39,146 +39,97 @@ Value ComparisonNode::evaluate(Context& context) {
 
 bool ComparisonNode::compareValues(const Value& left, const Value& right, ComparisonOperator op,
                                    Context& context) {
-    // Handle same types
-    if (left.index() == right.index()) {
-        switch (left.index()) {
-            case 0: {  // Int
-                Int l = std::get<Int>(left);
-                Int r = std::get<Int>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
-            case 1: {  // Long
-                Long l = std::get<Long>(left);
-                Long r = std::get<Long>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
-            case 2: {  // Float
-                Float l = std::get<Float>(left);
-                Float r = std::get<Float>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
-            case 3: {  // Double
-                Double l = std::get<Double>(left);
-                Double r = std::get<Double>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
-            case 4: {  // Text
-                Text l = std::get<Text>(left);
-                Text r = std::get<Text>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
-            case 5: {  // Bool
-                Bool l = std::get<Bool>(left);
-                Bool r = std::get<Bool>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    default:
-                        throw EvaluationError("Invalid comparison operator for boolean values",
-                                              context);
-                }
-                break;
-            }
-            case 6: {  // Char
-                Char l = std::get<Char>(left);
-                Char r = std::get<Char>(right);
-                switch (op) {
-                    case ComparisonOperator::EQUAL:
-                        return l == r;
-                    case ComparisonOperator::NOT_EQUAL:
-                        return l != r;
-                    case ComparisonOperator::LESS_THAN:
-                        return l < r;
-                    case ComparisonOperator::GREATER_THAN:
-                        return l > r;
-                    case ComparisonOperator::LESS_EQUAL:
-                        return l <= r;
-                    case ComparisonOperator::GREATER_EQUAL:
-                        return l >= r;
-                }
-                break;
-            }
+    // Handle same types using type-safe checks (avoids hardcoded variant indices
+    // which differ between platforms when Long is excluded on Windows/MSVC).
+    if (holds_Int_Value(left) && holds_Int_Value(right)) {
+        Int l = get_Int_Value(left);
+        Int r = get_Int_Value(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
+        }
+    }
+    if (holds_Long_Value(left) && holds_Long_Value(right)) {
+        Long l = get_Long_Value(left);
+        Long r = get_Long_Value(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
+        }
+    }
+    if (std::holds_alternative<Float>(left) && std::holds_alternative<Float>(right)) {
+        Float l = std::get<Float>(left);
+        Float r = std::get<Float>(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
+        }
+    }
+    if (std::holds_alternative<Double>(left) && std::holds_alternative<Double>(right)) {
+        Double l = std::get<Double>(left);
+        Double r = std::get<Double>(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
+        }
+    }
+    if (std::holds_alternative<Text>(left) && std::holds_alternative<Text>(right)) {
+        const Text& l = std::get<Text>(left);
+        const Text& r = std::get<Text>(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
+        }
+    }
+    if (std::holds_alternative<Bool>(left) && std::holds_alternative<Bool>(right)) {
+        Bool l = std::get<Bool>(left);
+        Bool r = std::get<Bool>(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:     return l == r;
+            case ComparisonOperator::NOT_EQUAL: return l != r;
+            default:
+                throw EvaluationError("Invalid comparison operator for boolean values", context);
+        }
+    }
+    if (std::holds_alternative<Char>(left) && std::holds_alternative<Char>(right)) {
+        Char l = std::get<Char>(left);
+        Char r = std::get<Char>(right);
+        switch (op) {
+            case ComparisonOperator::EQUAL:        return l == r;
+            case ComparisonOperator::NOT_EQUAL:    return l != r;
+            case ComparisonOperator::LESS_THAN:    return l < r;
+            case ComparisonOperator::GREATER_THAN: return l > r;
+            case ComparisonOperator::LESS_EQUAL:   return l <= r;
+            case ComparisonOperator::GREATER_EQUAL:return l >= r;
         }
     }
 
     // Handle mixed types (Int and Float)
-    if ((std::holds_alternative<Int>(left) && std::holds_alternative<Float>(right)) ||
-        (std::holds_alternative<Float>(left) && std::holds_alternative<Int>(right))) {
-        Float l = std::holds_alternative<Int>(left) ? static_cast<Float>(std::get<Int>(left))
+    if ((holds_Int_Value(left) && std::holds_alternative<Float>(right)) ||
+        (std::holds_alternative<Float>(left) && holds_Int_Value(right))) {
+        Float l = holds_Int_Value(left) ? static_cast<Float>(get_Int_Value(left))
                                                     : std::get<Float>(left);
-        Float r = std::holds_alternative<Int>(right) ? static_cast<Float>(std::get<Int>(right))
+        Float r = holds_Int_Value(right) ? static_cast<Float>(get_Int_Value(right))
                                                      : std::get<Float>(right);
 
         switch (op) {

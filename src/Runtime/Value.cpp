@@ -129,11 +129,11 @@ std::string valueToString(const Value& value) {
 
 std::string getTypeName(const Value& value) {
     return std::visit(
-        [](const auto& v) -> std::string {
+        [&value](const auto& v) -> std::string {
             using T = std::decay_t<decltype(v)>;
 
             if constexpr (std::is_same_v<T, Int>) {
-                return "Int";
+                return value.is_long_ ? "Long" : "Int";
             } else if constexpr (std::is_same_v<T, Long>) {
                 return "Long";
             } else if constexpr (std::is_same_v<T, Float>) {
@@ -192,7 +192,7 @@ std::string getTypeName(const Value& value) {
 }
 
 bool valuesEqual(const Value& a, const Value& b) {
-    if (a.index() != b.index()) {
+    if (a.index() != b.index() || a.is_long_ != b.is_long_) {
         return false;
     }
 
@@ -244,6 +244,9 @@ bool valuesLess(const Value& a, const Value& b) {
     // If types are different, order by variant index
     if (a.index() != b.index()) {
         return a.index() < b.index();
+    }
+    if (a.is_long_ != b.is_long_) {
+        return !a.is_long_ && b.is_long_; // Int < Long
     }
 
     return std::visit(

@@ -155,13 +155,13 @@ Value DateTimeLibrary::create(const std::vector<Value>& args, Context& context) 
             context);
     }
 
-    int year = static_cast<int>(std::get<Int>(args[0]));
-    int month = static_cast<int>(std::get<Int>(args[1]));
-    int day = static_cast<int>(std::get<Int>(args[2]));
-    int hour = args.size() > 3 ? static_cast<int>(std::get<Int>(args[3])) : 0;
-    int minute = args.size() > 4 ? static_cast<int>(std::get<Int>(args[4])) : 0;
-    int second = args.size() > 5 ? static_cast<int>(std::get<Int>(args[5])) : 0;
-    int millisecond = args.size() > 6 ? static_cast<int>(std::get<Int>(args[6])) : 0;
+    int year = static_cast<int>(get_Int_Value(args[0]));
+    int month = static_cast<int>(get_Int_Value(args[1]));
+    int day = static_cast<int>(get_Int_Value(args[2]));
+    int hour = args.size() > 3 ? static_cast<int>(get_Int_Value(args[3])) : 0;
+    int minute = args.size() > 4 ? static_cast<int>(get_Int_Value(args[4])) : 0;
+    int second = args.size() > 5 ? static_cast<int>(get_Int_Value(args[5])) : 0;
+    int millisecond = args.size() > 6 ? static_cast<int>(get_Int_Value(args[6])) : 0;
 
     if (!isValidDateTime(year, month, day, hour, minute, second)) {
         throw EvaluationError("Invalid date/time values provided to datetime.create()", context);
@@ -191,9 +191,9 @@ Value DateTimeLibrary::createDate(const std::vector<Value>& args, Context& conte
                               context);
     }
 
-    int year = static_cast<int>(std::get<Int>(args[0]));
-    int month = static_cast<int>(std::get<Int>(args[1]));
-    int day = static_cast<int>(std::get<Int>(args[2]));
+    int year = static_cast<int>(get_Int_Value(args[0]));
+    int month = static_cast<int>(get_Int_Value(args[1]));
+    int day = static_cast<int>(get_Int_Value(args[2]));
 
     if (!isValidDateTime(year, month, day)) {
         throw EvaluationError("Invalid date values provided to datetime.createDate()", context);
@@ -218,10 +218,10 @@ Value DateTimeLibrary::createTime(const std::vector<Value>& args, Context& conte
             context);
     }
 
-    int hour = static_cast<int>(std::get<Int>(args[0]));
-    int minute = static_cast<int>(std::get<Int>(args[1]));
-    int second = args.size() > 2 ? static_cast<int>(std::get<Int>(args[2])) : 0;
-    int millisecond = args.size() > 3 ? static_cast<int>(std::get<Int>(args[3])) : 0;
+    int hour = static_cast<int>(get_Int_Value(args[0]));
+    int minute = static_cast<int>(get_Int_Value(args[1]));
+    int second = args.size() > 2 ? static_cast<int>(get_Int_Value(args[2])) : 0;
+    int millisecond = args.size() > 3 ? static_cast<int>(get_Int_Value(args[3])) : 0;
 
     if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59 ||
         millisecond < 0 || millisecond > 999) {
@@ -251,8 +251,8 @@ Value DateTimeLibrary::fromTimestamp(const std::vector<Value>& args, Context& co
     }
 
     double timestamp;
-    if (std::holds_alternative<Int>(args[0])) {
-        timestamp = static_cast<double>(std::get<Int>(args[0]));
+    if (holds_Int_Value(args[0])) {
+        timestamp = static_cast<double>(get_Int_Value(args[0]));
     } else if (std::holds_alternative<Double>(args[0])) {
         timestamp = std::get<Double>(args[0]);
     } else if (std::holds_alternative<Float>(args[0])) {
@@ -498,11 +498,11 @@ Value DateTimeLibrary::addDays(const std::vector<Value>& args, Context& context)
 
     DateTime dt = extractDateTime(args[0], "datetime.addDays", context);
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.addDays() requires Int days argument", context);
     }
 
-    Int days = std::get<Int>(args[1]);
+    Int days = get_Int_Value(args[1]);
     dt.time_point += std::chrono::hours(24 * days);
 
     return createDateTimeResult(dt);
@@ -516,11 +516,11 @@ Value DateTimeLibrary::addHours(const std::vector<Value>& args, Context& context
 
     DateTime dt = extractDateTime(args[0], "datetime.addHours", context);
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.addHours() requires Int hours argument", context);
     }
 
-    Int hours = std::get<Int>(args[1]);
+    Int hours = get_Int_Value(args[1]);
     dt.time_point += std::chrono::hours(hours);
 
     return createDateTimeResult(dt);
@@ -534,11 +534,11 @@ Value DateTimeLibrary::addMinutes(const std::vector<Value>& args, Context& conte
 
     DateTime dt = extractDateTime(args[0], "datetime.addMinutes", context);
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.addMinutes() requires Int minutes argument", context);
     }
 
-    Int minutes = std::get<Int>(args[1]);
+    Int minutes = get_Int_Value(args[1]);
     dt.time_point += std::chrono::minutes(minutes);
 
     return createDateTimeResult(dt);
@@ -552,11 +552,11 @@ Value DateTimeLibrary::addSeconds(const std::vector<Value>& args, Context& conte
 
     DateTime dt = extractDateTime(args[0], "datetime.addSeconds", context);
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.addSeconds() requires Int seconds argument", context);
     }
 
-    Int seconds = std::get<Int>(args[1]);
+    Int seconds = get_Int_Value(args[1]);
     dt.time_point += std::chrono::seconds(seconds);
 
     return createDateTimeResult(dt);
@@ -605,11 +605,11 @@ Value DateTimeLibrary::isLeapYear(const std::vector<Value>& args, Context& conte
         throw EvaluationError("datetime.isLeapYear() requires 1 argument (year)", context);
     }
 
-    if (!std::holds_alternative<Int>(args[0])) {
+    if (!holds_Int_Value(args[0])) {
         throw EvaluationError("datetime.isLeapYear() requires Int year argument", context);
     }
 
-    Int year = std::get<Int>(args[0]);
+    Int year = get_Int_Value(args[0]);
     bool is_leap = calculateIsLeapYear(static_cast<int>(year));
 
     return Value(Bool(is_leap));
@@ -790,12 +790,12 @@ Value DateTimeLibrary::addMilliseconds(const std::vector<Value>& args, Context& 
 
     DateTime dt = extractDateTime(args[0], "datetime.addMilliseconds", context);
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.addMilliseconds() requires Int milliseconds argument",
                               context);
     }
 
-    Int milliseconds = std::get<Int>(args[1]);
+    Int milliseconds = get_Int_Value(args[1]);
     dt.time_point += std::chrono::milliseconds(milliseconds);
 
     return createDateTimeResult(dt);
@@ -834,12 +834,12 @@ Value DateTimeLibrary::daysInMonth(const std::vector<Value>& args, Context& cont
         throw EvaluationError("datetime.daysInMonth() requires 2 arguments (year, month)", context);
     }
 
-    if (!std::holds_alternative<Int>(args[0]) || !std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[0]) || !holds_Int_Value(args[1])) {
         throw EvaluationError("datetime.daysInMonth() requires Int arguments", context);
     }
 
-    Int year = std::get<Int>(args[0]);
-    Int month = std::get<Int>(args[1]);
+    Int year = get_Int_Value(args[0]);
+    Int month = get_Int_Value(args[1]);
 
     int days = calculateDaysInMonth(static_cast<int>(year), static_cast<int>(month));
     return Value(Int(days));

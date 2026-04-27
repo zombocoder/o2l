@@ -56,11 +56,11 @@ class TypeConversionTest : public ::testing::Test {
         if (std::holds_alternative<Text>(object_value)) {
             Text text_value = std::get<Text>(object_value);
             return evaluateTextMethod(text_value, method_name, args);
-        } else if (std::holds_alternative<Int>(object_value)) {
-            Int int_value = std::get<Int>(object_value);
+        } else if (holds_Int_Value(object_value) && !object_value.is_long_) {
+            Int int_value = get_Int_Value(object_value);
             return evaluateIntMethod(int_value, method_name, args);
-        } else if (std::holds_alternative<Long>(object_value)) {
-            Long long_value = std::get<Long>(object_value);
+        } else if (holds_Long_Value(object_value)) {
+            Long long_value = get_Long_Value(object_value);
             return evaluateLongMethod(long_value, method_name, args);
         } else if (std::holds_alternative<Float>(object_value)) {
             Float float_value = std::get<Float>(object_value);
@@ -610,6 +610,7 @@ TEST_F(TypeConversionTest, LongToStringConversion) {
 }
 
 TEST_F(TypeConversionTest, LongToIntConversion) {
+#if O2L_HAS_INT128
     // Safe conversion
     Value result = callMethodOnValue(Long(42), "toInt");
     ASSERT_TRUE(std::holds_alternative<Int>(result));
@@ -621,6 +622,7 @@ TEST_F(TypeConversionTest, LongToIntConversion) {
 
     Long small_value = static_cast<Long>(std::numeric_limits<int>::min()) - 1;
     EXPECT_THROW(callMethodOnValue(small_value, "toInt"), EvaluationError);
+#endif
 }
 
 TEST_F(TypeConversionTest, LongToDoubleConversion) {

@@ -101,17 +101,17 @@ Value MethodCallNode::evaluate(Context& context) {
                 list_instance->add(arg_values[0]);
                 return Value{};  // Return void/empty value
             } else if (method_name_ == "get") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("List.get() requires exactly one Int argument", context);
                 }
-                size_t index = static_cast<size_t>(std::get<Int>(arg_values[0]));
+                size_t index = static_cast<size_t>(get_Int_Value(arg_values[0]));
                 return list_instance->get(index);
             } else if (method_name_ == "remove") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("List.remove() requires exactly one Int argument",
                                           context);
                 }
-                size_t index = static_cast<size_t>(std::get<Int>(arg_values[0]));
+                size_t index = static_cast<size_t>(get_Int_Value(arg_values[0]));
                 list_instance->remove(index);
                 return Value{};  // Return void/empty value
             } else if (method_name_ == "reverse") {
@@ -142,10 +142,10 @@ Value MethodCallNode::evaluate(Context& context) {
                 list_instance->clear();
                 return Value{};  // Return void/empty value
             } else if (method_name_ == "set") {
-                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 2 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("List.set() requires Int index and Value argument", context);
                 }
-                size_t index = static_cast<size_t>(std::get<Int>(arg_values[0]));
+                size_t index = static_cast<size_t>(get_Int_Value(arg_values[0]));
                 list_instance->set(index, arg_values[1]);
                 return Value{};
             } else if (method_name_ == "addAll") {
@@ -168,11 +168,13 @@ Value MethodCallNode::evaluate(Context& context) {
                 list_instance->sortDescending();
                 return Value{};
             } else if (method_name_ == "slice") {
-                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0]) || !std::holds_alternative<Int>(arg_values[1])) {
-                    throw EvaluationError("List.slice() requires two Int arguments (start, end)", context);
+                if (arg_values.size() != 2 || !holds_Int_Value(arg_values[0]) ||
+                    !holds_Int_Value(arg_values[1])) {
+                    throw EvaluationError("List.slice() requires two Int arguments (start, end)",
+                                          context);
                 }
-                size_t start = static_cast<size_t>(std::get<Int>(arg_values[0]));
-                size_t end = static_cast<size_t>(std::get<Int>(arg_values[1]));
+                size_t start = static_cast<size_t>(get_Int_Value(arg_values[0]));
+                size_t end = static_cast<size_t>(get_Int_Value(arg_values[1]));
                 return list_instance->slice(start, end);
             } else if (method_name_ == "copy") {
                 if (!arg_values.empty()) {
@@ -711,12 +713,12 @@ Value MethodCallNode::evaluate(Context& context) {
 
             if (method_name_ == "addField") {
                 if (arg_values.size() != 3 || !std::holds_alternative<Text>(arg_values[0]) ||
-                    !std::holds_alternative<Text>(arg_values[1]) || !std::holds_alternative<Int>(arg_values[2])) {
+                    !std::holds_alternative<Text>(arg_values[1]) || !holds_Int_Value(arg_values[2])) {
                     throw EvaluationError("CStruct.addField() requires (name: Text, type: Text, offset: Int)", context);
                 }
                 std::string field_name = std::get<Text>(arg_values[0]);
                 std::string type_str = std::get<Text>(arg_values[1]);
-                Int offset = std::get<Int>(arg_values[2]);
+                Int offset = get_Int_Value(arg_values[2]);
                 
                 try {
                     ffi::CType field_type = ffi::stringToCType(type_str);
@@ -758,16 +760,16 @@ Value MethodCallNode::evaluate(Context& context) {
             auto array_instance = std::get<std::shared_ptr<ffi::CArrayInstance>>(object_value);
 
             if (method_name_ == "get") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("CArray.get() requires (index: Int)", context);
                 }
-                Int index = std::get<Int>(arg_values[0]);
+                Int index = get_Int_Value(arg_values[0]);
                 return array_instance->getElement(static_cast<size_t>(index));
             } else if (method_name_ == "set") {
-                if (arg_values.size() != 2 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 2 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("CArray.set() requires (index: Int, value: Value)", context);
                 }
-                Int index = std::get<Int>(arg_values[0]);
+                Int index = get_Int_Value(arg_values[0]);
                 bool success = array_instance->setElement(static_cast<size_t>(index), arg_values[1]);
                 return Bool(success);
             } else if (method_name_ == "length") {
@@ -873,21 +875,24 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("Text.caseFold() takes no arguments", context);
                 }
                 std::string result = text_value;
-                std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+                std::transform(result.begin(), result.end(), result.begin(),
+                               [](unsigned char c){ return std::tolower(c); });
                 return Text(result);
             } else if (method_name_ == "lower") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Text.lower() takes no arguments", context);
                 }
                 std::string result = text_value;
-                std::transform(result.begin(), result.end(), result.begin(), ::tolower);
+                std::transform(result.begin(), result.end(), result.begin(),
+                               [](unsigned char c){ return std::tolower(c); });
                 return Text(result);
             } else if (method_name_ == "upper") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Text.upper() takes no arguments", context);
                 }
                 std::string result = text_value;
-                std::transform(result.begin(), result.end(), result.begin(), ::toupper);
+                std::transform(result.begin(), result.end(), result.begin(),
+                               [](unsigned char c){ return std::toupper(c); });
                 return Text(result);
             } else if (method_name_ == "swapCase") {
                 if (!arg_values.empty()) {
@@ -1240,22 +1245,23 @@ Value MethodCallNode::evaluate(Context& context) {
                 // Returns substring from start (inclusive) to end (exclusive).
                 // Follows Python slice semantics: negative indices count from end.
                 if (arg_values.size() != 2) {
-                    throw EvaluationError("Text.substring() requires exactly 2 arguments (start, end)", context);
+                    throw EvaluationError(
+                        "Text.substring() requires exactly 2 arguments (start, end)", context);
                 }
-                if (!std::holds_alternative<Int>(arg_values[0]) || !std::holds_alternative<Int>(arg_values[1])) {
+                if (!holds_Int_Value(arg_values[0]) || !holds_Int_Value(arg_values[1])) {
                     throw EvaluationError("Text.substring() arguments must be Int", context);
                 }
-                auto raw_start = std::get<Int>(arg_values[0]);
-                auto raw_end = std::get<Int>(arg_values[1]);
+                auto raw_start = get_Int_Value(arg_values[0]);
+                auto raw_end = get_Int_Value(arg_values[1]);
                 auto len = static_cast<Int>(text_value.length());
 
                 // Resolve negative indices
-                Int start = raw_start < 0 ? std::max(Int(0), len + raw_start) : raw_start;
-                Int end = raw_end < 0 ? std::max(Int(0), len + raw_end) : raw_end;
+                Int start = raw_start < 0 ? (std::max)(Int(0), len + raw_start) : raw_start;
+                Int end = raw_end < 0 ? (std::max)(Int(0), len + raw_end) : raw_end;
 
                 // Clamp to bounds
-                start = std::max(Int(0), std::min(start, len));
-                end = std::max(Int(0), std::min(end, len));
+                start = (std::max)(Int(0), (std::min)(start, len));
+                end = (std::max)(Int(0), (std::min)(end, len));
 
                 if (start >= end) {
                     return Text("");
@@ -1266,10 +1272,10 @@ Value MethodCallNode::evaluate(Context& context) {
                 // Text.charAt(index) -> Text (single character)
                 // Returns the character at the given index as a single-char Text.
                 // Negative indices count from end.
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("Text.charAt() requires exactly 1 Int argument", context);
                 }
-                auto raw_idx = std::get<Int>(arg_values[0]);
+                auto raw_idx = get_Int_Value(arg_values[0]);
                 auto len = static_cast<Int>(text_value.length());
 
                 // Resolve negative index
@@ -1371,11 +1377,11 @@ Value MethodCallNode::evaluate(Context& context) {
 
                 return Value(list_instance);
             } else if (method_name_ == "center") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("Text.center() requires exactly one Int argument",
                                           context);
                 }
-                int width = std::get<Int>(arg_values[0]);
+                int width = get_Int_Value(arg_values[0]);
                 if (width <= static_cast<int>(text_value.length())) {
                     return Text(text_value);
                 }
@@ -1388,11 +1394,11 @@ Value MethodCallNode::evaluate(Context& context) {
                     std::string(left_padding, ' ') + text_value + std::string(right_padding, ' ');
                 return Text(result);
             } else if (method_name_ == "ljust") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("Text.ljust() requires exactly one Int argument",
                                           context);
                 }
-                int width = std::get<Int>(arg_values[0]);
+                int width = get_Int_Value(arg_values[0]);
                 if (width <= static_cast<int>(text_value.length())) {
                     return Text(text_value);
                 }
@@ -1401,11 +1407,11 @@ Value MethodCallNode::evaluate(Context& context) {
                 std::string result = text_value + std::string(padding, ' ');
                 return Text(result);
             } else if (method_name_ == "rjust") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("Text.rjust() requires exactly one Int argument",
                                           context);
                 }
-                int width = std::get<Int>(arg_values[0]);
+                int width = get_Int_Value(arg_values[0]);
                 if (width <= static_cast<int>(text_value.length())) {
                     return Text(text_value);
                 }
@@ -1414,11 +1420,11 @@ Value MethodCallNode::evaluate(Context& context) {
                 std::string result = std::string(padding, ' ') + text_value;
                 return Text(result);
             } else if (method_name_ == "zfill") {
-                if (arg_values.size() != 1 || !std::holds_alternative<Int>(arg_values[0])) {
+                if (arg_values.size() != 1 || !holds_Int_Value(arg_values[0])) {
                     throw EvaluationError("Text.zfill() requires exactly one Int argument",
                                           context);
                 }
-                int width = std::get<Int>(arg_values[0]);
+                int width = get_Int_Value(arg_values[0]);
                 if (width <= static_cast<int>(text_value.length())) {
                     return Text(text_value);
                 }
@@ -1452,8 +1458,8 @@ Value MethodCallNode::evaluate(Context& context) {
                     // Convert element to string
                     if (std::holds_alternative<Text>(elements[i])) {
                         result += std::get<Text>(elements[i]);
-                    } else if (std::holds_alternative<Int>(elements[i])) {
-                        result += std::to_string(std::get<Int>(elements[i]));
+                    } else if (holds_Int_Value(elements[i])) {
+                        result += std::to_string(get_Int_Value(elements[i]));
                     } else if (std::holds_alternative<Float>(elements[i])) {
                         result += std::to_string(std::get<Float>(elements[i]));
                     } else if (std::holds_alternative<Bool>(elements[i])) {
@@ -1520,8 +1526,8 @@ Value MethodCallNode::evaluate(Context& context) {
 
                     if (std::holds_alternative<Text>(arg_values[i])) {
                         replacement = std::get<Text>(arg_values[i]);
-                    } else if (std::holds_alternative<Int>(arg_values[i])) {
-                        replacement = std::to_string(std::get<Int>(arg_values[i]));
+                    } else if (holds_Int_Value(arg_values[i])) {
+                        replacement = std::to_string(get_Int_Value(arg_values[i]));
                     } else if (std::holds_alternative<Float>(arg_values[i])) {
                         replacement = std::to_string(std::get<Float>(arg_values[i]));
                     } else if (std::holds_alternative<Bool>(arg_values[i])) {
@@ -1557,8 +1563,8 @@ Value MethodCallNode::evaluate(Context& context) {
 
                         if (std::holds_alternative<Text>(value)) {
                             replacement = std::get<Text>(value);
-                        } else if (std::holds_alternative<Int>(value)) {
-                            replacement = std::to_string(std::get<Int>(value));
+                        } else if (holds_Int_Value(value)) {
+                            replacement = std::to_string(get_Int_Value(value));
                         } else if (std::holds_alternative<Float>(value)) {
                             replacement = std::to_string(std::get<Float>(value));
                         } else if (std::holds_alternative<Bool>(value)) {
@@ -1654,8 +1660,12 @@ Value MethodCallNode::evaluate(Context& context) {
                         throw std::invalid_argument("Empty string");
                     }
 
-                    long result = std::stol(trimmed);
-                    return Long(result);
+                    long long result = std::stoll(trimmed);
+#if !O2L_HAS_INT128
+                    return Value(static_cast<Long>(result), Value::LongTag{});
+#else
+                    return Long(static_cast<Long>(result));
+#endif
                 } catch (const std::exception&) {
                     throw EvaluationError("Cannot convert '" + text_value + "' to Long", context);
                 }
@@ -1705,7 +1715,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
 
                 // Convert to lowercase for comparison
-                std::transform(trimmed.begin(), trimmed.end(), trimmed.begin(), ::tolower);
+                std::transform(trimmed.begin(), trimmed.end(), trimmed.begin(),
+                               [](unsigned char c){ return std::tolower(c); });
 
                 if (trimmed == "true" || trimmed == "1" || trimmed == "yes" || trimmed == "on") {
                     return Bool(true);
@@ -1725,14 +1736,19 @@ Value MethodCallNode::evaluate(Context& context) {
         }
 
         // Check if it's an Int
-        if (std::holds_alternative<Int>(object_value)) {
-            auto int_value = std::get<Int>(object_value);
+        if (holds_Int_Value(object_value)) {
+            auto int_value = get_Int_Value(object_value);
 
             if (method_name_ == "toString") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toString() takes no arguments", context);
                 }
                 return Text(std::to_string(int_value));
+            } else if (method_name_ == "toInt") {
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Int.toInt() takes no arguments", context);
+                }
+                return Int(int_value);
             } else if (method_name_ == "toDouble") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toDouble() takes no arguments", context);
@@ -1759,8 +1775,8 @@ Value MethodCallNode::evaluate(Context& context) {
         }
 
         // Check if it's a Long
-        if (std::holds_alternative<Long>(object_value)) {
-            auto long_value = std::get<Long>(object_value);
+        if (holds_Long_Value(object_value)) {
+            auto long_value = get_Long_Value(object_value);
 
             if (method_name_ == "toString") {
                 if (!arg_values.empty()) {

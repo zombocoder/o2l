@@ -35,8 +35,8 @@ Value IfStatementNode::evaluate(Context& context) {
     bool is_true = false;
     if (std::holds_alternative<Bool>(condition_value)) {
         is_true = std::get<Bool>(condition_value);
-    } else if (std::holds_alternative<Int>(condition_value)) {
-        is_true = std::get<Int>(condition_value) != 0;
+    } else if (holds_Int_Value(condition_value)) {
+        is_true = get_Int_Value(condition_value) != 0;
     } else if (std::holds_alternative<Text>(condition_value)) {
         is_true = !std::get<Text>(condition_value).empty();
     } else {

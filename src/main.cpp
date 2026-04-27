@@ -267,8 +267,8 @@ int main(int argc, char* argv[]) {
 
             // Check if main() returned an Int to use as exit code
             int exit_code = 0;
-            if (std::holds_alternative<o2l::Int>(result)) {
-                exit_code = std::get<o2l::Int>(result);
+            if (result.index() == 0 && !result.is_long_) {
+                exit_code = static_cast<int>(std::get<0>(result));
 
                 if (debug_mode) {
                     std::cout << "[DEBUG] Execution completed\n";

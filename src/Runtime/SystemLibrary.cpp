@@ -460,10 +460,10 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
 
                         case 'd':
                             // Integer format - works with Int and Long
-                            if (std::holds_alternative<Int>(args[arg_index])) {
-                                replacement = std::to_string(std::get<Int>(args[arg_index]));
-                            } else if (std::holds_alternative<Long>(args[arg_index])) {
-                                replacement = longToString(std::get<Long>(args[arg_index]));
+                            if (holds_Int_Value(args[arg_index])) {
+                                replacement = std::to_string(get_Int_Value(args[arg_index]));
+                            } else if (holds_Long_Value(args[arg_index])) {
+                                replacement = longToString(get_Long_Value(args[arg_index]));
                             } else {
                                 replacement = "[non-integer]";
                             }
@@ -471,12 +471,12 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
 
                         case 'l':
                             // Long format - specifically for Long integers
-                            if (std::holds_alternative<Long>(args[arg_index])) {
-                                replacement = longToString(std::get<Long>(args[arg_index]));
-                            } else if (std::holds_alternative<Int>(args[arg_index])) {
+                            if (holds_Long_Value(args[arg_index])) {
+                                replacement = longToString(get_Long_Value(args[arg_index]));
+                            } else if (holds_Int_Value(args[arg_index])) {
                                 // Allow Int to be formatted as Long
                                 replacement =
-                                    longToString(static_cast<Long>(std::get<Int>(args[arg_index])));
+                                    longToString(static_cast<Long>(get_Int_Value(args[arg_index])));
                             } else {
                                 replacement = "[non-long]";
                             }
@@ -502,9 +502,9 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
                                 } else {
                                     replacement = std::to_string(val);
                                 }
-                            } else if (std::holds_alternative<Int>(args[arg_index])) {
+                            } else if (holds_Int_Value(args[arg_index])) {
                                 // Allow integers to be formatted as floats
-                                double val = static_cast<double>(std::get<Int>(args[arg_index]));
+                                double val = static_cast<double>(get_Int_Value(args[arg_index]));
                                 if (precision >= 0) {
                                     std::ostringstream oss;
                                     oss << std::fixed << std::setprecision(precision) << val;
@@ -550,10 +550,10 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
 std::string SystemLibrary::valueToDisplayString(const Value& value) {
     if (std::holds_alternative<Text>(value)) {
         return std::get<Text>(value);
-    } else if (std::holds_alternative<Int>(value)) {
-        return std::to_string(std::get<Int>(value));
-    } else if (std::holds_alternative<Long>(value)) {
-        return longToString(std::get<Long>(value));
+    } else if (holds_Int_Value(value)) {
+        return std::to_string(get_Int_Value(value));
+    } else if (holds_Long_Value(value)) {
+        return longToString(get_Long_Value(value));
     } else if (std::holds_alternative<Float>(value)) {
         return std::to_string(std::get<Float>(value));
     } else if (std::holds_alternative<Double>(value)) {
@@ -655,11 +655,11 @@ Value SystemLibrary::nativeRepeat(const std::vector<Value>& args, Context& conte
     }
 
     // First argument must be the count
-    if (!std::holds_alternative<Int>(args[0])) {
+    if (!holds_Int_Value(args[0])) {
         throw EvaluationError("repeat() argument must be an Int (count)");
     }
 
-    Int count = std::get<Int>(args[0]);
+    Int count = get_Int_Value(args[0]);
 
     if (count < 0) {
         throw EvaluationError("repeat() count cannot be negative: " + std::to_string(count));
@@ -867,7 +867,7 @@ Value SystemLibrary::nativeListFiles(const std::vector<Value>& args, Context& co
 
         // Iterate through directory entries
         for (const auto& entry : std::filesystem::directory_iterator(dirpath)) {
-            std::string filename = entry.path().filename().string();
+            std::string filename = entry.path().filename().generic_string();
             files_list->add(Text(filename));
         }
 
@@ -1057,7 +1057,7 @@ Value SystemLibrary::nativeGetCurrentDir(const std::vector<Value>& args, Context
     }
 
     try {
-        std::string cwd = std::filesystem::current_path().string();
+        std::string cwd = std::filesystem::current_path().generic_string();
         return Text(cwd);
     } catch (const std::exception& e) {
         return Text("unknown");
@@ -1419,13 +1419,13 @@ Value SystemLibrary::nativeExecuteWithTimeout(const std::vector<Value>& args, Co
         throw EvaluationError("executeWithTimeout() first argument must be a Text (command)");
     }
 
-    if (!std::holds_alternative<Int>(args[1])) {
+    if (!holds_Int_Value(args[1])) {
         throw EvaluationError(
             "executeWithTimeout() second argument must be an Int (timeout in seconds)");
     }
 
     std::string command = std::get<Text>(args[0]);
-    Int timeout_seconds = std::get<Int>(args[1]);
+    Int timeout_seconds = get_Int_Value(args[1]);
 
     try {
 // Add timeout prefix to command
@@ -1606,7 +1606,7 @@ Value SystemLibrary::nativeBasename(const std::vector<Value>& args, Context& con
     try {
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
-        return Text(path.filename().string());
+        return Text(path.filename().generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1624,7 +1624,7 @@ Value SystemLibrary::nativeDirname(const std::vector<Value>& args, Context& cont
     try {
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
-        return Text(path.parent_path().string());
+        return Text(path.parent_path().generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1642,7 +1642,7 @@ Value SystemLibrary::nativeExtname(const std::vector<Value>& args, Context& cont
     try {
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
-        return Text(path.extension().string());
+        return Text(path.extension().generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1666,7 +1666,7 @@ Value SystemLibrary::nativeJoin(const std::vector<Value>& args, Context& context
             }
         }
 
-        return Text(result.string());
+        return Text(result.generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1685,7 +1685,7 @@ Value SystemLibrary::nativeNormalize(const std::vector<Value>& args, Context& co
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
         path = path.lexically_normal();
-        return Text(path.string());
+        return Text(path.generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text(std::get<Text>(args[0]));
     }
@@ -1704,7 +1704,7 @@ Value SystemLibrary::nativeResolve(const std::vector<Value>& args, Context& cont
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
         std::filesystem::path absolute = std::filesystem::absolute(path);
-        return Text(absolute.string());
+        return Text(absolute.generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text(std::get<Text>(args[0]));
     }
@@ -1727,7 +1727,7 @@ Value SystemLibrary::nativeRelative(const std::vector<Value>& args, Context& con
         std::filesystem::path to(to_str);
 
         std::filesystem::path relative = std::filesystem::relative(to, from);
-        return Text(relative.string());
+        return Text(relative.generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1768,7 +1768,7 @@ Value SystemLibrary::nativeSplitPath(const std::vector<Value>& args, Context& co
 
         for (const auto& component : path) {
             if (!component.empty() && component != "/") {
-                list->add(Text(component.string()));
+                list->add(Text(component.generic_string()));
             }
         }
 
@@ -1791,7 +1791,7 @@ Value SystemLibrary::nativeGetParent(const std::vector<Value>& args, Context& co
     try {
         std::string path_str = std::get<Text>(args[0]);
         std::filesystem::path path(path_str);
-        return Text(path.parent_path().string());
+        return Text(path.parent_path().generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
@@ -1819,7 +1819,7 @@ Value SystemLibrary::nativeChangeExtension(const std::vector<Value>& args, Conte
         }
 
         path.replace_extension(new_ext);
-        return Text(path.string());
+        return Text(path.generic_string());
     } catch (const std::filesystem::filesystem_error& e) {
         return Text("");
     }
