@@ -143,9 +143,6 @@ struct Value
 #else
     Value(Long v) : variant(v), is_long_(true) {}
 #endif
-    
-    // Default constructor
-    Value() : variant(Int(0)), is_long_(false) {}
 };
 
 // Utility functions for Value operations
