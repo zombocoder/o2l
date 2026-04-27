@@ -35,8 +35,8 @@
 namespace o2l {
 
 // Forward declarations
-class HttpServerRequest;
-class HttpServerResponse;
+struct HttpServerRequest;
+struct HttpServerResponse;
 class Router;
 class ThreadPool;
 class MiddlewareChain;

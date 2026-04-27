@@ -380,7 +380,7 @@ Value ModuleLoader::resolveImportRecursively(const ImportPath& import_path, Cont
 }
 
 std::map<std::string, Value> ModuleLoader::loadAllMethods(const ImportPath& import_path,
-                                                          Context& context) {
+                                                          Context& /*context*/) {
     // Check if this is a native system module first
     if (isNativeSystemModule(import_path)) {
         auto native_object = createNativeSystemModule(import_path.object_name);
