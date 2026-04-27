@@ -110,7 +110,11 @@ struct Value
                           std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
                           std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
                           ValueList, ValueMap, ValueOptional> {
-    Value() : std::variant<Int, Long, Float, Double, Text, Bool, Char,
+    Value() : std::variant<Int, 
+#if O2L_HAS_INT128
+                          Long,
+#endif
+                          Float, Double, Text, Bool, Char,
                           std::shared_ptr<ObjectInstance>, std::shared_ptr<EnumInstance>,
                           std::shared_ptr<RecordType>, std::shared_ptr<RecordInstance>,
                           std::shared_ptr<ProtocolInstance>, std::shared_ptr<ListInstance>,
@@ -118,10 +122,7 @@ struct Value
                           std::shared_ptr<MapInstance>, std::shared_ptr<MapIterator>,
                           std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
                           std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
-                          std::shared_ptr<ResultInstance>,
-                          std::shared_ptr<CoroutineHandle>,
-                          std::shared_ptr<ChannelInstance>,
-                          std::shared_ptr<ffi::PtrInstance>,
+                          std::shared_ptr<ResultInstance>, std::shared_ptr<ffi::PtrInstance>,
                           std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
                           std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
                           ValueList, ValueMap, ValueOptional>(static_cast<Int>(0)) {}
