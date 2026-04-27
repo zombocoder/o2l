@@ -1790,7 +1790,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toDouble() takes no arguments", context);
                 }
-                return Float(static_cast<double>(int_value));
+                return Double(static_cast<double>(int_value));
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toFloat() takes no arguments", context);
@@ -1836,7 +1836,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Long.toDouble() takes no arguments", context);
                 }
-                return Float(static_cast<double>(long_value));
+                return Double(static_cast<double>(long_value));
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Long.toFloat() takes no arguments", context);
@@ -1869,8 +1869,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(float_value) || std::isinf(float_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Int", context);
                 }
-                if (float_value > std::numeric_limits<int>::max() ||
-                    float_value < std::numeric_limits<int>::min()) {
+                if (float_value > static_cast<float>(std::numeric_limits<int>::max()) ||
+                    float_value < static_cast<float>(std::numeric_limits<int>::min())) {
                     throw EvaluationError(
                         "Float value " + std::to_string(float_value) + " out of Int range",
                         context);
@@ -1883,8 +1883,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(float_value) || std::isinf(float_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Long", context);
                 }
-                if (float_value > std::numeric_limits<long>::max() ||
-                    float_value < std::numeric_limits<long>::min()) {
+                if (float_value > static_cast<float>(std::numeric_limits<long>::max()) ||
+                    float_value < static_cast<float>(std::numeric_limits<long>::min())) {
                     throw EvaluationError(
                         "Float value " + std::to_string(float_value) + " out of Long range",
                         context);
@@ -1932,8 +1932,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(double_value) || std::isinf(double_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Int", context);
                 }
-                if (double_value > std::numeric_limits<int>::max() ||
-                    double_value < std::numeric_limits<int>::min()) {
+                if (double_value > static_cast<double>(std::numeric_limits<int>::max()) ||
+                    double_value < static_cast<double>(std::numeric_limits<int>::min())) {
                     throw EvaluationError(
                         "Double value " + std::to_string(double_value) + " out of Int range",
                         context);
@@ -1946,8 +1946,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(double_value) || std::isinf(double_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Long", context);
                 }
-                if (double_value > std::numeric_limits<long>::max() ||
-                    double_value < std::numeric_limits<long>::min()) {
+                if (double_value > static_cast<double>(std::numeric_limits<long>::max()) ||
+                    double_value < static_cast<double>(std::numeric_limits<long>::min())) {
                     throw EvaluationError(
                         "Double value " + std::to_string(double_value) + " out of Long range",
                         context);

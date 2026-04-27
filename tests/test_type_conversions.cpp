@@ -177,7 +177,7 @@ class TypeConversionTest : public ::testing::Test {
             if (!args.empty()) {
                 throw EvaluationError("Int.toDouble() takes no arguments", *context);
             }
-            return Float(static_cast<double>(int_value));
+            return Double(static_cast<double>(int_value));
         } else if (method_name == "toFloat") {
             if (!args.empty()) {
                 throw EvaluationError("Int.toFloat() takes no arguments", *context);
@@ -219,7 +219,7 @@ class TypeConversionTest : public ::testing::Test {
             if (!args.empty()) {
                 throw EvaluationError("Long.toDouble() takes no arguments", *context);
             }
-            return Float(static_cast<double>(long_value));
+            return Double(static_cast<double>(long_value));
         } else if (method_name == "toFloat") {
             if (!args.empty()) {
                 throw EvaluationError("Long.toFloat() takes no arguments", *context);
