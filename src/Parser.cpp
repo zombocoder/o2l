@@ -763,7 +763,40 @@ ASTNodePtr Parser::parseConstructorDeclaration() {
 
 ASTNodePtr Parser::parseIdentifierExpression() {
     // Look ahead to see if this is identifier<...>(...)
+    bool is_generic = false;
     if (peekToken().type == TokenType::LESS_THAN) {
+        size_t lookahead = 1;
+        int angle_brackets = 0;
+        while (peekToken(lookahead).type != TokenType::EOF_TOKEN &&
+               peekToken(lookahead).type != TokenType::NEWLINE) {
+            TokenType t = peekToken(lookahead).type;
+            if (t == TokenType::LESS_THAN) {
+                angle_brackets++;
+            } else if (t == TokenType::GREATER_THAN) {
+                angle_brackets--;
+                if (angle_brackets == 0) {
+                    if (peekToken(lookahead + 1).type == TokenType::LPAREN) {
+                        is_generic = true;
+                    }
+                    break;
+                }
+            } else if (t == TokenType::RSHIFT) {
+                angle_brackets -= 2;
+                if (angle_brackets <= 0) {
+                    if (peekToken(lookahead + 1).type == TokenType::LPAREN) {
+                        is_generic = true;
+                    }
+                    break;
+                }
+            } else if (t == TokenType::ASSIGN || t == TokenType::PLUS || t == TokenType::MINUS ||
+                       t == TokenType::MULTIPLY || t == TokenType::DIVIDE) {
+                break;
+            }
+            lookahead++;
+        }
+    }
+
+    if (is_generic) {
         // It's a generic type instantiation (likely a constructor call or record)
         std::string full_type_name = parseTypeName();
         

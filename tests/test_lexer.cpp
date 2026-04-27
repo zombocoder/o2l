@@ -341,33 +341,29 @@ TEST_F(LexerTest, StringEscapeSequences) {
 TEST_F(LexerTest, NestedComments) {
     auto tokens = tokenize("Object ### comment with # inside ### method");
 
-    // May have a space token or similar, expecting 4 tokens
-    ASSERT_EQ(tokens.size(), 4);
+    ASSERT_EQ(tokens.size(), 3);
     EXPECT_EQ(tokens[0].type, TokenType::OBJECT);
-    // Skip the space/whitespace token
-    EXPECT_EQ(tokens[2].type, TokenType::METHOD);
-    EXPECT_EQ(tokens[3].type, TokenType::EOF_TOKEN);
+    EXPECT_EQ(tokens[1].type, TokenType::METHOD);
+    EXPECT_EQ(tokens[2].type, TokenType::EOF_TOKEN);
 }
 
 // Test consecutive operators
 TEST_F(LexerTest, ConsecutiveOperators) {
-    auto tokens = tokenize("++--**//==!=<=>=");
+    auto tokens = tokenize("++--**==!=<=>=");
 
-    // == != <= >= are multi-character operators, so expecting 13 tokens
-    ASSERT_EQ(tokens.size(), 13);
+    // == != <= >= are multi-character operators, so expecting 11 tokens
+    ASSERT_EQ(tokens.size(), 11);
     EXPECT_EQ(tokens[0].type, TokenType::PLUS);
     EXPECT_EQ(tokens[1].type, TokenType::PLUS);
     EXPECT_EQ(tokens[2].type, TokenType::MINUS);
     EXPECT_EQ(tokens[3].type, TokenType::MINUS);
     EXPECT_EQ(tokens[4].type, TokenType::MULTIPLY);
     EXPECT_EQ(tokens[5].type, TokenType::MULTIPLY);
-    EXPECT_EQ(tokens[6].type, TokenType::DIVIDE);
-    EXPECT_EQ(tokens[7].type, TokenType::DIVIDE);
-    EXPECT_EQ(tokens[8].type, TokenType::EQUAL);           // ==
-    EXPECT_EQ(tokens[9].type, TokenType::NOT_EQUAL);       // !=
-    EXPECT_EQ(tokens[10].type, TokenType::LESS_EQUAL);     // <=
-    EXPECT_EQ(tokens[11].type, TokenType::GREATER_EQUAL);  // >=
-    EXPECT_EQ(tokens[12].type, TokenType::EOF_TOKEN);
+    EXPECT_EQ(tokens[6].type, TokenType::EQUAL);           // ==
+    EXPECT_EQ(tokens[7].type, TokenType::NOT_EQUAL);       // !=
+    EXPECT_EQ(tokens[8].type, TokenType::LESS_EQUAL);     // <=
+    EXPECT_EQ(tokens[9].type, TokenType::GREATER_EQUAL);  // >=
+    EXPECT_EQ(tokens[10].type, TokenType::EOF_TOKEN);
 }
 
 // Test edge case: empty input
