@@ -127,6 +127,12 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Float(std::fmod(left_float, right_float));
+            case BinaryOperator::BITWISE_AND:
+            case BinaryOperator::BITWISE_OR:
+            case BinaryOperator::BITWISE_XOR:
+            case BinaryOperator::LSHIFT:
+            case BinaryOperator::RSHIFT:
+                throw EvaluationError("Bitwise operators are not supported for Float types", context);
         }
     }
 
@@ -152,6 +158,12 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Double(std::fmod(left_double, right_double));
+            case BinaryOperator::BITWISE_AND:
+            case BinaryOperator::BITWISE_OR:
+            case BinaryOperator::BITWISE_XOR:
+            case BinaryOperator::LSHIFT:
+            case BinaryOperator::RSHIFT:
+                throw EvaluationError("Bitwise operators are not supported for Double types", context);
         }
     }
 
@@ -237,6 +249,12 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Float(std::fmod(left_val_f, right_val_f));
+            case BinaryOperator::BITWISE_AND:
+            case BinaryOperator::BITWISE_OR:
+            case BinaryOperator::BITWISE_XOR:
+            case BinaryOperator::LSHIFT:
+            case BinaryOperator::RSHIFT:
+                throw EvaluationError("Bitwise operators are not supported for Float types", context);
         }
     }
 
@@ -287,6 +305,12 @@ Value BinaryOpNode::evaluate(Context& context) {
                     throw EvaluationError("Modulo by zero", context);
                 }
                 return Double(std::fmod(left_val_d, right_val_d));
+            case BinaryOperator::BITWISE_AND:
+            case BinaryOperator::BITWISE_OR:
+            case BinaryOperator::BITWISE_XOR:
+            case BinaryOperator::LSHIFT:
+            case BinaryOperator::RSHIFT:
+                throw EvaluationError("Bitwise operators are not supported for Double types", context);
         }
     }
 
