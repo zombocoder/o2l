@@ -516,8 +516,8 @@ Value UrlLibrary::nativeSetPort(const std::vector<Value>& args, Context& context
             } else {
                 components.port = "";
             }
-        } else if (std::holds_alternative<Int>(args[1])) {
-            int port = std::get<Int>(args[1]);
+        } else if (holds_Int_Value(args[1])) {
+            int port = get_Int_Value(args[1]);
             if (port < 1 || port > 65535) {
                 throw EvaluationError("Invalid port number: " + std::to_string(port), context);
             }

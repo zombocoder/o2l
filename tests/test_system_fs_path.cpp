@@ -215,17 +215,27 @@ TEST_F(SystemFSPathTest, ResolveMethod) {
     Value result1 = callFSMethod("resolve", {Value(Text("documents/file.txt"))});
     EXPECT_TRUE(isNonEmptyText(result1));
     std::string resolved = std::get<Text>(result1);
+#ifdef _WIN32
+    EXPECT_TRUE((resolved.size() >= 2 && resolved[1] == ':') || (resolved.find("//") == 0));
+#else
     EXPECT_TRUE(resolved[0] == '/');  // Should be absolute
+#endif
 
     // Test already absolute path
+#ifndef _WIN32
     Value result2 = callFSMethod("resolve", {Value(Text("/usr/local/bin"))});
     expectText(result2, "/usr/local/bin");
+#endif
 
     // Test current directory
     Value result3 = callFSMethod("resolve", {Value(Text("."))});
     EXPECT_TRUE(isNonEmptyText(result3));
     std::string current = std::get<Text>(result3);
+#ifdef _WIN32
+    EXPECT_TRUE((current.size() >= 2 && current[1] == ':') || (current.find("//") == 0));
+#else
     EXPECT_TRUE(current[0] == '/');  // Should be absolute
+#endif
 
     // Test error cases
     EXPECT_THROW(callFSMethod("resolve", {}), EvaluationError);
@@ -260,11 +270,19 @@ TEST_F(SystemFSPathTest, RelativeMethod) {
 // Test isAbsolute method
 TEST_F(SystemFSPathTest, IsAbsoluteMethod) {
     // Test absolute paths
+#ifdef _WIN32
+    Value result1 = callFSMethod("isAbsolute", {Value(Text("C:/windows"))});
+    expectBool(result1, true);
+
+    Value result2 = callFSMethod("isAbsolute", {Value(Text("//server/share"))});
+    expectBool(result2, true);
+#else
     Value result1 = callFSMethod("isAbsolute", {Value(Text("/usr/local/bin"))});
     expectBool(result1, true);
 
     Value result2 = callFSMethod("isAbsolute", {Value(Text("/"))});
     expectBool(result2, true);
+#endif
 
     // Test relative paths
     Value result3 = callFSMethod("isAbsolute", {Value(Text("documents/file.txt"))});

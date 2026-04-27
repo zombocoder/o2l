@@ -1,6 +1,6 @@
 # 🌟 O²L Programming Language
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-445%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-54-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-478%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-54-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
 
 **O²L** is a modern object-oriented programming language that balances pure object-oriented design with practical programming constructs. Built with C++23, O²L eliminates primitives and null values while providing essential control flow like while loops, comprehensive arithmetic operations, and extensive string manipulation capabilities for real-world programming needs.
 
@@ -25,7 +25,7 @@
 - **🧠 Logical Operators**: Full `&&`, `||`, `!` support with proper precedence and short-circuit evaluation
 - **📁 Filesystem Operations**: Complete `system.fs` module for file/directory management
 - **🔗 Expression Enhancements**: Parentheses support for complex expression grouping
-- **🧪 Complete Test Suite**: 282+ comprehensive tests covering all language features with Google Test framework
+- **🧪 Complete Test Suite**: 478 comprehensive tests covering all language features with Google Test framework
 
 ---
 
@@ -126,7 +126,7 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
 
   - GCC ≥ 12
   - Clang ≥ 15
-  - MSVC ≥ 19.35 (Visual Studio 2022 17.5)
+  - MSVC ≥ 19.40 (Visual Studio 2022 17.10)
 
 - **CMake ≥ 3.20**
 
@@ -137,13 +137,16 @@ Looking at your `CMakeLists.txt`, the only **external dependency** you need to i
 git clone https://github.com/zombocoder/o2l.git
 cd o2l
 
-# Build the interpreter
+# Build the interpreter (Linux/macOS)
 mkdir build && cd build
 cmake ..
 make
 
-# Run your first O²L program
-./o2l run ../examples/hello_world.obq
+# Build the interpreter (Windows - MSVC)
+# Open "Developer Command Prompt for VS 2022"
+mkdir build && cd build
+cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release
+ninja
 ```
 
 ### Creating a New O²L Project
@@ -279,7 +282,7 @@ o2l run hello.obq
 # Output: Hello, World!
 ```
 
-## 🌍 Philosophy in Practice
+## 🌏 Philosophy in Practice
 
 ### **Why No If Statements?**
 
@@ -354,7 +357,7 @@ Immutable objects eliminate entire categories of bugs:
 
 ---
 
-## 🛣️ Roadmap
+## 🛤️ Roadmap
 
 ### **Current Version (0.0.1)**
 
@@ -405,10 +408,14 @@ make
 ### **Running Tests**
 
 ```bash
-# Run all 338 tests
+# Run all 478 tests (Linux/macOS)
 cd build
 make test
 
+# Run all 478 tests (Windows)
+cd build
+ctest -C Release
+```
 # Run specific test suites
 cd build/tests
 ./o2l_tests --gtest_filter="TextMethodTest.*"      # Text method tests
@@ -426,20 +433,20 @@ cd build/tests
 ./o2l_tests --gtest_filter="ElseIfAndLengthTest.*" # else if and Text.length() tests
 
 # Test coverage summary:
-# ✅ 445 total tests - All passing (including 14 FFI tests)
+# ✅ 478 total tests - All passing (including 23 FFI tests)
 # 📝 27 Lexer tests - Token parsing, keywords, operators
-# 🌳 29 Parser tests - AST generation, syntax validation
+# 🌲 29 Parser tests - AST generation, syntax validation
 # ⚡ 44 Runtime tests - Value types, collections, iterators
 # 🔌 20 Protocol tests - Interface compliance and signature validation
 # 🚀 35 Integration tests - End-to-end execution
 # ✨ 12 Text method tests - All 54 string methods including length()
-# 📐 12 Math library tests - All mathematical functions and constants
+# 📏 12 Math library tests - All mathematical functions and constants
 # 🔄 JSON Library - 16 comprehensive tests covering parsing, path navigation, validation, and native collection integration
 # 🌐 HTTP Client - 24 extensive tests covering all HTTP methods, authentication, file operations, and error handling
 # 🔄 65 Regular expression tests - Complete regexp library functionality
 # 🌐 43 URL library tests - Complete URL manipulation and validation
 # 🔀 14 Control flow tests - else if syntax and Text.length() method
-# 🔄 33 Type conversion tests - Comprehensive conversion methods with error handling
+# 🔄 42 Type conversion tests - Comprehensive conversion methods with error handling
 # 📊 20 Extended system tests - DateTime, filesystem, and OS integration
 ```
 
@@ -470,9 +477,9 @@ O²L draws inspiration from:
 
 ---
 
-## 📞 Support & Community
+## ☎️ Support & Community
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/zombocoder/o2l/issues)
+- 🐞 **Issues**: [GitHub Issues](https://github.com/zombocoder/o2l/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/zombocoder/o2l/discussions)
 - 📖 **Documentation**: [Wiki](https://github.com/zombocoder/o2l/wiki)
 - 📧 **Contact**: [o2l@zombocoder.com](mailto:o2l@zombocoder.com)

@@ -389,9 +389,13 @@ ASTNodePtr Parser::parseAtomicExpression() {
                     if (negative) long_value = -long_value;
 #else
                     long_value = std::stoll(number_part);
-#endif
-                    return std::make_unique<LiteralNode>(long_value);
-                } else if (token_value.find('.') != std::string::npos) {
+                    #endif
+                    #if !O2L_HAS_INT128
+                    return std::make_unique<LiteralNode>(Value(long_value, Value::LongTag{}));
+                    #else
+                    return std::make_unique<LiteralNode>(Value(long_value));
+                    #endif
+                    } else if (token_value.find('.') != std::string::npos) {
                     // Decimal without suffix defaults to Double
                     return std::make_unique<LiteralNode>(Double(std::stod(token_value)));
                 } else {

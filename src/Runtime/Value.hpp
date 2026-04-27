@@ -54,18 +54,20 @@ class CCallbackInstance;
 // Built-in immutable types
 using Text = std::string;
 using Int = long long;
-#ifdef __SIZEOF_INT128__
+#if defined(__SIZEOF_INT128__) && !defined(_WIN32)
 // Suppress pedantic warning for __int128 which is a widely supported extension
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 using Long = __int128;
+#define O2L_HAS_INT128 1
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 #else
 using Long = long long;  // Fallback to 64-bit if 128-bit not available
+#define O2L_HAS_INT128 0
 #endif
 using Float = float;
 using Double = double;
@@ -91,7 +93,11 @@ using ValueOptional = Optional<std::shared_ptr<Value>>;
 
 // The main Value variant that represents all possible O²L values
 struct Value
-    : public std::variant<Int, Long, Float, Double, Text, Bool, Char,
+    : public std::variant<Int, 
+#if O2L_HAS_INT128
+                          Long,
+#endif
+                          Float, Double, Text, Bool, Char,
                           std::shared_ptr<ObjectInstance>, std::shared_ptr<EnumInstance>,
                           std::shared_ptr<RecordType>, std::shared_ptr<RecordInstance>,
                           std::shared_ptr<ProtocolInstance>, std::shared_ptr<ListInstance>,
@@ -104,6 +110,22 @@ struct Value
                           std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
                           ValueList, ValueMap, ValueOptional> {
     using variant::variant;
+
+    // Additional flag to distinguish between Int and Long when they have the same underlying type
+    bool is_long_ = false;
+
+    // Constructors to set the flag
+    Value(Int v) : variant(v), is_long_(false) {}
+#if !O2L_HAS_INT128
+    // Special constructor for Long when it's the same as Int
+    struct LongTag {};
+    Value(Long v, LongTag) : variant(v), is_long_(true) {}
+#else
+    Value(Long v) : variant(v), is_long_(true) {}
+#endif
+    
+    // Default constructor
+    Value() : variant(Int(0)), is_long_(false) {}
 };
 
 // Utility functions for Value operations
@@ -111,6 +133,21 @@ std::string valueToString(const Value& value);
 std::string getTypeName(const Value& value);
 bool valuesEqual(const Value& a, const Value& b);
 bool valuesLess(const Value& a, const Value& b);
+
+// Helper functions for MSVC compatibility when Int and Long are the same type.
+// On platforms with __int128 (Linux/macOS) Long occupies its own variant slot (index 1).
+// On MSVC/Windows Long=Int=long long; the is_long_ flag distinguishes them at runtime.
+#if O2L_HAS_INT128
+inline bool holds_Int_Value(const Value& v) { return v.index() == 0; }
+inline Int  get_Int_Value(const Value& v)   { return std::get<0>(v); }
+inline bool holds_Long_Value(const Value& v) { return v.index() == 1; }
+inline Long get_Long_Value(const Value& v)   { return std::get<1>(v); }
+#else
+inline bool holds_Int_Value(const Value& v) { return v.index() == 0 && !v.is_long_; }
+inline Int  get_Int_Value(const Value& v)   { return std::get<0>(v); }
+inline bool holds_Long_Value(const Value& v) { return v.index() == 0 && v.is_long_; }
+inline Long get_Long_Value(const Value& v)   { return std::get<0>(v); }
+#endif
 
 // Custom comparator for Value types for use in std::set and std::map
 struct ValueComparator {

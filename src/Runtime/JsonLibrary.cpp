@@ -399,8 +399,8 @@ Value JsonLibrary::nativeStringify(const std::vector<Value>& args, Context& cont
 
         int indent = 0;
         if (args.size() == 2) {
-            if (std::holds_alternative<Int>(args[1])) {
-                indent = std::get<Int>(args[1]);
+            if (holds_Int_Value(args[1])) {
+                indent = get_Int_Value(args[1]);
             }
         }
 
@@ -836,14 +836,14 @@ Value JsonLibrary::nativeSlice(const std::vector<Value>& args, Context& context)
                               context);
     }
 
-    if (!std::holds_alternative<Text>(args[0]) || !std::holds_alternative<Int>(args[1])) {
+    if (!std::holds_alternative<Text>(args[0]) || !holds_Int_Value(args[1])) {
         throw EvaluationError("json.slice() first argument must be Text, second must be Int",
                               context);
     }
 
     try {
         std::string jsonStr = std::get<Text>(args[0]);
-        int start = static_cast<int>(std::get<Int>(args[1]));
+        int start = static_cast<int>(get_Int_Value(args[1]));
 
         JsonValue root = parseJsonString(jsonStr);
 
@@ -857,8 +857,8 @@ Value JsonLibrary::nativeSlice(const std::vector<Value>& args, Context& context)
 
             int end = size;
             if (args.size() == 3) {
-                if (std::holds_alternative<Int>(args[2])) {
-                    end = static_cast<int>(std::get<Int>(args[2]));
+                if (holds_Int_Value(args[2])) {
+                    end = static_cast<int>(get_Int_Value(args[2]));
                     if (end < 0) end += size;
                 }
             }
@@ -1287,8 +1287,8 @@ std::string JsonLibrary::escapeJsonString(const std::string& str) {
 JsonValue JsonLibrary::o2lValueToJson(const Value& value) {
     if (std::holds_alternative<Bool>(value)) {
         return JsonValue(std::get<Bool>(value));
-    } else if (std::holds_alternative<Int>(value)) {
-        return JsonValue(std::get<Int>(value));
+    } else if (holds_Int_Value(value)) {
+        return JsonValue(get_Int_Value(value));
     } else if (std::holds_alternative<Float>(value)) {
         return JsonValue(static_cast<Double>(std::get<Float>(value)));
     } else if (std::holds_alternative<Double>(value)) {

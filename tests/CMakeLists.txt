@@ -67,7 +67,9 @@ if(FFI_FOUND)
 endif()
 
 # Link dynamic loading libraries
-if(APPLE)
+if(WIN32)
+    target_link_libraries(o2l_tests wininet ws2_32)
+elseif(APPLE)
     target_link_libraries(o2l_tests ${CMAKE_DL_LIBS})
 elseif(UNIX)
     target_link_libraries(o2l_tests ${CMAKE_DL_LIBS})

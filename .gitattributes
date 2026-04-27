@@ -1,0 +1,19 @@
+# Normalize all text files to LF on commit
+* text=auto
+
+# C++ files
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h text eol=lf
+
+# Build files
+CMakeLists.txt text eol=lf
+*.cmake text eol=lf
+
+# Docs
+*.md text eol=lf
+LICENSE text eol=lf
+
+# CI/CD
+*.yml text eol=lf
+*.sh text eol=lf

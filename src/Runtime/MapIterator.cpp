@@ -51,7 +51,7 @@ Value MapIterator::nextValue() {
         has_cached_entry_ = false;
         return cached_value_;
     }
-    // Standalone nextValue() without a preceding nextKey() — advance normally.
+    // Standalone nextValue() without a preceding nextKey() â€” advance normally.
     if (!hasNext()) {
         throw EvaluationError("MapIterator has no more values");
     }

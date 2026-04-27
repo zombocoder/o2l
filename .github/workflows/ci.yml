@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest] # Windows is excluded for now
+        os: [ubuntu-latest, macos-latest, windows-latest]
         build_type: [Release, Debug]
         exclude:
           # Reduce matrix size by excluding some combinations
@@ -58,37 +58,45 @@ jobs:
           vcpkg install gtest:x64-windows
 
       - name: Configure CMake
+        shell: bash
         run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -G Ninja ${{ runner.os == 'Linux' && '-DCMAKE_C_COMPILER=gcc-13 -DCMAKE_CXX_COMPILER=g++-13' || '' }}
-        env:
-          CMAKE_TOOLCHAIN_FILE: ${{ runner.os == 'Windows' && 'C:/vcpkg/scripts/buildsystems/vcpkg.cmake' || '' }}
+          TOOLCHAIN_ARG=""
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            TOOLCHAIN_ARG="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          fi
+          cmake -B build -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -G Ninja ${{ runner.os == 'Linux' && '-DCMAKE_C_COMPILER=gcc-13 -DCMAKE_CXX_COMPILER=g++-13' || '' }} $TOOLCHAIN_ARG
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{matrix.build_type}}
+        run: cmake --build build --config ${{matrix.build_type}}
 
       - name: Test interpreter binary
+        shell: bash
         run: |
-          cd ${{github.workspace}}/build
+          cd build
           ./bin/o2l --version
           ./bin/o2l --help
 
       - name: Test o2l-fmt binary
+        shell: bash
         run: |
-          cd ${{github.workspace}}/build
+          cd build
           ./bin/o2l-fmt --help
 
       - name: Test o2l-pkg binary
+        shell: bash
         run: |
-          cd ${{github.workspace}}/build
+          cd build
           ./bin/o2l-pkg --help
 
       - name: Run unit tests
-        working-directory: ${{github.workspace}}/build/tests
+        shell: bash
+        working-directory: build/tests
         run: ./o2l_tests --gtest_output=xml:test_results.xml
 
       - name: Test example programs
+        shell: bash
         run: |
-          cd ${{github.workspace}}/build
+          cd build
           echo "Testing basic examples..."
           ./bin/o2l run ../examples/minimal_test.obq
           ./bin/o2l run ../examples/correct_syntax_test.obq
@@ -100,8 +108,8 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.build_type }}
           path: |
-            ${{github.workspace}}/build/tests/test_results.xml
-            ${{github.workspace}}/build/o2l
+            build/tests/test_results.xml
+            build/bin/o2l*
 
   code-quality:
     name: Code Quality

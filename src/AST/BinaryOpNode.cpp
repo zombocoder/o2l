@@ -36,9 +36,9 @@ Value BinaryOpNode::evaluate(Context& context) {
     Value right_val = right_->evaluate(context);
 
     // Handle integer operations
-    if (std::holds_alternative<Int>(left_val) && std::holds_alternative<Int>(right_val)) {
-        Int left_int = std::get<Int>(left_val);
-        Int right_int = std::get<Int>(right_val);
+    if (holds_Int_Value(left_val) && holds_Int_Value(right_val)) {
+        Int left_int = get_Int_Value(left_val);
+        Int right_int = get_Int_Value(right_val);
 
         switch (operator_) {
             case BinaryOperator::PLUS:
@@ -61,9 +61,9 @@ Value BinaryOpNode::evaluate(Context& context) {
     }
 
     // Handle long operations
-    if (std::holds_alternative<Long>(left_val) && std::holds_alternative<Long>(right_val)) {
-        Long left_long = std::get<Long>(left_val);
-        Long right_long = std::get<Long>(right_val);
+    if (holds_Long_Value(left_val) && holds_Long_Value(right_val)) {
+        Long left_long = get_Long_Value(left_val);
+        Long right_long = get_Long_Value(right_val);
 
         switch (operator_) {
             case BinaryOperator::PLUS:
@@ -136,14 +136,14 @@ Value BinaryOpNode::evaluate(Context& context) {
     }
 
     // Handle mixed integer operations - Int + Long = Long
-    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Long>(right_val)) ||
-        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Int>(right_val))) {
-        Long left_val_l = std::holds_alternative<Long>(left_val)
-                              ? std::get<Long>(left_val)
-                              : static_cast<Long>(std::get<Int>(left_val));
-        Long right_val_l = std::holds_alternative<Long>(right_val)
-                               ? std::get<Long>(right_val)
-                               : static_cast<Long>(std::get<Int>(right_val));
+    if ((holds_Int_Value(left_val) && holds_Long_Value(right_val)) ||
+        (holds_Long_Value(left_val) && holds_Int_Value(right_val))) {
+        Long left_val_l = holds_Long_Value(left_val)
+                              ? get_Long_Value(left_val)
+                              : static_cast<Long>(get_Int_Value(left_val));
+        Long right_val_l = holds_Long_Value(right_val)
+                               ? get_Long_Value(right_val)
+                               : static_cast<Long>(get_Int_Value(right_val));
 
         switch (operator_) {
             case BinaryOperator::PLUS:
@@ -167,27 +167,27 @@ Value BinaryOpNode::evaluate(Context& context) {
 
     // Handle mixed numeric operations - promote to highest precision
     // Int + Float = Float, Long + Float = Float
-    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Float>(right_val)) ||
-        (std::holds_alternative<Float>(left_val) && std::holds_alternative<Int>(right_val)) ||
-        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Float>(right_val)) ||
-        (std::holds_alternative<Float>(left_val) && std::holds_alternative<Long>(right_val))) {
+    if ((holds_Int_Value(left_val) && std::holds_alternative<Float>(right_val)) ||
+        (std::holds_alternative<Float>(left_val) && holds_Int_Value(right_val)) ||
+        (holds_Long_Value(left_val) && std::holds_alternative<Float>(right_val)) ||
+        (std::holds_alternative<Float>(left_val) && holds_Long_Value(right_val))) {
         Float left_val_f;
         Float right_val_f;
 
         if (std::holds_alternative<Float>(left_val)) {
             left_val_f = std::get<Float>(left_val);
-        } else if (std::holds_alternative<Long>(left_val)) {
-            left_val_f = static_cast<Float>(std::get<Long>(left_val));
+        } else if (holds_Long_Value(left_val)) {
+            left_val_f = static_cast<Float>(get_Long_Value(left_val));
         } else {
-            left_val_f = static_cast<Float>(std::get<Int>(left_val));
+            left_val_f = static_cast<Float>(get_Int_Value(left_val));
         }
 
         if (std::holds_alternative<Float>(right_val)) {
             right_val_f = std::get<Float>(right_val);
-        } else if (std::holds_alternative<Long>(right_val)) {
-            right_val_f = static_cast<Float>(std::get<Long>(right_val));
+        } else if (holds_Long_Value(right_val)) {
+            right_val_f = static_cast<Float>(get_Long_Value(right_val));
         } else {
-            right_val_f = static_cast<Float>(std::get<Int>(right_val));
+            right_val_f = static_cast<Float>(get_Int_Value(right_val));
         }
 
         switch (operator_) {
@@ -211,10 +211,10 @@ Value BinaryOpNode::evaluate(Context& context) {
     }
 
     // Int + Double = Double, Long + Double = Double, Float + Double = Double
-    if ((std::holds_alternative<Int>(left_val) && std::holds_alternative<Double>(right_val)) ||
-        (std::holds_alternative<Double>(left_val) && std::holds_alternative<Int>(right_val)) ||
-        (std::holds_alternative<Long>(left_val) && std::holds_alternative<Double>(right_val)) ||
-        (std::holds_alternative<Double>(left_val) && std::holds_alternative<Long>(right_val)) ||
+    if ((holds_Int_Value(left_val) && std::holds_alternative<Double>(right_val)) ||
+        (std::holds_alternative<Double>(left_val) && holds_Int_Value(right_val)) ||
+        (holds_Long_Value(left_val) && std::holds_alternative<Double>(right_val)) ||
+        (std::holds_alternative<Double>(left_val) && holds_Long_Value(right_val)) ||
         (std::holds_alternative<Float>(left_val) && std::holds_alternative<Double>(right_val)) ||
         (std::holds_alternative<Double>(left_val) && std::holds_alternative<Float>(right_val))) {
         Double left_val_d;
@@ -224,20 +224,20 @@ Value BinaryOpNode::evaluate(Context& context) {
             left_val_d = std::get<Double>(left_val);
         } else if (std::holds_alternative<Float>(left_val)) {
             left_val_d = static_cast<Double>(std::get<Float>(left_val));
-        } else if (std::holds_alternative<Long>(left_val)) {
-            left_val_d = static_cast<Double>(std::get<Long>(left_val));
+        } else if (holds_Long_Value(left_val)) {
+            left_val_d = static_cast<Double>(get_Long_Value(left_val));
         } else {
-            left_val_d = static_cast<Double>(std::get<Int>(left_val));
+            left_val_d = static_cast<Double>(get_Int_Value(left_val));
         }
 
         if (std::holds_alternative<Double>(right_val)) {
             right_val_d = std::get<Double>(right_val);
         } else if (std::holds_alternative<Float>(right_val)) {
             right_val_d = static_cast<Double>(std::get<Float>(right_val));
-        } else if (std::holds_alternative<Long>(right_val)) {
-            right_val_d = static_cast<Double>(std::get<Long>(right_val));
+        } else if (holds_Long_Value(right_val)) {
+            right_val_d = static_cast<Double>(get_Long_Value(right_val));
         } else {
-            right_val_d = static_cast<Double>(std::get<Int>(right_val));
+            right_val_d = static_cast<Double>(get_Int_Value(right_val));
         }
 
         switch (operator_) {

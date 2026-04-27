@@ -44,10 +44,10 @@ Value UnaryNode::evaluate(Context& context) {
 
             case UnaryOperator::MINUS:
                 // Unary minus: operand must be a numeric type
-                if (std::holds_alternative<Int>(operand_value)) {
-                    return Int(-std::get<Int>(operand_value));
-                } else if (std::holds_alternative<Long>(operand_value)) {
-                    return Long(-std::get<Long>(operand_value));
+                if (holds_Int_Value(operand_value)) {
+                    return Int(-get_Int_Value(operand_value));
+                } else if (holds_Long_Value(operand_value)) {
+                    return Long(-get_Long_Value(operand_value));
                 } else if (std::holds_alternative<Float>(operand_value)) {
                     return Float(-std::get<Float>(operand_value));
                 } else if (std::holds_alternative<Double>(operand_value)) {
