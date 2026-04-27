@@ -1720,7 +1720,7 @@ Value MethodCallNode::evaluate(Context& context) {
                     }
 
                     double result = std::stod(trimmed);
-                    return Float(result);
+                    return Double(result);
                 } catch (const std::exception&) {
                     throw EvaluationError("Cannot convert '" + text_value + "' to Double", context);
                 }
@@ -2007,7 +2007,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Bool.toDouble() takes no arguments", context);
                 }
-                return Float(bool_value ? 1.0 : 0.0);
+                return Double(bool_value ? 1.0 : 0.0);
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Bool.toFloat() takes no arguments", context);

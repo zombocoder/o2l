@@ -124,7 +124,7 @@ class TypeConversionTest : public ::testing::Test {
                     throw std::invalid_argument("Empty string");
                 }
                 double result = std::stod(trimmed);
-                return Float(result);
+                return Double(result);
             } catch (const std::exception&) {
                 throw EvaluationError("Cannot convert '" + text_value + "' to Double", *context);
             }
@@ -374,7 +374,7 @@ class TypeConversionTest : public ::testing::Test {
             if (!args.empty()) {
                 throw EvaluationError("Bool.toDouble() takes no arguments", *context);
             }
-            return Float(bool_value ? 1.0 : 0.0);
+            return Double(bool_value ? 1.0 : 0.0);
         } else if (method_name == "toFloat") {
             if (!args.empty()) {
                 throw EvaluationError("Bool.toFloat() takes no arguments", *context);
@@ -456,23 +456,23 @@ TEST_F(TypeConversionTest, TextToLongConversion) {
 TEST_F(TypeConversionTest, TextToDoubleConversion) {
     // Basic decimal
     Value result = callMethodOnValue(Text("3.14159"), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 3.14159, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 3.14159, 0.00001);
 
     // Integer as double
     result = callMethodOnValue(Text("42"), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 42.0, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 42.0, 0.00001);
 
     // Negative decimal
     result = callMethodOnValue(Text("-2.718"), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), -2.718, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), -2.718, 0.00001);
 
     // Scientific notation
     result = callMethodOnValue(Text("1.23e-4"), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 0.000123, 0.0000001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 0.000123, 0.0000001);
 }
 
 TEST_F(TypeConversionTest, TextToFloatConversion) {
@@ -555,12 +555,12 @@ TEST_F(TypeConversionTest, IntToStringConversion) {
 
 TEST_F(TypeConversionTest, IntToDoubleConversion) {
     Value result = callMethodOnValue(Int(42), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 42.0, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 42.0, 0.00001);
 
     result = callMethodOnValue(Int(-123), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), -123.0, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), -123.0, 0.00001);
 }
 
 TEST_F(TypeConversionTest, IntToFloatConversion) {
@@ -627,15 +627,15 @@ TEST_F(TypeConversionTest, LongToIntConversion) {
 
 TEST_F(TypeConversionTest, LongToDoubleConversion) {
     Value result = callMethodOnValue(Long(9876543210LL), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
     // Large integers lose precision when converted to double (IEEE 754 limitation)
     // Allow for reasonable precision loss - doubles have ~15-16 significant digits
-    EXPECT_NEAR(std::get<Float>(result), 9876543210.0, 1000.0);
+    EXPECT_NEAR(std::get<Double>(result), 9876543210.0, 1000.0);
 
     // Test with smaller number that should be exact
     result = callMethodOnValue(Long(123456), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 123456.0, 0.1);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 123456.0, 0.1);
 }
 
 TEST_F(TypeConversionTest, LongToBoolConversion) {
@@ -966,12 +966,12 @@ TEST_F(TypeConversionTest, BoolToLongConversion) {
 
 TEST_F(TypeConversionTest, BoolToDoubleConversion) {
     Value result = callMethodOnValue(Bool(true), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 1.0, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 1.0, 0.00001);
 
     result = callMethodOnValue(Bool(false), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 0.0, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 0.0, 0.00001);
 }
 
 TEST_F(TypeConversionTest, BoolToFloatConversion) {
@@ -1012,7 +1012,7 @@ TEST_F(TypeConversionTest, ConversionChaining) {
     ASSERT_TRUE(std::holds_alternative<Int>(step1));
 
     Value step2 = callMethodOnValue(step1, "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(step2));
+    ASSERT_TRUE(std::holds_alternative<Double>(step2));
 
     Value step3 = callMethodOnValue(step2, "toBool");
     ASSERT_TRUE(std::holds_alternative<Bool>(step3));
@@ -1063,8 +1063,8 @@ TEST_F(TypeConversionTest, WhitespaceHandling) {
     EXPECT_EQ(std::get<Int>(result), 42);
 
     result = callMethodOnValue(Text("\t3.14\n"), "toDouble");
-    ASSERT_TRUE(std::holds_alternative<Float>(result));
-    EXPECT_NEAR(std::get<Float>(result), 3.14, 0.00001);
+    ASSERT_TRUE(std::holds_alternative<Double>(result));
+    EXPECT_NEAR(std::get<Double>(result), 3.14, 0.00001);
 }
 
 TEST_F(TypeConversionTest, CaseInsensitiveBoolConversion) {

@@ -1851,37 +1851,55 @@ std::string Parser::parseTypeName() {
     if (currentToken().type == TokenType::LESS_THAN) {
         std::string base_type = type_name;
         advance(); // consume '<'
-        
+
         // Skip whitespace
         while (match(TokenType::NEWLINE)) {}
-        
+
         // Parse first type parameter (recursive)
         std::string first_type = parseTypeName();
-        
+
         // Skip whitespace
         while (match(TokenType::NEWLINE)) {}
-        
+
+        // Helper: consume one '>', splitting '>>' (RSHIFT) into two '>' tokens if needed
+        // This handles nested generics like Map<Text, List<Int>> where '>>' appears at the end
+        auto consumeClosingAngle = [&](const std::string& error_msg) {
+            if (currentToken().type == TokenType::GREATER_THAN) {
+                advance();
+            } else if (currentToken().type == TokenType::RSHIFT) {
+                // Split '>>' into two separate '>' tokens
+                size_t line = currentToken().line;
+                size_t col  = currentToken().column;
+                tokens_[current_token_] = Token(TokenType::GREATER_THAN, ">", line, col);
+                tokens_.insert(tokens_.begin() + static_cast<std::ptrdiff_t>(current_token_) + 1,
+                               Token(TokenType::GREATER_THAN, ">", line, col + 1));
+                advance();
+            } else {
+                throw SyntaxError(error_msg + " at line " + std::to_string(currentToken().line));
+            }
+        };
+
         // Check if this is a two-parameter generic type (Map, Result) or single-parameter (List, Set)
         if (currentToken().type == TokenType::COMMA) {
             advance(); // consume ','
-            
+
             // Skip whitespace
             while (match(TokenType::NEWLINE)) {}
-            
+
             // Parse second type parameter (recursive)
             std::string second_type = parseTypeName();
-            
+
             // Skip whitespace
             while (match(TokenType::NEWLINE)) {}
-            
-            consume(TokenType::GREATER_THAN, "Expected '>' after generic type parameters");
-            
+
+            consumeClosingAngle("Expected '>' after generic type parameters");
+
             // Combine into full type name
             type_name = base_type + "<" + first_type + ", " + second_type + ">";
         } else {
             // Single type parameter (List<T>)
-            consume(TokenType::GREATER_THAN, "Expected '>' after generic type parameter");
-            
+            consumeClosingAngle("Expected '>' after generic type parameter");
+
             // Combine into full type name
             type_name = base_type + "<" + first_type + ">";
         }
