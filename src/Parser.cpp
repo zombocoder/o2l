@@ -335,7 +335,14 @@ ASTNodePtr Parser::parsePrimaryExpression() {
     while (currentToken().type == TokenType::DOT) {
         advance(); // consume dot
         
-        Token member_name_token = consume(TokenType::IDENTIFIER, "Expected member name after '.'");
+        // Accept keywords that can be used as method names (e.g. Channel.new())
+        Token member_name_token;
+        if (currentToken().type == TokenType::IDENTIFIER || currentToken().type == TokenType::NEW) {
+            member_name_token = currentToken();
+            advance();
+        } else {
+            throw SyntaxError("Expected member name after '.' at line " + std::to_string(currentToken().line));
+        }
         std::string member_name = member_name_token.value;
         
         // Check if this is a method call (has parentheses)

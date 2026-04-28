@@ -48,6 +48,7 @@ void Scheduler::reset() {
     next_id_ = 0;
     active_ = false;
     root_result_ = Int(0);
+    root_exception_ = nullptr;
 }
 
 void Scheduler::run() {
@@ -85,6 +86,9 @@ void Scheduler::run() {
         } catch (const std::exception& e) {
             current_->state = Coroutine::State::Failed;
             current_->error_message = e.what();
+            if (current_->id == 0) {
+                root_exception_ = std::current_exception();
+            }
             std::cerr << "Error in coroutine #" << current_->id << ": " << e.what() << std::endl;
             running_coro_.reset();
             current_ = nullptr;

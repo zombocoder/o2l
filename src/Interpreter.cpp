@@ -173,6 +173,11 @@ Value Interpreter::execute(const std::vector<ASTNodePtr>& nodes) {
         // Run the scheduler
         scheduler.run();
 
+        // Propagate any exception thrown by the root coroutine
+        if (auto ex = scheduler.getRootException()) {
+            std::rethrow_exception(ex);
+        }
+
         // Return the result of the root coroutine
         return scheduler.getRootResult();
 

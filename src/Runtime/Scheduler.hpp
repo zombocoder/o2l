@@ -22,6 +22,7 @@
 #include <vector>
 #include <functional>
 #include <mutex>
+#include <exception>
 #include "Coroutine.hpp"
 
 namespace o2l {
@@ -52,8 +53,9 @@ public:
     bool isActive() const { return active_; }
     Coroutine* currentCoroutine() { return current_; }
     
-    // Root result (from the first coroutine spawned, usually Main)
+    // Root result and exception (from the first coroutine spawned, usually Main)
     Value getRootResult() const;
+    std::exception_ptr getRootException() const { return root_exception_; }
 
 private:
     Scheduler() = default;
@@ -71,6 +73,7 @@ private:
     uint64_t next_id_ = 0;
     bool active_ = false;
     Value root_result_ = Int(0);
+    std::exception_ptr root_exception_;
 
     void wakeTimers();
     void processCompletions();
