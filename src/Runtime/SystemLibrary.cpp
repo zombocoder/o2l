@@ -247,6 +247,13 @@ std::shared_ptr<ObjectInstance> SystemLibrary::createOSObject() {
         },
         true);
 
+    os_object->addMethod(
+        "spawn",
+        [](const std::vector<Value>& args, Context& ctx) -> Value {
+            return SystemLibrary::nativeSpawn(args, ctx);
+        },
+        true);
+
     return os_object;
 }
 
@@ -422,22 +429,34 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
 
     for (size_t i = 0; i < format.length(); ++i) {
         if (format[i] == '%' && i + 1 < format.length()) {
-            // Handle %% escape sequence specially
+            size_t format_start = i;
             if (format[i + 1] == '%') {
                 result += "%";
-                i++;  // Skip the second %, the loop will increment i again
+                i++;
                 continue;
             }
 
             if (arg_index < args.size()) {
-                std::string replacement;
-                size_t format_start = i;
-                i++;  // Move past the %
+                i++; // Move past %
+                
+                // Parse flags (e.g., '-')
+                bool left_align = false;
+                while (i < format.length() && (format[i] == '-' || format[i] == '0' || format[i] == '+')) {
+                    if (format[i] == '-') left_align = true;
+                    i++;
+                }
+
+                // Parse width
+                int width = 0;
+                while (i < format.length() && std::isdigit(format[i])) {
+                    width = width * 10 + (format[i] - '0');
+                    i++;
+                }
 
                 // Parse precision specifier (e.g., .1 in %.1f)
                 int precision = -1;
                 if (i < format.length() && format[i] == '.') {
-                    i++;  // Skip the dot
+                    i++;
                     std::string precision_str;
                     while (i < format.length() && std::isdigit(format[i])) {
                         precision_str += format[i];
@@ -445,20 +464,21 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
                     }
                     if (!precision_str.empty()) {
                         precision = std::stoi(precision_str);
+                    } else {
+                        precision = 0;
                     }
                 }
 
-                // Get the format character
                 if (i < format.length()) {
                     char format_char = format[i];
+                    std::string replacement;
 
                     switch (format_char) {
                         case 's':
-                            // String format - convert any value to string
                             replacement = valueToDisplayString(args[arg_index]);
                             break;
-
                         case 'd':
+                        case 'i':
                             // Integer format - works with Int and Long
                             if (holds_Int_Value(args[arg_index])) {
                                 replacement = std::to_string(get_Int_Value(args[arg_index]));
@@ -468,7 +488,6 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
                                 replacement = "[non-integer]";
                             }
                             break;
-
                         case 'l':
                             // Long format - specifically for Long integers
                             if (holds_Long_Value(args[arg_index])) {
@@ -478,72 +497,69 @@ std::string SystemLibrary::formatString(const std::string& format, const std::ve
                                 replacement =
                                     longToString(static_cast<Long>(get_Int_Value(args[arg_index])));
                             } else {
-                                replacement = "[non-long]";
+                                replacement = "[non-integer]";
                             }
                             break;
-
+                        case 'x':
+                        case 'X':
+                            if (holds_Int_Value(args[arg_index])) {
+                                char buf[32];
+                                snprintf(buf, sizeof(buf), format_char == 'x' ? "%llx" : "%llX", 
+                                         (long long)get_Int_Value(args[arg_index]));
+                                replacement = buf;
+                            } else {
+                                replacement = "[non-integer]";
+                            }
+                            break;
                         case 'f':
-                            // Float format - works with Float and Double, with precision support
                             if (std::holds_alternative<Float>(args[arg_index])) {
                                 double val = static_cast<double>(std::get<Float>(args[arg_index]));
-                                if (precision >= 0) {
-                                    std::ostringstream oss;
-                                    oss << std::fixed << std::setprecision(precision) << val;
-                                    replacement = oss.str();
-                                } else {
-                                    replacement = std::to_string(val);
-                                }
+                                char buf[64];
+                                snprintf(buf, sizeof(buf), "%.*f", precision >= 0 ? precision : 6, val);
+                                replacement = buf;
                             } else if (std::holds_alternative<Double>(args[arg_index])) {
                                 double val = std::get<Double>(args[arg_index]);
-                                if (precision >= 0) {
-                                    std::ostringstream oss;
-                                    oss << std::fixed << std::setprecision(precision) << val;
-                                    replacement = oss.str();
-                                } else {
-                                    replacement = std::to_string(val);
-                                }
+                                char buf[64];
+                                snprintf(buf, sizeof(buf), "%.*f", precision >= 0 ? precision : 6, val);
+                                replacement = buf;
                             } else if (holds_Int_Value(args[arg_index])) {
                                 // Allow integers to be formatted as floats
                                 double val = static_cast<double>(get_Int_Value(args[arg_index]));
-                                if (precision >= 0) {
-                                    std::ostringstream oss;
-                                    oss << std::fixed << std::setprecision(precision) << val;
-                                    replacement = oss.str();
-                                } else {
-                                    replacement = std::to_string(val);
-                                }
+                                char buf[64];
+                                snprintf(buf, sizeof(buf), "%.*f", precision >= 0 ? precision : 6, val);
+                                replacement = buf;
                             } else {
-                                replacement = "[non-numeric]";
+                                replacement = "[non-float]";
                             }
                             break;
-
                         case 'o':
-                            // Object format - specialized formatting for objects/records/enums
                             replacement = valueToObjectString(args[arg_index]);
                             break;
-
                         default:
-                            // Unknown format specifier, keep as-is
-                            result += format.substr(format_start, i - format_start + 1);
-                            continue;
+                            replacement = format.substr(format_start, i - format_start + 1);
+                            break;
+                    }
+
+                    // Apply width and alignment
+                    if (width > 0 && replacement.length() < static_cast<size_t>(width)) {
+                        std::string padding(width - replacement.length(), ' ');
+                        if (left_align) {
+                            replacement += padding;
+                        } else {
+                            replacement = padding + replacement;
+                        }
                     }
 
                     result += replacement;
                     arg_index++;
-                } else {
-                    // Incomplete format specifier at end of string
-                    result += format.substr(format_start);
-                    break;
                 }
             } else {
-                // No more arguments, keep format specifier as-is
                 result += format[i];
             }
         } else {
             result += format[i];
         }
     }
-
     return result;
 }
 
@@ -1073,6 +1089,69 @@ Value SystemLibrary::nativeGetProcessId(const std::vector<Value>& args, Context&
     return Int(static_cast<Int>(GetCurrentProcessId()));
 #else
     return Int(static_cast<Int>(getpid()));
+#endif
+}
+
+Value SystemLibrary::nativeSpawn(const std::vector<Value>& args, Context& context) {
+    if (args.size() < 2 || !std::holds_alternative<Text>(args[0]) || !std::holds_alternative<std::shared_ptr<ListInstance>>(args[1])) {
+        throw EvaluationError("os.spawn() requires (Text command, List<Text> args)");
+    }
+
+    std::string command = std::get<Text>(args[0]);
+    auto args_list = std::get<std::shared_ptr<ListInstance>>(args[1]);
+    
+    std::vector<std::string> c_args_strs;
+    c_args_strs.push_back(command);
+    for (size_t i = 0; i < args_list->size(); ++i) {
+        Value val = args_list->get(i);
+        if (std::holds_alternative<Text>(val)) {
+            c_args_strs.push_back(std::get<Text>(val));
+        }
+    }
+
+#ifdef _WIN32
+    std::string cmd_line;
+    for (const auto& s : c_args_strs) {
+        cmd_line += s + " ";
+    }
+    
+    STARTUPINFOA si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    
+    if (!CreateProcessA(NULL, const_cast<char*>(cmd_line.c_str()), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+        return Int(-1);
+    }
+    
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    DWORD exit_code;
+    GetExitCodeProcess(pi.hProcess, &exit_code);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+    return Int(static_cast<Int>(exit_code));
+#else
+    pid_t pid = fork();
+    if (pid == 0) {
+        std::vector<char*> argv;
+        for (auto& s : c_args_strs) {
+            argv.push_back(const_cast<char*>(s.c_str()));
+        }
+        argv.push_back(nullptr);
+        
+        execvp(command.c_str(), argv.data());
+        exit(1);
+    } else if (pid > 0) {
+        int status;
+        waitpid(pid, &status, 0);
+        if (WIFEXITED(status)) {
+            return Int(static_cast<Int>(WEXITSTATUS(status)));
+        }
+        return Int(-1);
+    } else {
+        return Int(-1);
+    }
 #endif
 }
 

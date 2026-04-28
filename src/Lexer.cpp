@@ -79,6 +79,13 @@ void Lexer::skipComment() {
                 advance();
             }
         }
+    } else if (currentChar() == '/' && peekChar() == '/') {
+        // Skip single-line comment //
+        advance(); // first /
+        advance(); // second /
+        while (currentChar() != '\n' && currentChar() != '\0') {
+            advance();
+        }
     }
 }
 
@@ -119,6 +126,20 @@ Token Lexer::makeNumber() {
     size_t start_line = line_;
     size_t start_column = column_;
     std::string value;
+    
+    // Check for hexadecimal
+    if (currentChar() == '0' && (peekChar() == 'x' || peekChar() == 'X')) {
+        value += currentChar();
+        advance();
+        value += currentChar();
+        advance();
+        
+        while (std::isxdigit(currentChar())) {
+            value += currentChar();
+            advance();
+        }
+        return Token(TokenType::NUMBER, value, start_line, start_column);
+    }
     
     while (std::isdigit(currentChar())) {
         value += currentChar();
@@ -256,6 +277,7 @@ TokenType Lexer::getKeywordType(const std::string& identifier) const {
     if (identifier == "finally") return TokenType::FINALLY;
     if (identifier == "Result") return TokenType::RESULT;
     if (identifier == "Error") return TokenType::ERROR;
+    if (identifier == "null") return TokenType::NULL_TOKEN;
 #if O2L_ENABLE_NAMESPACES
     if (identifier == "namespace") return TokenType::NAMESPACE;
 #endif
@@ -263,8 +285,12 @@ TokenType Lexer::getKeywordType(const std::string& identifier) const {
 }
 
 Token Lexer::nextToken() {
-    skipWhitespace();
-    skipComment();
+    while (true) {
+        size_t last_pos = current_pos_;
+        skipWhitespace();
+        skipComment();
+        if (current_pos_ == last_pos) break;
+    }
     
     size_t current_line = line_;
     size_t current_column = column_;
@@ -312,6 +338,14 @@ Token Lexer::nextToken() {
         advance(); advance(); // Skip both characters
         return Token(TokenType::GREATER_EQUAL, ">=", current_line, current_column);
     }
+    if (ch == '<' && peekChar() == '<') {
+        advance(); advance(); // Skip both characters
+        return Token(TokenType::LSHIFT, "<<", current_line, current_column);
+    }
+    if (ch == '>' && peekChar() == '>') {
+        advance(); advance(); // Skip both characters
+        return Token(TokenType::RSHIFT, ">>", current_line, current_column);
+    }
     if (ch == '&' && peekChar() == '&') {
         advance(); advance(); // Skip both '&' characters
         return Token(TokenType::LOGICAL_AND, "&&", current_line, current_column);
@@ -350,6 +384,10 @@ Token Lexer::nextToken() {
         case '!': return Token(TokenType::LOGICAL_NOT, "!", current_line, current_column);
         case '<': return Token(TokenType::LESS_THAN, "<", current_line, current_column);
         case '>': return Token(TokenType::GREATER_THAN, ">", current_line, current_column);
+        case '&': return Token(TokenType::BITWISE_AND, "&", current_line, current_column);
+        case '|': return Token(TokenType::BITWISE_OR, "|", current_line, current_column);
+        case '^': return Token(TokenType::BITWISE_XOR, "^", current_line, current_column);
+        case '~': return Token(TokenType::BITWISE_NOT, "~", current_line, current_column);
         case '.': return Token(TokenType::DOT, ".", current_line, current_column);
         case '$': return Token(TokenType::DOLLAR, "$", current_line, current_column);
         case '(': return Token(TokenType::LPAREN, "(", current_line, current_column);

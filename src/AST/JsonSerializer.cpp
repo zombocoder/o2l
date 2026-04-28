@@ -1898,43 +1898,43 @@ std::string JsonSerializer::serializeQualifiedIdentifierNode(const ASTNodePtr& n
 }
 
 // Placeholder implementations for the remaining nodes
-std::string JsonSerializer::serializeFunctionCallNode(const ASTNodePtr& node, int indent_level,
-                                                      bool pretty_print) {
+std::string JsonSerializer::serializeFunctionCallNode(const ASTNodePtr& node, int /*indent_level*/,
+                                                      bool /*pretty_print*/) {
     return "{\"node_type\":\"FunctionCallNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";
 }
 
-std::string JsonSerializer::serializeEnumDeclarationNode(const ASTNodePtr& node, int indent_level,
-                                                         bool pretty_print) {
+std::string JsonSerializer::serializeEnumDeclarationNode(const ASTNodePtr& node, int /*indent_level*/,
+                                                         bool /*pretty_print*/) {
     return "{\"node_type\":\"EnumDeclarationNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";
 }
 
-std::string JsonSerializer::serializeEnumAccessNode(const ASTNodePtr& node, int indent_level,
-                                                    bool pretty_print) {
+std::string JsonSerializer::serializeEnumAccessNode(const ASTNodePtr& node, int /*indent_level*/,
+                                                    bool /*pretty_print*/) {
     return "{\"node_type\":\"EnumAccessNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";
 }
 
-std::string JsonSerializer::serializeNamespaceNode(const ASTNodePtr& node, int indent_level,
-                                                   bool pretty_print) {
+std::string JsonSerializer::serializeNamespaceNode(const ASTNodePtr& node, int /*indent_level*/,
+                                                   bool /*pretty_print*/) {
     return "{\"node_type\":\"NamespaceNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";
 }
 
-std::string JsonSerializer::serializeThrowNode(const ASTNodePtr& node, int indent_level,
-                                               bool pretty_print) {
+std::string JsonSerializer::serializeThrowNode(const ASTNodePtr& node, int /*indent_level*/,
+                                               bool /*pretty_print*/) {
     return "{\"node_type\":\"ThrowNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";
 }
 
-std::string JsonSerializer::serializeTryCatchFinallyNode(const ASTNodePtr& node, int indent_level,
-                                                         bool pretty_print) {
+std::string JsonSerializer::serializeTryCatchFinallyNode(const ASTNodePtr& node, int /*indent_level*/,
+                                                         bool /*pretty_print*/) {
     return "{\"node_type\":\"TryCatchFinallyNode\",\"source_location\":" +
            sourceLocationToJsonString(node->getSourceLocation()) +
            ",\"note\":\"Implementation pending\"}";

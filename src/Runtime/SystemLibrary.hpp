@@ -67,6 +67,7 @@ class SystemLibrary {
     static Value nativeGetUsername(const std::vector<Value>& args, Context& context);
     static Value nativeGetCurrentDir(const std::vector<Value>& args, Context& context);
     static Value nativeGetProcessId(const std::vector<Value>& args, Context& context);
+    static Value nativeSpawn(const std::vector<Value>& args, Context& context);
     static Value nativeGetParentProcessId(const std::vector<Value>& args, Context& context);
     static Value nativeGetUptime(const std::vector<Value>& args, Context& context);
 

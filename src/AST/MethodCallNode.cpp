@@ -21,6 +21,7 @@
 #include <cmath>
 #include <limits>
 #include <sstream>
+#include <iostream>
 
 #include "../Common/Exceptions.hpp"
 #include "../Common/StackFrameGuard.hpp"
@@ -791,8 +792,20 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (arg_values.size() != 1) {
                     throw EvaluationError("CArray.fromList() requires (list: List)", context);
                 }
-                // TODO: Convert O²L List to std::vector<Value>
-                throw EvaluationError("CArray.fromList() not yet implemented", context);
+                if (!std::holds_alternative<std::shared_ptr<ListInstance>>(arg_values[0])) {
+                    throw EvaluationError("CArray.fromList() argument must be a List", context);
+                }
+                auto src_list = std::get<std::shared_ptr<ListInstance>>(arg_values[0]);
+                const auto& elems = src_list->getElements();
+                if (elems.size() != array_instance->element_count()) {
+                    throw EvaluationError(
+                        "CArray.fromList() size mismatch: list has " + std::to_string(elems.size()) +
+                        " elements but array has " + std::to_string(array_instance->element_count()), context);
+                }
+                for (size_t i = 0; i < elems.size(); ++i) {
+                    array_instance->setElement(i, elems[i]);
+                }
+                return Bool(true);
             } else if (method_name_ == "toString") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("CArray.toString() takes no arguments", context);
@@ -1286,6 +1299,30 @@ Value MethodCallNode::evaluate(Context& context) {
                                           " out of range for Text of length " + std::to_string(len), context);
                 }
                 return Text(std::string(1, text_value[static_cast<size_t>(idx)]));
+            } else if (method_name_ == "charCodeAt") {
+                // Text.charCodeAt(index) -> Int
+                // Returns the integer character code at the given index.
+                if (arg_values.size() != 1) {
+                    throw EvaluationError("Text.charCodeAt() requires exactly 1 argument", context);
+                }
+                
+                if (!std::holds_alternative<Int>(arg_values[0])) {
+                    throw EvaluationError("Text.charCodeAt() argument must be Int", context);
+                }
+                auto raw_idx = std::get<Int>(arg_values[0]);
+                auto len = static_cast<Int>(text_value.length());
+                Int idx = raw_idx < 0 ? len + raw_idx : raw_idx;
+                if (idx < 0 || idx >= len) {
+                    throw EvaluationError("Text.charCodeAt(): index out of range", context);
+                }
+                return Int(static_cast<uint8_t>(text_value[static_cast<size_t>(idx)]));
+            } else if (method_name_ == "id") {
+                // Text.id() -> Int
+                // Returns a unique integer ID for this string (interning).
+                if (!arg_values.empty()) {
+                    throw EvaluationError("Text.id() takes no arguments", context);
+                }
+                return Int(context.getStringId(text_value));
             } else if (method_name_ == "split") {
                 if (arg_values.size() != 1 || !std::holds_alternative<Text>(arg_values[0])) {
                     throw EvaluationError("Text.split() requires exactly one Text argument",
@@ -1683,7 +1720,7 @@ Value MethodCallNode::evaluate(Context& context) {
                     }
 
                     double result = std::stod(trimmed);
-                    return Float(result);
+                    return Double(result);
                 } catch (const std::exception&) {
                     throw EvaluationError("Cannot convert '" + text_value + "' to Double", context);
                 }
@@ -1753,7 +1790,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toDouble() takes no arguments", context);
                 }
-                return Float(static_cast<double>(int_value));
+                return Double(static_cast<double>(int_value));
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Int.toFloat() takes no arguments", context);
@@ -1799,7 +1836,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Long.toDouble() takes no arguments", context);
                 }
-                return Float(static_cast<double>(long_value));
+                return Double(static_cast<double>(long_value));
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Long.toFloat() takes no arguments", context);
@@ -1832,8 +1869,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(float_value) || std::isinf(float_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Int", context);
                 }
-                if (float_value > std::numeric_limits<int>::max() ||
-                    float_value < std::numeric_limits<int>::min()) {
+                if (float_value > static_cast<float>(std::numeric_limits<int>::max()) ||
+                    float_value < static_cast<float>(std::numeric_limits<int>::min())) {
                     throw EvaluationError(
                         "Float value " + std::to_string(float_value) + " out of Int range",
                         context);
@@ -1846,8 +1883,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(float_value) || std::isinf(float_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Long", context);
                 }
-                if (float_value > std::numeric_limits<long>::max() ||
-                    float_value < std::numeric_limits<long>::min()) {
+                if (float_value > static_cast<float>(std::numeric_limits<long>::max()) ||
+                    float_value < static_cast<float>(std::numeric_limits<long>::min())) {
                     throw EvaluationError(
                         "Float value " + std::to_string(float_value) + " out of Long range",
                         context);
@@ -1895,8 +1932,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(double_value) || std::isinf(double_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Int", context);
                 }
-                if (double_value > std::numeric_limits<int>::max() ||
-                    double_value < std::numeric_limits<int>::min()) {
+                if (double_value > static_cast<double>(std::numeric_limits<int>::max()) ||
+                    double_value < static_cast<double>(std::numeric_limits<int>::min())) {
                     throw EvaluationError(
                         "Double value " + std::to_string(double_value) + " out of Int range",
                         context);
@@ -1909,8 +1946,8 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (std::isnan(double_value) || std::isinf(double_value)) {
                     throw EvaluationError("Cannot convert NaN or Infinity to Long", context);
                 }
-                if (double_value > std::numeric_limits<long>::max() ||
-                    double_value < std::numeric_limits<long>::min()) {
+                if (double_value > static_cast<double>(std::numeric_limits<long>::max()) ||
+                    double_value < static_cast<double>(std::numeric_limits<long>::min())) {
                     throw EvaluationError(
                         "Double value " + std::to_string(double_value) + " out of Long range",
                         context);
@@ -1970,7 +2007,7 @@ Value MethodCallNode::evaluate(Context& context) {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Bool.toDouble() takes no arguments", context);
                 }
-                return Float(bool_value ? 1.0 : 0.0);
+                return Double(bool_value ? 1.0 : 0.0);
             } else if (method_name_ == "toFloat") {
                 if (!arg_values.empty()) {
                     throw EvaluationError("Bool.toFloat() takes no arguments", context);

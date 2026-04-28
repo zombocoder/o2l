@@ -20,7 +20,7 @@
 
 namespace o2l {
 
-Value ContinueNode::evaluate(Context& context) {
+Value ContinueNode::evaluate(Context& /*context*/) {
     throw ContinueException();
 }
 

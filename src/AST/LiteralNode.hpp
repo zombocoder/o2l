@@ -27,7 +27,7 @@ class LiteralNode : public ASTNode {
    public:
     explicit LiteralNode(Value value) : value_(std::move(value)) {}
 
-    Value evaluate(Context& context) override {
+    Value evaluate(Context& /*context*/) override {
         return value_;
     }
 

@@ -169,6 +169,17 @@ std::shared_ptr<ObjectInstance> Context::getThisObject() const {
     return this_stack_.back();
 }
 
+Int Context::getStringId(const std::string& str) {
+    auto it = string_pool_.find(str);
+    if (it != string_pool_.end()) {
+        return it->second;
+    }
+    
+    Int new_id = next_string_id_++;
+    string_pool_[str] = new_id;
+    return new_id;
+}
+
 bool Context::hasThisObject() const {
     return !this_stack_.empty();
 }

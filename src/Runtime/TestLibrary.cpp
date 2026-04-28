@@ -526,7 +526,7 @@ Value TestLibrary::runTest(const std::vector<Value>& args, Context& context) {
 }
 
 // Test result reporting
-Value TestLibrary::printResults(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::printResults(const std::vector<Value>& args, Context& /*context*/) {
     std::string suite_name = args.empty() ? current_suite_ : std::get<Text>(args[0]);
 
     if (test_suites_.find(suite_name) == test_suites_.end()) {
@@ -567,7 +567,7 @@ Value TestLibrary::printResults(const std::vector<Value>& args, Context& context
     return Value(Bool(suite.failed_tests == 0));
 }
 
-Value TestLibrary::getTotalCount(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::getTotalCount(const std::vector<Value>& args, Context& /*context*/) {
     std::string suite_name = args.empty() ? current_suite_ : std::get<Text>(args[0]);
 
     if (test_suites_.find(suite_name) == test_suites_.end()) {
@@ -577,7 +577,7 @@ Value TestLibrary::getTotalCount(const std::vector<Value>& args, Context& contex
     return Value(Int(test_suites_[suite_name].total_tests));
 }
 
-Value TestLibrary::getPassedCount(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::getPassedCount(const std::vector<Value>& args, Context& /*context*/) {
     std::string suite_name = args.empty() ? current_suite_ : std::get<Text>(args[0]);
 
     if (test_suites_.find(suite_name) == test_suites_.end()) {
@@ -587,7 +587,7 @@ Value TestLibrary::getPassedCount(const std::vector<Value>& args, Context& conte
     return Value(Int(test_suites_[suite_name].passed_tests));
 }
 
-Value TestLibrary::getFailedCount(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::getFailedCount(const std::vector<Value>& args, Context& /*context*/) {
     std::string suite_name = args.empty() ? current_suite_ : std::get<Text>(args[0]);
 
     if (test_suites_.find(suite_name) == test_suites_.end()) {
@@ -606,24 +606,24 @@ Value TestLibrary::fail(const std::vector<Value>& args, Context& context) {
 }
 
 // Placeholder implementations for other methods
-Value TestLibrary::assertNull(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::assertNull(const std::vector<Value>& /*args*/, Context& /*context*/) {
     // Since O²L doesn't have null, this could check for Optional.empty()
     recordTestResult(current_test_, true);
     return Value(Bool(true));
 }
 
-Value TestLibrary::assertNotNull(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::assertNotNull(const std::vector<Value>& /*args*/, Context& /*context*/) {
     recordTestResult(current_test_, true);
     return Value(Bool(true));
 }
 
-Value TestLibrary::assertGreaterEqual(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::assertGreaterEqual(const std::vector<Value>& /*args*/, Context& /*context*/) {
     // Implementation similar to assertGreater but with >=
     recordTestResult(current_test_, true);
     return Value(Bool(true));
 }
 
-Value TestLibrary::assertLessEqual(const std::vector<Value>& args, Context& context) {
+Value TestLibrary::assertLessEqual(const std::vector<Value>& /*args*/, Context& /*context*/) {
     // Implementation similar to assertLess but with <=
     recordTestResult(current_test_, true);
     return Value(Bool(true));

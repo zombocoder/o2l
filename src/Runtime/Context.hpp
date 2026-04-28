@@ -72,8 +72,15 @@ class Context {
     // Stack of 'this' objects for property access
     std::vector<std::shared_ptr<ObjectInstance>> this_stack_;
 
+    // String interning pool for Text.id()
+    std::map<std::string, Int> string_pool_;
+    Int next_string_id_ = 1;
+
    public:
     Context();
+
+    // String interning
+    Int getStringId(const std::string& str);
 
     // Scope management
     void pushScope();

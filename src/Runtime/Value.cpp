@@ -68,7 +68,9 @@ std::string valueToString(const Value& value) {
         [](const auto& v) -> std::string {
             using T = std::decay_t<decltype(v)>;
 
-            if constexpr (std::is_same_v<T, Int>) {
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                return "null";
+            } else if constexpr (std::is_same_v<T, Int>) {
                 return std::to_string(v);
             } else if constexpr (std::is_same_v<T, Long>) {
                 return longToString(v);
@@ -132,7 +134,9 @@ std::string getTypeName(const Value& value) {
         [&value](const auto& v) -> std::string {
             using T = std::decay_t<decltype(v)>;
 
-            if constexpr (std::is_same_v<T, Int>) {
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                return "null";
+            } else if constexpr (std::is_same_v<T, Int>) {
                 return value.is_long_ ? "Long" : "Int";
             } else if constexpr (std::is_same_v<T, Long>) {
                 return "Long";
@@ -201,7 +205,9 @@ bool valuesEqual(const Value& a, const Value& b) {
             using T = std::decay_t<decltype(lhs)>;
             using U = std::decay_t<decltype(rhs)>;
 
-            if constexpr (std::is_same_v<T, U>) {
+            if constexpr (std::is_same_v<T, std::monostate> && std::is_same_v<U, std::monostate>) {
+                return true;
+            } else if constexpr (std::is_same_v<T, U>) {
                 if constexpr (std::is_same_v<T, std::shared_ptr<ObjectInstance>>) {
                     return lhs.get() == rhs.get();  // Pointer equality for objects
                 } else if constexpr (std::is_same_v<T, std::shared_ptr<EnumInstance>>) {

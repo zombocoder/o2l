@@ -71,6 +71,14 @@ enum class TokenType {
     DOT,
     DOLLAR,
     
+    // Bitwise operators
+    BITWISE_AND,    // &
+    BITWISE_OR,     // |
+    BITWISE_XOR,    // ^
+    BITWISE_NOT,    // ~
+    LSHIFT,         // <<
+    RSHIFT,         // >>
+    
     // Comparison operators
     EQUAL,          // ==
     NOT_EQUAL,      // !=
@@ -97,6 +105,7 @@ enum class TokenType {
     
     // Special
     NEWLINE,
+    NULL_TOKEN,
     EOF_TOKEN,
     INVALID
 };

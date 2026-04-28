@@ -24,6 +24,7 @@
 #include "../Runtime/ProtocolInstance.hpp"
 #include "ConstructorDeclarationNode.hpp"
 #include "MethodDeclarationNode.hpp"
+#include "PropertyDeclarationNode.hpp"
 
 namespace o2l {
 
@@ -39,6 +40,15 @@ ObjectNode::ObjectNode(std::string name, std::vector<ASTNodePtr> methods,
 Value ObjectNode::evaluate(Context& context) {
     // Create new object instance
     auto object_instance = std::make_shared<ObjectInstance>(object_name_);
+
+    // Process properties and add them to the object instance
+    for (const auto& property_node : properties_) {
+        auto property_decl = dynamic_cast<PropertyDeclarationNode*>(property_node.get());
+        if (property_decl) {
+            // Register property with default null value
+            object_instance->setProperty(property_decl->getPropertyName(), Value());
+        }
+    }
 
     // Process constructor if present
     if (constructor_) {

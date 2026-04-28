@@ -21,7 +21,7 @@
 
 namespace o2l {
 
-Value ImportNode::evaluate(Context& context) {
+Value ImportNode::evaluate(Context& /*context*/) {
     // Import evaluation will be handled by the interpreter
     // For now, just return a placeholder value
     return Int(0);

@@ -23,8 +23,9 @@
 namespace o2l {
 
 enum class UnaryOperator {
-    NOT,   // !
-    MINUS  // - (unary minus)
+    NOT,         // !
+    MINUS,       // - (unary minus)
+    BITWISE_NOT  // ~
 };
 
 class UnaryNode : public ASTNode {

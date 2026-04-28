@@ -132,6 +132,9 @@ set(SOURCES
     src/Runtime/FFI/SharedLibrary.cpp
     src/Runtime/FFI/FFITypes.cpp
     src/Runtime/FFI/FFIEngine.cpp
+    src/Runtime/CompilerLibrary.cpp
+    src/Runtime/BinaryLibrary.cpp
+    src/Runtime/BitLibrary.cpp
     src/Common/Exceptions.cpp
 )
 

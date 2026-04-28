@@ -28,7 +28,7 @@ MethodDeclarationNode::MethodDeclarationNode(std::string name, std::vector<Param
       body_(std::move(body)),
       is_external_(is_external) {}
 
-Value MethodDeclarationNode::evaluate(Context& context) {
+Value MethodDeclarationNode::evaluate(Context& /*context*/) {
     // Method declarations don't evaluate to values directly
     // They are processed when creating objects
     return Int(0);

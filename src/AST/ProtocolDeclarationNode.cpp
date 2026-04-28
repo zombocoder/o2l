@@ -24,7 +24,7 @@ ProtocolDeclarationNode::ProtocolDeclarationNode(std::string name,
                                                  std::vector<ProtocolMethodSignature> signatures)
     : protocol_name_(std::move(name)), method_signatures_(std::move(signatures)) {}
 
-Value ProtocolDeclarationNode::evaluate(Context& context) {
+Value ProtocolDeclarationNode::evaluate(Context& /*context*/) {
     // Create a protocol instance that defines the interface
     auto protocol_instance = std::make_shared<ProtocolInstance>(protocol_name_, method_signatures_);
     return protocol_instance;

@@ -20,7 +20,7 @@
 
 namespace o2l {
 
-Value BreakNode::evaluate(Context& context) {
+Value BreakNode::evaluate(Context& /*context*/) {
     throw BreakException();
 }
 

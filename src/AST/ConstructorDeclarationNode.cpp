@@ -22,7 +22,7 @@ ConstructorDeclarationNode::ConstructorDeclarationNode(std::vector<Parameter> pa
                                                        ASTNodePtr body)
     : parameters_(std::move(parameters)), body_(std::move(body)) {}
 
-Value ConstructorDeclarationNode::evaluate(Context& context) {
+Value ConstructorDeclarationNode::evaluate(Context& /*context*/) {
     // Constructor declarations don't evaluate to values directly
     // They are processed when creating objects
     return Int(0);

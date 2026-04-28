@@ -22,7 +22,18 @@
 
 namespace o2l {
 
-enum class BinaryOperator { PLUS, MINUS, MULTIPLY, DIVIDE, MODULO };
+enum class BinaryOperator {
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE,
+    MODULO,
+    BITWISE_AND,
+    BITWISE_OR,
+    BITWISE_XOR,
+    LSHIFT,
+    RSHIFT
+};
 
 class BinaryOpNode : public ASTNode {
    private:
