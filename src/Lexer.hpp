@@ -50,6 +50,7 @@ enum class TokenType {
     RESULT,
     ERROR,
     NAMESPACE,
+    SPAWN,
     
     // Modifiers
     AT_EXTERNAL,

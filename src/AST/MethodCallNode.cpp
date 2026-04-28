@@ -2040,6 +2040,9 @@ Value MethodCallNode::evaluate(Context& context) {
 
         return object_instance->callMethod(method_name_, arg_values, context, is_external_call);
 
+    } catch (const SuspendException& e) {
+        // SuspendException must be allowed to propagate to the scheduler
+        throw;
     } catch (const o2lException& e) {
         // Re-throw with current context if it doesn't already have a stack trace
         if (e.getStackTrace().empty()) {

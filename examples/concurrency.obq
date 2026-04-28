@@ -1,0 +1,42 @@
+// O2L Concurrency Example
+// Demonstrates green threads (spawn), channels, and async I/O
+
+Object Worker {
+    method workerRoutine(id: Int, ch: Channel) {
+        io.print("Worker %d starting...", id)
+        
+        // Simulate work with async sleep
+        io.sleep(100)
+        
+        io.print("Worker %d finished work. Sending result...", id)
+        ch.send("Result from Worker " + id.toString())
+    }
+}
+
+Object Main {
+    method main(): Text {
+        io.print("🚀 Concurrency Demo Starting")
+
+        // Create a buffered channel
+        results: Channel = Channel.new(5)
+        worker: Worker = new Worker()
+
+        io.print("Spawning workers...")
+        spawn { worker.workerRoutine(1, results) }
+        spawn { worker.workerRoutine(2, results) }
+        spawn { worker.workerRoutine(3, results) }
+
+        // Wait for results
+        io.print("Waiting for results from workers...")
+        
+        count: Int = 0
+        while (count < 3) {
+            msg: Text = results.receive()
+            io.print("Received: %s", msg)
+            count = count + 1
+        }
+
+        io.print("All workers finished!")
+        return "Demo Complete"
+    }
+}

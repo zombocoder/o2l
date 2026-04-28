@@ -84,6 +84,7 @@ set(SOURCES
     src/AST/WhileStatementNode.cpp
     src/AST/BreakNode.cpp
     src/AST/ContinueNode.cpp
+    src/AST/SpawnNode.cpp
     src/AST/ComparisonNode.cpp
     src/AST/LogicalNode.cpp
     src/AST/UnaryNode.cpp
@@ -102,6 +103,11 @@ set(SOURCES
     src/Runtime/Value.cpp
     src/Runtime/ObjectInstance.cpp
     src/Runtime/Context.cpp
+    src/Runtime/Coroutine.cpp
+    src/Runtime/Scheduler.cpp
+    src/Runtime/ChannelInstance.cpp
+    src/Runtime/ConcurrencyLibrary.cpp
+    src/Runtime/IOThreadPool.cpp
     src/Runtime/ModuleLoader.cpp
     src/Runtime/SystemLibrary.cpp
     src/Runtime/MathLibrary.cpp
@@ -166,6 +172,7 @@ set(HEADERS
     src/AST/WhileStatementNode.hpp
     src/AST/BreakNode.hpp
     src/AST/ContinueNode.hpp
+    src/AST/SpawnNode.hpp
     src/AST/ComparisonNode.hpp
     src/AST/LogicalNode.hpp
     src/AST/UnaryNode.hpp
@@ -180,6 +187,12 @@ set(HEADERS
     src/Runtime/Value.hpp
     src/Runtime/ObjectInstance.hpp
     src/Runtime/Context.hpp
+    src/Runtime/Coroutine.hpp
+    src/Runtime/CoroutineHandle.hpp
+    src/Runtime/Scheduler.hpp
+    src/Runtime/ChannelInstance.hpp
+    src/Runtime/ConcurrencyLibrary.hpp
+    src/Runtime/IOThreadPool.hpp
     src/Runtime/ModuleLoader.hpp
     src/Runtime/SystemLibrary.hpp
     src/Runtime/MathLibrary.hpp

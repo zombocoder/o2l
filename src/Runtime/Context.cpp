@@ -211,4 +211,22 @@ std::vector<std::string> Context::getVariableNames() const {
     return names;
 }
 
+Context Context::clone() const {
+    Context cloned;
+    // Context constructor already calls pushScope(), so we need to clear it
+    cloned.scopes_.clear();
+    cloned.const_scopes_.clear();
+
+    // Deep copy scope stack (each scope is a map<string, Value>)
+    cloned.scopes_ = this->scopes_;
+    cloned.const_scopes_ = this->const_scopes_;
+
+    // Fresh call stacks for the new coroutine
+    cloned.call_stack_ = {};
+    cloned.execution_stack_ = {};
+    cloned.this_stack_ = {};
+
+    return cloned;
+}
+
 }  // namespace o2l

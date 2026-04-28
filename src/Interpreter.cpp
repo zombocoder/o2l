@@ -28,6 +28,8 @@
 #include "Common/Exceptions.hpp"
 #include "Runtime/ListInstance.hpp"
 #include "Runtime/ObjectInstance.hpp"
+#include "Runtime/Scheduler.hpp"
+#include "Runtime/ConcurrencyLibrary.hpp"
 #include "Runtime/SystemLibrary.hpp"
 #include "Runtime/FFILibrary.hpp"
 #include "Runtime/CompilerLibrary.hpp"
@@ -36,8 +38,26 @@
 
 namespace o2l {
 
+/**
+ * Helper node to wrap the initial call to Main.main() as a coroutine.
+ */
+class RootCoroutineNode : public ASTNode {
+private:
+    std::shared_ptr<ObjectInstance> main_instance_;
+public:
+    RootCoroutineNode(std::shared_ptr<ObjectInstance> main_instance) 
+        : ASTNode(SourceLocation()), main_instance_(main_instance) {}
+
+    Value evaluate(Context& context) override {
+        std::vector<Value> no_args;
+        return main_instance_->callMethod("main", no_args, context);
+    }
+
+    std::string toString() const override { return "RootCoroutine(Main.main)"; }
+};
+
 Interpreter::Interpreter() {
-    // Initialize global context with built-in objects/methods
+    global_context_.defineVariable("Channel", Value(ConcurrencyLibrary::createChannelClassObject()));
     global_context_.defineVariable("io", Value(SystemLibrary::createIOObject()));
     global_context_.defineVariable("os", Value(SystemLibrary::createOSObject()));
     global_context_.defineVariable("fs", Value(SystemLibrary::createFSObject()));
@@ -47,7 +67,7 @@ Interpreter::Interpreter() {
 }
 
 Interpreter::Interpreter(const std::string& filename) : source_filename_(filename) {
-    // Initialize global context with built-in objects/methods
+    global_context_.defineVariable("Channel", Value(ConcurrencyLibrary::createChannelClassObject()));
     global_context_.defineVariable("io", Value(SystemLibrary::createIOObject()));
     global_context_.defineVariable("os", Value(SystemLibrary::createOSObject()));
     global_context_.defineVariable("fs", Value(SystemLibrary::createFSObject()));
@@ -126,7 +146,7 @@ Value Interpreter::execute(const std::vector<ASTNodePtr>& nodes) {
         throw EvaluationError("Program must contain a 'Main' object as entry point");
     }
 
-    // Second pass: Execute Main.main()
+    // Second pass: Execute Main.main() via Scheduler
     try {
         Value main_object = global_context_.getVariable("Main");
 
@@ -140,9 +160,21 @@ Value Interpreter::execute(const std::vector<ASTNodePtr>& nodes) {
             throw EvaluationError("Main object must have a 'main()' method");
         }
 
-        // Call Main.main() with no arguments
-        std::vector<Value> no_args;
-        return main_instance->callMethod("main", no_args, global_context_);
+        // Initialize scheduler
+        auto& scheduler = Scheduler::instance();
+        scheduler.reset(); // Ensure a clean state
+
+        // Wrap Main.main() call in a RootCoroutineNode
+        auto root_node = std::make_unique<RootCoroutineNode>(main_instance);
+        
+        // Spawn the root coroutine
+        scheduler.spawn(root_node.get(), global_context_);
+
+        // Run the scheduler
+        scheduler.run();
+
+        // Return the result of the root coroutine
+        return scheduler.getRootResult();
 
     } catch (const UnresolvedReferenceError& e) {
         // Re-throw the original error instead of masking it

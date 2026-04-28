@@ -57,6 +57,7 @@
 #include "AST/SetLiteralNode.hpp"
 #include "AST/NamespaceNode.hpp"
 #include "AST/QualifiedIdentifierNode.hpp"
+#include "AST/SpawnNode.hpp"
 
 namespace o2l {
 
@@ -125,6 +126,8 @@ std::vector<ASTNodePtr> Parser::parse() {
             nodes.push_back(parseRecordDeclaration());
         } else if (currentToken().type == TokenType::PROTOCOL) {
             nodes.push_back(parseProtocolDeclaration());
+        } else if (currentToken().type == TokenType::SPAWN) {
+            nodes.push_back(parseSpawnExpression());
         } else if (currentToken().type == TokenType::NAMESPACE) {
 #if O2L_ENABLE_NAMESPACES
             nodes.push_back(parseNamespaceDeclaration());
@@ -1195,7 +1198,12 @@ ASTNodePtr Parser::parseStatement() {
     if (token.type == TokenType::TRY) {
         return parseTryCatchFinallyStatement();
     }
-    
+
+    // Check for spawn statements
+    if (token.type == TokenType::SPAWN) {
+        return parseSpawnExpression();
+    }
+
     // Check for variable declarations (identifier followed by colon)
     if (token.type == TokenType::IDENTIFIER && peekToken().type == TokenType::COLON) {
         return parseVariableDeclaration();
@@ -2054,6 +2062,31 @@ std::string Parser::reconstructQualifiedName(ASTNode* node) {
         return result;
     }
     return "unknown";
+}
+
+ASTNodePtr Parser::parseSpawnExpression() {
+    Token spawn_token = consume(TokenType::SPAWN, "Expected 'spawn'");
+    SourceLocation location(filename_, spawn_token.line, spawn_token.column);
+
+    consume(TokenType::LBRACE, "Expected '{' after 'spawn'");
+
+    std::vector<ASTNodePtr> body_stmts;
+    while (currentToken().type != TokenType::RBRACE && currentToken().type != TokenType::EOF_TOKEN) {
+        while (match(TokenType::NEWLINE)) {}
+        if (currentToken().type == TokenType::RBRACE) {
+            break;
+        }
+        body_stmts.push_back(parseStatement());
+        if (currentToken().type == TokenType::SEMICOLON) {
+            advance();
+        }
+    }
+    consume(TokenType::RBRACE, "Expected '}' after spawn body");
+
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+    auto spawn_node = std::make_unique<SpawnNode>(std::move(body));
+    spawn_node->setSourceLocation(location);
+    return spawn_node;
 }
 
 } // namespace o2l

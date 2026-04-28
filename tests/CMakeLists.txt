@@ -43,6 +43,15 @@ set(TEST_SOURCES_LIST
     test_o2l_fmt.cpp
     test_ffi_simplified.cpp
     test_ffi_library.cpp
+    test_carray_from_list.cpp
+    test_spawn_basic.cpp
+    test_channel_basic.cpp
+    test_scheduler.cpp
+    test_suspend_exception.cpp
+    test_resume_logic.cpp
+    test_context_clone.cpp
+    test_io_yield.cpp
+    test_concurrency_advanced.cpp
     test_break_statement.cpp
     test_continue_statement.cpp
     test_main.cpp
@@ -116,5 +125,14 @@ add_test(NAME protocol_signature_validation_tests COMMAND o2l_tests --gtest_filt
 add_test(NAME o2l_fmt_tests COMMAND o2l_tests --gtest_filter="O2LFmtTest.*")
 add_test(NAME ffi_simplified_tests COMMAND o2l_tests --gtest_filter="FFISimplifiedTest.*")
 add_test(NAME ffi_library_tests COMMAND o2l_tests --gtest_filter="FFILibraryTest.*")
+add_test(NAME carray_from_list_tests COMMAND o2l_tests --gtest_filter="CArrayFromListTest.*")
+add_test(NAME spawn_basic_tests COMMAND o2l_tests --gtest_filter="SpawnBasicTest.*")
+add_test(NAME channel_basic_tests COMMAND o2l_tests --gtest_filter="ChannelBasicTest.*")
+add_test(NAME scheduler_tests COMMAND o2l_tests --gtest_filter="SchedulerTest.*")
+add_test(NAME suspend_exception_tests COMMAND o2l_tests --gtest_filter="SuspendExceptionTest.*")
+add_test(NAME resume_logic_tests COMMAND o2l_tests --gtest_filter="ResumeLogicTest.*")
+add_test(NAME context_clone_tests COMMAND o2l_tests --gtest_filter="ContextCloneTest.*")
+add_test(NAME io_yield_tests COMMAND o2l_tests --gtest_filter="IOYieldTest.*")
+add_test(NAME concurrency_advanced_tests COMMAND o2l_tests --gtest_filter="ConcurrencyAdvancedTest.*")
 add_test(NAME break_statement_tests COMMAND o2l_tests --gtest_filter="BreakStatementTest.*")
 add_test(NAME continue_statement_tests COMMAND o2l_tests --gtest_filter="ContinueStatementTest.*")

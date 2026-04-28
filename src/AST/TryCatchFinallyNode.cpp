@@ -39,6 +39,10 @@ Value TryCatchFinallyNode::evaluate(Context& context) {
     // Execute try block
     try {
         result = try_block_->evaluate(context);
+    } catch (const SuspendException& e) {
+        // SuspendException should not be caught by user try/catch and should NOT trigger finally.
+        // It unwinds the stack to the scheduler.
+        throw;
     } catch (const UserException& e) {
         // User threw an exception with throw statement
         exception_thrown = true;
