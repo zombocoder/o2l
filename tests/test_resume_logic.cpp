@@ -362,3 +362,142 @@ TEST(ConcurrencyTest, error_in_condition_after_resume) {
     ASSERT_NE(sched.getRootException(), nullptr);
     EXPECT_FALSE(sched.isActive());
 }
+
+// AC#1 (task-005): yield inside inner loop of nested while-while
+TEST(ConcurrencyTest, yield_nested_inner_loop) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+
+    // var i: Int = 0;
+    // var j: Int = 0;
+    // while (i < 2) {
+    //   j = 0;
+    //   while (j < 2) {
+    //     yield;
+    //     j = j + 1;
+    //   }
+    //   i = i + 1;
+    // }
+    SourceLocation loc;
+    auto decl_i = std::make_unique<VariableDeclarationNode>(
+        "i", "Int", std::make_unique<LiteralNode>(Int(0)));
+    auto decl_j = std::make_unique<VariableDeclarationNode>(
+        "j", "Int", std::make_unique<LiteralNode>(Int(0)));
+
+    // Inner condition: j < 2
+    auto inner_cond = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("j"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(2)), loc);
+
+    // Inner body: { yield; j = j + 1; }
+    auto inc_j = std::make_unique<VariableAssignmentNode>(
+        "j", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("j"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+    std::vector<ASTNodePtr> inner_body_stmts;
+    inner_body_stmts.push_back(std::make_unique<YieldNode>());
+    inner_body_stmts.push_back(std::move(inc_j));
+    auto inner_body = std::make_unique<BlockNode>(std::move(inner_body_stmts));
+
+    auto inner_while = std::make_unique<WhileStatementNode>(
+        std::move(inner_cond), std::move(inner_body));
+
+    // Outer condition: i < 2
+    auto outer_cond = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("i"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(2)), loc);
+
+    // Outer body: { j = 0; inner_while; i = i + 1; }
+    auto reset_j = std::make_unique<VariableAssignmentNode>(
+        "j", std::make_unique<LiteralNode>(Int(0)));
+    auto inc_i = std::make_unique<VariableAssignmentNode>(
+        "i", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("i"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+    std::vector<ASTNodePtr> outer_body_stmts;
+    outer_body_stmts.push_back(std::move(reset_j));
+    outer_body_stmts.push_back(std::move(inner_while));
+    outer_body_stmts.push_back(std::move(inc_i));
+    auto outer_body = std::make_unique<BlockNode>(std::move(outer_body_stmts));
+
+    auto outer_while = std::make_unique<WhileStatementNode>(
+        std::move(outer_cond), std::move(outer_body));
+
+    Context context;
+    decl_i->evaluate(context);
+    decl_j->evaluate(context);
+    sched.spawn(outer_while.get(), std::move(context));
+    sched.run();
+
+    // 2 outer iterations * 2 inner iterations = 4 yields
+    EXPECT_EQ(g_yield_count, 4);
+    EXPECT_EQ(sched.getRootException(), nullptr);
+}
+
+// AC#2 (task-005): yield in outer loop body after inner loop completes
+TEST(ConcurrencyTest, yield_nested_outer_body) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+
+    // var i: Int = 0;
+    // var j: Int = 0;
+    // while (i < 2) {
+    //   j = 0;
+    //   while (j < 2) {
+    //     j = j + 1;     // no yield in inner loop
+    //   }
+    //   yield;            // yield in outer body after inner loop
+    //   i = i + 1;
+    // }
+    SourceLocation loc;
+    auto decl_i = std::make_unique<VariableDeclarationNode>(
+        "i", "Int", std::make_unique<LiteralNode>(Int(0)));
+    auto decl_j = std::make_unique<VariableDeclarationNode>(
+        "j", "Int", std::make_unique<LiteralNode>(Int(0)));
+
+    // Inner loop: while (j < 2) { j = j + 1; }
+    auto inner_cond = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("j"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(2)), loc);
+    auto inc_j = std::make_unique<VariableAssignmentNode>(
+        "j", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("j"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+    std::vector<ASTNodePtr> inner_body_stmts;
+    inner_body_stmts.push_back(std::move(inc_j));
+    auto inner_body = std::make_unique<BlockNode>(std::move(inner_body_stmts));
+    auto inner_while = std::make_unique<WhileStatementNode>(
+        std::move(inner_cond), std::move(inner_body));
+
+    // Outer loop body: { j = 0; inner_while; yield; i = i + 1; }
+    auto outer_cond = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("i"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(2)), loc);
+    auto reset_j = std::make_unique<VariableAssignmentNode>(
+        "j", std::make_unique<LiteralNode>(Int(0)));
+    auto inc_i = std::make_unique<VariableAssignmentNode>(
+        "i", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("i"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+    std::vector<ASTNodePtr> outer_body_stmts;
+    outer_body_stmts.push_back(std::move(reset_j));
+    outer_body_stmts.push_back(std::move(inner_while));
+    outer_body_stmts.push_back(std::make_unique<YieldNode>());
+    outer_body_stmts.push_back(std::move(inc_i));
+    auto outer_body = std::make_unique<BlockNode>(std::move(outer_body_stmts));
+
+    auto outer_while = std::make_unique<WhileStatementNode>(
+        std::move(outer_cond), std::move(outer_body));
+
+    Context context;
+    decl_i->evaluate(context);
+    decl_j->evaluate(context);
+    sched.spawn(outer_while.get(), std::move(context));
+    sched.run();
+
+    // 2 outer iterations, each yields once after inner loop completes
+    EXPECT_EQ(g_yield_count, 2);
+    EXPECT_EQ(sched.getRootException(), nullptr);
+}
