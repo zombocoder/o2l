@@ -18,6 +18,8 @@
 
 #include "../Common/Exceptions.hpp"
 #include "../Runtime/Context.hpp"
+#include "../Runtime/Scheduler.hpp"
+#include "../Runtime/Coroutine.hpp"
 
 namespace o2l {
 
@@ -26,16 +28,35 @@ BlockNode::BlockNode(std::vector<ASTNodePtr> statements) : statements_(std::move
 Value BlockNode::evaluate(Context& context) {
     Value result = Int(0);  // Default return value
 
-    // Execute all statements in sequence
-    for (const auto& statement : statements_) {
+    size_t start_index = 0;
+    auto& scheduler = Scheduler::instance();
+    auto current_coro = scheduler.currentCoroutine();
+
+    // Concurrency support: resume from last suspended statement
+    if (current_coro && !current_coro->block_resume_stack.empty()) {
+        start_index = current_coro->block_resume_stack.back();
+        current_coro->block_resume_stack.pop_back();
+    }
+
+    for (size_t i = start_index; i < statements_.size(); ++i) {
         try {
-            result = statement->evaluate(context);
+            result = statements_[i]->evaluate(context);
         } catch (const ReturnException& e) {
-            // Return statement encountered - propagate it up to method level
+            throw;
+        } catch (const BreakException& e) {
+            throw;
+        } catch (const ContinueException& e) {
+            throw;
+        } catch (const SuspendException&) {
+            // Save current index for resumption
+            if (current_coro) {
+                current_coro->block_resume_stack.push_back(i);
+            }
             throw;
         }
     }
 
+    // Block finished successfully
     return result;
 }
 

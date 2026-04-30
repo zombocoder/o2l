@@ -25,6 +25,7 @@
 #include "../Interpreter.hpp"
 #include "../Lexer.hpp"
 #include "../Parser.hpp"
+#include "ConcurrencyLibrary.hpp"
 #include "DateTimeLibrary.hpp"
 #include "HttpClientLibrary.hpp"
 #include "HttpServerLibrary.hpp"
@@ -458,6 +459,22 @@ bool ModuleLoader::isNativeSystemModule(const ImportPath& import_path) {
         return true;
     }
 
+    // Check if this is a direct concurrency import
+    if (import_path.package_path.empty() && import_path.object_name == "concurrency") {
+        return true;
+    }
+
+    // Check if this is an io import
+    if (import_path.package_path.empty() && import_path.object_name == "io") {
+        return true;
+    }
+
+    // Check if this is a system.io import
+    if (import_path.package_path.size() == 1 && import_path.package_path[0] == "system" &&
+        import_path.object_name == "io") {
+        return true;
+    }
+
     // Check if this is an http.client import
     if (import_path.package_path.size() == 1 && import_path.package_path[0] == "http" &&
         import_path.object_name == "client") {
@@ -500,6 +517,10 @@ std::shared_ptr<ObjectInstance> ModuleLoader::createNativeSystemModule(
         return UrlLibrary::createUrlObject();
     } else if (module_name == "json") {
         return JsonLibrary::createJsonObject();
+    } else if (module_name == "concurrency") {
+        return ConcurrencyLibrary::createConcurrencyObject();
+    } else if (module_name == "io") {
+        return SystemLibrary::createIOObject();
     } else if (module_name == "client") {
         return HttpClientLibrary::createHttpClientObject();
     } else if (module_name == "server") {

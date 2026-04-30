@@ -41,3 +41,6 @@ o2l
 
 # Test files (optional - remove if you want to track test .obq files)
 *.obq.test
+
+# bv (beads viewer) local config and caches
+.bv/

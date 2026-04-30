@@ -168,6 +168,22 @@ public:
     }
 };
 
+// Special exception for coroutine suspension - not an error, but control flow
+// This inherits from std::exception directly so it bypasses o2lException catch blocks
+class SuspendException : public std::exception {
+private:
+    std::string reason_;
+
+public:
+    explicit SuspendException(const std::string& reason) : reason_(reason) {}
+    
+    const std::string& getReason() const { return reason_; }
+    
+    const char* what() const noexcept override {
+        return "Coroutine suspended (not an error)";
+    }
+};
+
 // Exception for user-thrown errors via throw statements
 class UserException : public o2lException {
 private:

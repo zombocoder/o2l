@@ -86,6 +86,7 @@ class Parser {
     ASTNodePtr parseTryCatchFinallyStatement();
     ASTNodePtr parseResultStaticCall();
     ASTNodePtr parseNamespaceDeclaration();
+    ASTNodePtr parseSpawnExpression();
 
     // Helper method to parse type names including generics
     std::string parseTypeName();

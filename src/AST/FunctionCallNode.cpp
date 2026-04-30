@@ -16,10 +16,14 @@
 
 #include "FunctionCallNode.hpp"
 
+#include <thread>
+#include <chrono>
+
 #include "../Common/Exceptions.hpp"
 #include "../Runtime/Context.hpp"
 #include "../Runtime/ObjectInstance.hpp"
 #include "../Runtime/ResultInstance.hpp"
+#include "../Runtime/Scheduler.hpp"
 
 namespace o2l {
 
@@ -73,6 +77,38 @@ Value FunctionCallNode::evaluate(Context& context) {
         // Create an error Result instance
         auto result_instance = ResultInstance::createError(error_value, "T", "E");
         return std::static_pointer_cast<ResultInstance>(result_instance);
+    }
+
+    // Handle sleep() built-in
+    if (function_name_ == "sleep") {
+        if (arguments_.size() != 1) {
+            throw EvaluationError("sleep() requires exactly one argument (milliseconds)");
+        }
+
+        auto& scheduler = Scheduler::instance();
+        
+        // If we just resumed from sleep, we're done
+        if (scheduler.hasResumeValue()) {
+            scheduler.consumeResumeValue();
+            return Value(Int(0));
+        }
+
+        Value ms_value = arguments_[0]->evaluate(context);
+        if (!std::holds_alternative<Int>(ms_value)) {
+            throw TypeMismatchError("sleep() argument must be an Integer");
+        }
+
+        Int ms = std::get<Int>(ms_value);
+
+        if (scheduler.isActive()) {
+            scheduler.suspendForSleep(static_cast<uint64_t>(ms));
+            // suspendForSleep throws SuspendException, so we never reach here
+        } else {
+            // Blocking fallback
+            std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+        }
+
+        return Value(Int(0));
     }
 
     throw UnresolvedReferenceError("Function '" + function_name_ + "' not found");

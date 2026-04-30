@@ -17,6 +17,8 @@
 #include "WhileStatementNode.hpp"
 
 #include "../Common/Exceptions.hpp"
+#include "../Runtime/Scheduler.hpp"
+#include "../Runtime/Coroutine.hpp"
 
 namespace o2l {
 
@@ -26,31 +28,48 @@ WhileStatementNode::WhileStatementNode(ASTNodePtr condition, ASTNodePtr body)
 Value WhileStatementNode::evaluate(Context& context) {
     Value result = Value{};  // Default empty value
 
-    while (true) {
-        // Evaluate the condition
-        Value condition_value = condition_->evaluate(context);
+    auto& scheduler = Scheduler::instance();
+    auto current_coro = scheduler.currentCoroutine();
 
-        // Check if condition is boolean
-        if (!std::holds_alternative<Bool>(condition_value)) {
-            throw TypeMismatchError("While condition must evaluate to Bool, got " +
-                                    o2l::getTypeName(condition_value));
+    while (true) {
+        // If we have a non-zero index, it means we suspended INSIDE the body.
+        // So we skip the condition check for this first "resume" iteration.
+        bool skip_condition = false;
+        if (current_coro && !current_coro->block_resume_stack.empty()) {
+            skip_condition = current_coro->block_resume_stack.back() != 0;
+            current_coro->block_resume_stack.pop_back();
         }
 
-        // Check if condition is true
-        bool condition_bool = std::get<Bool>(condition_value);
-        if (!condition_bool) {
-            break;  // Exit loop if condition is false
+        if (!skip_condition) {
+            // Evaluate the condition
+            Value condition_value = condition_->evaluate(context);
+
+            // Check if condition is boolean
+            if (!std::holds_alternative<Bool>(condition_value)) {
+                throw TypeMismatchError("While condition must evaluate to Bool, got " +
+                                        o2l::getTypeName(condition_value));
+            }
+
+            // Check if condition is true
+            bool condition_bool = std::get<Bool>(condition_value);
+            if (!condition_bool) {
+                break;  // Exit loop if condition is false
+            }
         }
 
         // Execute the body
         try {
             result = body_->evaluate(context);
+            // If body completes without suspension, loop continues normally.
         } catch (const BreakException&) {
-            // Break statement was executed, exit the while loop
             break;
         } catch (const ContinueException&) {
-            // Continue statement was executed, skip to next iteration
             continue;
+        } catch (const SuspendException&) {
+            if (current_coro) {
+                current_coro->block_resume_stack.push_back(1); // 1 means resuming body
+            }
+            throw;
         }
     }
 

@@ -31,6 +31,7 @@
 #include "RecordType.hpp"
 #include "RepeatIterator.hpp"
 #include "ResultInstance.hpp"
+#include "CoroutineHandle.hpp"
 #include "SetInstance.hpp"
 #include "SetIterator.hpp"
 #include "FFI/FFITypes.hpp"
@@ -112,6 +113,10 @@ std::string valueToString(const Value& value) {
                 return v->toString();
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
                 return v->toString();
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<CoroutineHandle>>) {
+                return "Coroutine(" + std::to_string(v->getId()) + ")";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ChannelInstance>>) {
+                return "Channel";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::PtrInstance>>) {
                 return v->toString();
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
@@ -178,6 +183,10 @@ std::string getTypeName(const Value& value) {
                 return "Error";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
                 return "Result<" + v->getValueTypeName() + ", " + v->getErrorTypeName() + ">";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<CoroutineHandle>>) {
+                return "Coroutine";
+            } else if constexpr (std::is_same_v<T, std::shared_ptr<ChannelInstance>>) {
+                return "Channel";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::PtrInstance>>) {
                 return "Ptr<Void>";
             } else if constexpr (std::is_same_v<T, std::shared_ptr<ffi::CBufferInstance>>) {
@@ -236,6 +245,10 @@ bool valuesEqual(const Value& a, const Value& b) {
                     return lhs.get() == rhs.get();  // Pointer equality for error instances
                 } else if constexpr (std::is_same_v<T, std::shared_ptr<ResultInstance>>) {
                     return lhs.get() == rhs.get();  // Pointer equality for result instances
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<CoroutineHandle>>) {
+                    return lhs->getId() == rhs->getId();
+                } else if constexpr (std::is_same_v<T, std::shared_ptr<ChannelInstance>>) {
+                    return lhs.get() == rhs.get();
                 } else {
                     return lhs == rhs;
                 }

@@ -41,6 +41,8 @@ class SetInstance;
 class SetIterator;
 class ErrorInstance;
 class ResultInstance;
+class CoroutineHandle;
+class ChannelInstance;
 
 // FFI forward declarations
 namespace ffi {
@@ -49,7 +51,7 @@ class CBufferInstance;
 class CStructInstance;
 class CArrayInstance;
 class CCallbackInstance;
-}
+}  // namespace ffi
 
 // Built-in immutable types
 using Text = std::string;
@@ -92,56 +94,55 @@ using ValueList = List<std::shared_ptr<Value>>;
 using ValueMap = Map<std::shared_ptr<Value>, std::shared_ptr<Value>>;
 using ValueOptional = Optional<std::shared_ptr<Value>>;
 
+#if O2L_HAS_INT128
+using ValueVariantBase = std::variant<
+    Int, Long, Float, Double, Text, Bool, Char, std::shared_ptr<ObjectInstance>,
+    std::shared_ptr<EnumInstance>, std::shared_ptr<RecordType>,
+    std::shared_ptr<RecordInstance>, std::shared_ptr<ProtocolInstance>,
+    std::shared_ptr<ListInstance>, std::shared_ptr<ListIterator>,
+    std::shared_ptr<RepeatIterator>, std::shared_ptr<MapInstance>,
+    std::shared_ptr<MapIterator>, std::shared_ptr<MapObject>,
+    std::shared_ptr<SetInstance>, std::shared_ptr<SetIterator>,
+    std::shared_ptr<ErrorInstance>, std::shared_ptr<ResultInstance>,
+    std::shared_ptr<CoroutineHandle>, std::shared_ptr<ChannelInstance>,
+    std::shared_ptr<ffi::PtrInstance>, std::shared_ptr<ffi::CBufferInstance>,
+    std::shared_ptr<ffi::CStructInstance>, std::shared_ptr<ffi::CArrayInstance>,
+    std::shared_ptr<ffi::CCallbackInstance>, ValueList, ValueMap, ValueOptional>;
+#else
+using ValueVariantBase = std::variant<
+    Int, Float, Double, Text, Bool, Char, std::shared_ptr<ObjectInstance>,
+    std::shared_ptr<EnumInstance>, std::shared_ptr<RecordType>,
+    std::shared_ptr<RecordInstance>, std::shared_ptr<ProtocolInstance>,
+    std::shared_ptr<ListInstance>, std::shared_ptr<ListIterator>,
+    std::shared_ptr<RepeatIterator>, std::shared_ptr<MapInstance>,
+    std::shared_ptr<MapIterator>, std::shared_ptr<MapObject>,
+    std::shared_ptr<SetInstance>, std::shared_ptr<SetIterator>,
+    std::shared_ptr<ErrorInstance>, std::shared_ptr<ResultInstance>,
+    std::shared_ptr<CoroutineHandle>, std::shared_ptr<ChannelInstance>,
+    std::shared_ptr<ffi::PtrInstance>, std::shared_ptr<ffi::CBufferInstance>,
+    std::shared_ptr<ffi::CStructInstance>, std::shared_ptr<ffi::CArrayInstance>,
+    std::shared_ptr<ffi::CCallbackInstance>, ValueList, ValueMap, ValueOptional>;
+#endif
+
 // The main Value variant that represents all possible O²L values
-struct Value
-    : public std::variant<Int, 
-#if O2L_HAS_INT128
-                          Long,
-#endif
-                          Float, Double, Text, Bool, Char,
-                          std::shared_ptr<ObjectInstance>, std::shared_ptr<EnumInstance>,
-                          std::shared_ptr<RecordType>, std::shared_ptr<RecordInstance>,
-                          std::shared_ptr<ProtocolInstance>, std::shared_ptr<ListInstance>,
-                          std::shared_ptr<ListIterator>, std::shared_ptr<RepeatIterator>,
-                          std::shared_ptr<MapInstance>, std::shared_ptr<MapIterator>,
-                          std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
-                          std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
-                          std::shared_ptr<ResultInstance>, std::shared_ptr<ffi::PtrInstance>,
-                          std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
-                          std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
-                          ValueList, ValueMap, ValueOptional> {
-    Value() : std::variant<Int, 
-#if O2L_HAS_INT128
-                          Long,
-#endif
-                          Float, Double, Text, Bool, Char,
-                          std::shared_ptr<ObjectInstance>, std::shared_ptr<EnumInstance>,
-                          std::shared_ptr<RecordType>, std::shared_ptr<RecordInstance>,
-                          std::shared_ptr<ProtocolInstance>, std::shared_ptr<ListInstance>,
-                          std::shared_ptr<ListIterator>, std::shared_ptr<RepeatIterator>,
-                          std::shared_ptr<MapInstance>, std::shared_ptr<MapIterator>,
-                          std::shared_ptr<MapObject>, std::shared_ptr<SetInstance>,
-                          std::shared_ptr<SetIterator>, std::shared_ptr<ErrorInstance>,
-                          std::shared_ptr<ResultInstance>, std::shared_ptr<ffi::PtrInstance>,
-                          std::shared_ptr<ffi::CBufferInstance>, std::shared_ptr<ffi::CStructInstance>,
-                          std::shared_ptr<ffi::CArrayInstance>, std::shared_ptr<ffi::CCallbackInstance>,
-                          ValueList, ValueMap, ValueOptional>(static_cast<Int>(0)) {}
+struct Value : public ValueVariantBase {
+    Value() : ValueVariantBase(static_cast<Int>(0)), is_long_(false) {}
 
     Value(std::nullptr_t) : Value() {}
 
-    using variant::variant;
+    using ValueVariantBase::ValueVariantBase;
 
     // Additional flag to distinguish between Int and Long when they have the same underlying type
     bool is_long_ = false;
 
     // Constructors to set the flag
-    Value(Int v) : variant(v), is_long_(false) {}
+    Value(Int v) : ValueVariantBase(v), is_long_(false) {}
 #if !O2L_HAS_INT128
     // Special constructor for Long when it's the same as Int
     struct LongTag {};
-    Value(Long v, LongTag) : variant(v), is_long_(true) {}
+    Value(Long v, LongTag) : ValueVariantBase(v), is_long_(true) {}
 #else
-    Value(Long v) : variant(v), is_long_(true) {}
+    Value(Long v) : ValueVariantBase(v), is_long_(true) {}
 #endif
 };
 
@@ -155,15 +156,31 @@ bool valuesLess(const Value& a, const Value& b);
 // On platforms with __int128 (Linux/macOS) Long occupies its own variant slot (index 1).
 // On MSVC/Windows Long=Int=long long; the is_long_ flag distinguishes them at runtime.
 #if O2L_HAS_INT128
-inline bool holds_Int_Value(const Value& v) { return v.index() == 0; }
-inline Int  get_Int_Value(const Value& v)   { return std::get<0>(v); }
-inline bool holds_Long_Value(const Value& v) { return v.index() == 1; }
-inline Long get_Long_Value(const Value& v)   { return std::get<1>(v); }
+inline bool holds_Int_Value(const Value& v) {
+    return v.index() == 0;
+}
+inline Int get_Int_Value(const Value& v) {
+    return std::get<0>(v);
+}
+inline bool holds_Long_Value(const Value& v) {
+    return v.index() == 1;
+}
+inline Long get_Long_Value(const Value& v) {
+    return std::get<1>(v);
+}
 #else
-inline bool holds_Int_Value(const Value& v) { return v.index() == 0 && !v.is_long_; }
-inline Int  get_Int_Value(const Value& v)   { return std::get<0>(v); }
-inline bool holds_Long_Value(const Value& v) { return v.index() == 0 && v.is_long_; }
-inline Long get_Long_Value(const Value& v)   { return std::get<0>(v); }
+inline bool holds_Int_Value(const Value& v) {
+    return v.index() == 0 && !v.is_long_;
+}
+inline Int get_Int_Value(const Value& v) {
+    return std::get<0>(v);
+}
+inline bool holds_Long_Value(const Value& v) {
+    return v.index() == 0 && v.is_long_;
+}
+inline Long get_Long_Value(const Value& v) {
+    return std::get<0>(v);
+}
 #endif
 
 // Custom comparator for Value types for use in std::set and std::map

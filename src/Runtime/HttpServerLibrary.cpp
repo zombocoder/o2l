@@ -15,6 +15,7 @@
  */
 
 #include "HttpServerLibrary.hpp"
+#include "Scheduler.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -1501,6 +1502,14 @@ Value HttpServerLibrary::nativeWaitForever(const std::vector<Value>& args, Conte
     auto server = getServerFromValue(args[0]);
     if (!server) {
         throw std::runtime_error("Invalid server instance");
+    }
+
+    auto& sched = Scheduler::instance();
+    if (sched.isActive() && sched.currentCoroutine()) {
+        // Suspend indefinitely (will be woken by program exit)
+        sched.suspendForSleep((std::numeric_limits<uint64_t>::max)());
+        // unreachable
+        return Value(Text("Server stopped"));
     }
 
     // Block until server is stopped

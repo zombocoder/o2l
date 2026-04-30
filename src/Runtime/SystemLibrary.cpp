@@ -15,6 +15,7 @@
  */
 
 #include "SystemLibrary.hpp"
+#include "Scheduler.hpp"
 
 #include <array>
 #include <cstdlib>
@@ -414,6 +415,24 @@ Value SystemLibrary::nativeInput(const std::vector<Value>& args, Context& contex
         }
         std::string prompt = std::get<Text>(args[0]);
         std::cout << prompt;
+    }
+
+    auto& sched = Scheduler::instance();
+    if (sched.isActive() && sched.currentCoroutine()) {
+        auto* coro = sched.currentCoroutine();
+        if (coro->suspend_reason == "io" && sched.hasResumeValue()) {
+            Value result = sched.consumeResumeValue();
+            coro->suspend_reason = "";
+            return result;
+        }
+
+        sched.suspendForIO([]() -> Value {
+            std::string input_line;
+            std::getline(std::cin, input_line);
+            return Value(Text(input_line));
+        });
+        // unreachable
+        return Value(Text(""));
     }
 
     // Read line from stdin
@@ -1460,6 +1479,23 @@ Value SystemLibrary::nativeExecute(const std::vector<Value>& args, Context& cont
     }
 
     std::string command = std::get<Text>(args[0]);
+
+    auto& sched = Scheduler::instance();
+    if (sched.isActive() && sched.currentCoroutine()) {
+        auto* coro = sched.currentCoroutine();
+        if (coro->suspend_reason == "io" && sched.hasResumeValue()) {
+            Value result = sched.consumeResumeValue();
+            coro->suspend_reason = "";
+            return result;
+        }
+
+        sched.suspendForIO([command]() -> Value {
+            int exit_code = std::system(command.c_str());
+            return Value(Int(exit_code));
+        });
+        // unreachable
+        return Value(Int(0));
+    }
 
     try {
         int exit_code = std::system(command.c_str());
