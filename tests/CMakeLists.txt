@@ -52,6 +52,7 @@ set(TEST_SOURCES_LIST
     test_context_clone.cpp
     test_io_yield.cpp
     test_concurrency_advanced.cpp
+    test_root_exception.cpp
     test_break_statement.cpp
     test_continue_statement.cpp
     test_main.cpp
