@@ -16,7 +16,6 @@
 
 #include "BlockNode.hpp"
 
-#include <iostream>
 #include "../Common/Exceptions.hpp"
 #include "../Runtime/Context.hpp"
 #include "../Runtime/Scheduler.hpp"
@@ -28,18 +27,15 @@ BlockNode::BlockNode(std::vector<ASTNodePtr> statements) : statements_(std::move
 
 Value BlockNode::evaluate(Context& context) {
     Value result = Int(0);  // Default return value
-    
+
     size_t start_index = 0;
     auto& scheduler = Scheduler::instance();
     auto current_coro = scheduler.currentCoroutine();
-    
+
     // Concurrency support: resume from last suspended statement
     if (current_coro && !current_coro->block_resume_stack.empty()) {
         start_index = current_coro->block_resume_stack.back();
         current_coro->block_resume_stack.pop_back();
-        if (start_index > 0) {
-            std::cerr << "  [BlockNode] Resuming at index " << start_index << std::endl;
-        }
     }
 
     for (size_t i = start_index; i < statements_.size(); ++i) {
@@ -51,11 +47,10 @@ Value BlockNode::evaluate(Context& context) {
             throw;
         } catch (const ContinueException& e) {
             throw;
-        } catch (const SuspendException& e) {
+        } catch (const SuspendException&) {
             // Save current index for resumption
             if (current_coro) {
                 current_coro->block_resume_stack.push_back(i);
-                std::cerr << "  [BlockNode] Suspending at index " << i << std::endl;
             }
             throw;
         }

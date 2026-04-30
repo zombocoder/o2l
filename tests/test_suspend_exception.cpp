@@ -20,6 +20,8 @@
 
 using namespace o2l;
 
+namespace {
+
 // A custom AST node that throws SuspendException to simulate a yield point
 class YieldNode : public ASTNode {
    public:
@@ -35,6 +37,8 @@ class YieldNode : public ASTNode {
         return "yield";
     }
 };
+
+}  // anonymous namespace
 
 #include <gtest/gtest.h>
 

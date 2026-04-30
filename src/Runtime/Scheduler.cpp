@@ -99,11 +99,10 @@ void Scheduler::run() {
 
 void Scheduler::yield() {
     if (!running_coro_) return;
-    
+
     running_coro_->state = Coroutine::State::Ready;
     running_coro_->has_resume_value = true;
     running_coro_->resume_value = Int(0);
-    
     ready_queue_.push_back(std::move(running_coro_));
     current_ = nullptr;
     throw SuspendException("yield");

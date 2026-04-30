@@ -16,7 +16,11 @@
 #include "../src/Runtime/Coroutine.hpp"
 #include "../src/Runtime/Scheduler.hpp"
 
+#include <gtest/gtest.h>
+
 using namespace o2l;
+
+namespace {
 
 // Global counter for yields
 static int g_yield_count = 0;
@@ -24,20 +28,21 @@ static int g_yield_count = 0;
 class YieldNode : public ASTNode {
    public:
     Value evaluate(Context& context) override {
-        if (Scheduler::instance().hasResumeValue()) {
-            Scheduler::instance().consumeResumeValue();
-            return Int(0);
+        (void)context;
+        auto& sched = Scheduler::instance();
+        if (sched.hasResumeValue()) {
+            return sched.consumeResumeValue();
         }
-        g_yield_count++;
-        Scheduler::instance().yield();
-        return Int(0);
+        ++g_yield_count;
+        sched.yield();
+        return Value(static_cast<Int>(0));
     }
     std::string toString() const override {
         return "yield";
     }
 };
 
-#include <gtest/gtest.h>
+}  // anonymous namespace
 
 TEST(ConcurrencyTest, resume_logic) {
     o2l::Scheduler::instance().reset();
@@ -92,10 +97,7 @@ TEST(ConcurrencyTest, resume_logic) {
     // 1 (i=2). Iteration 2: Condition (2 < 2) is false, loop terminates.
 
     std::cout << "  Yield count: " << g_yield_count << std::endl;
-    assert(g_yield_count == 2);
+    EXPECT_EQ(g_yield_count, 2);
 
     std::cout << "Resumption tests passed!" << std::endl;
-    return;
 }
-
-

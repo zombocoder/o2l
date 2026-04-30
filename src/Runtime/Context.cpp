@@ -224,7 +224,8 @@ Context Context::clone() const {
     // Fresh call stacks for the new coroutine
     cloned.call_stack_ = {};
     cloned.execution_stack_ = {};
-    cloned.this_stack_ = {};
+    // Preserve 'this' so spawn blocks inside object methods can call this.method()
+    cloned.this_stack_ = this->this_stack_;
 
     return cloned;
 }

@@ -16,7 +16,6 @@
 
 #include "WhileStatementNode.hpp"
 
-#include <iostream>
 #include "../Common/Exceptions.hpp"
 #include "../Runtime/Scheduler.hpp"
 #include "../Runtime/Coroutine.hpp"
@@ -28,7 +27,7 @@ WhileStatementNode::WhileStatementNode(ASTNodePtr condition, ASTNodePtr body)
 
 Value WhileStatementNode::evaluate(Context& context) {
     Value result = Value{};  // Default empty value
-    
+
     auto& scheduler = Scheduler::instance();
     auto current_coro = scheduler.currentCoroutine();
 
@@ -39,9 +38,6 @@ Value WhileStatementNode::evaluate(Context& context) {
         if (current_coro && !current_coro->block_resume_stack.empty()) {
             skip_condition = current_coro->block_resume_stack.back() != 0;
             current_coro->block_resume_stack.pop_back();
-            if (skip_condition) {
-                std::cerr << "  [WhileNode] Skipping condition (resuming body)" << std::endl;
-            }
         }
 
         if (!skip_condition) {
@@ -60,7 +56,7 @@ Value WhileStatementNode::evaluate(Context& context) {
                 break;  // Exit loop if condition is false
             }
         }
-        
+
         // Execute the body
         try {
             result = body_->evaluate(context);
@@ -69,9 +65,9 @@ Value WhileStatementNode::evaluate(Context& context) {
             break;
         } catch (const ContinueException&) {
             continue;
-        } catch (const SuspendException& e) {
+        } catch (const SuspendException&) {
             if (current_coro) {
-                current_coro->block_resume_stack.push_back(1); // 1 means resuming body      
+                current_coro->block_resume_stack.push_back(1); // 1 means resuming body
             }
             throw;
         }
