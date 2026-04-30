@@ -1,6 +1,7 @@
 ﻿#include <cassert>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <variant>
 
 #include "../src/AST/BinaryOpNode.hpp"
@@ -22,8 +23,9 @@ using namespace o2l;
 
 namespace {
 
-// Global counter for yields
+// Shared counters reset per test
 static int g_yield_count = 0;
+static int g_post_yield_count = 0;
 
 class YieldNode : public ASTNode {
    public:
@@ -40,6 +42,58 @@ class YieldNode : public ASTNode {
     std::string toString() const override {
         return "yield";
     }
+};
+
+class ErrorNode : public ASTNode {
+   public:
+    Value evaluate(Context& context) override {
+        (void)context;
+        throw std::runtime_error("coroutine error");
+    }
+    std::string toString() const override { return "error"; }
+};
+
+// A node that yields on first call, then throws on resume
+class YieldThenErrorNode : public ASTNode {
+   public:
+    Value evaluate(Context& context) override {
+        (void)context;
+        auto& sched = Scheduler::instance();
+        if (sched.hasResumeValue()) {
+            sched.consumeResumeValue();
+            throw std::runtime_error("error after resume");
+        }
+        sched.yield();
+        return Value(static_cast<Int>(0));
+    }
+    std::string toString() const override { return "yield_then_error"; }
+};
+
+// A condition node that succeeds N times then throws
+class CountdownConditionNode : public ASTNode {
+   public:
+    int* remaining;
+    explicit CountdownConditionNode(int* r) : remaining(r) {}
+    Value evaluate(Context& context) override {
+        (void)context;
+        if (*remaining <= 0) {
+            throw std::runtime_error("condition error");
+        }
+        (*remaining)--;
+        return Value(Bool(true));
+    }
+    std::string toString() const override { return "countdown_cond"; }
+};
+
+// A node that records post-yield execution (proves resume happened before error)
+class PostYieldCounterNode : public ASTNode {
+   public:
+    Value evaluate(Context& context) override {
+        (void)context;
+        ++g_post_yield_count;
+        return Value(static_cast<Int>(0));
+    }
+    std::string toString() const override { return "post_yield_counter"; }
 };
 
 }  // anonymous namespace
@@ -217,4 +271,94 @@ TEST(ConcurrencyTest, yield_deeply_nested) {
 
     // block_resume_stack should handle 3 levels of BlockNode + WhileStatementNode
     EXPECT_EQ(g_yield_count, 1);
+}
+
+// AC#1 (task-004): error thrown after yield propagates to scheduler
+TEST(ConcurrencyTest, error_after_resume) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+
+    // while (true) { yield_then_error; }
+    // First run: yields. Resume: throws runtime_error.
+    auto condition = std::make_unique<LiteralNode>(Bool(true));
+
+    std::vector<ASTNodePtr> body_stmts;
+    body_stmts.push_back(std::make_unique<YieldThenErrorNode>());
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(body));
+
+    Context context;
+    sched.spawn(while_stmt.get(), std::move(context));  // id=0 (root)
+    sched.run();
+
+    // Root coroutine should have failed with our error
+    ASSERT_NE(sched.getRootException(), nullptr);
+    try {
+        std::rethrow_exception(sched.getRootException());
+    } catch (const std::runtime_error& e) {
+        EXPECT_STREQ(e.what(), "error after resume");
+    }
+}
+
+// AC#2 (task-004): scheduler queues are drained after both success and failure
+TEST(ConcurrencyTest, scheduler_clean_after_run) {
+    auto& sched = Scheduler::instance();
+
+    // Case 1: successful completion
+    sched.reset();
+    auto success = std::make_unique<LiteralNode>(Int(1));
+    sched.spawn(success.get(), Context());
+    sched.run();
+    EXPECT_FALSE(sched.isActive());
+    EXPECT_EQ(sched.getRootException(), nullptr);
+
+    // Case 2: error completion
+    sched.reset();
+    auto error = std::make_unique<ErrorNode>();
+    sched.spawn(error.get(), Context());
+    sched.run();
+    EXPECT_FALSE(sched.isActive());
+    EXPECT_NE(sched.getRootException(), nullptr);
+
+    // Case 3: yield then error — scheduler should still drain
+    sched.reset();
+    auto cond = std::make_unique<LiteralNode>(Bool(true));
+    std::vector<ASTNodePtr> stmts;
+    stmts.push_back(std::make_unique<YieldThenErrorNode>());
+    auto blk = std::make_unique<BlockNode>(std::move(stmts));
+    auto ws = std::make_unique<WhileStatementNode>(std::move(cond), std::move(blk));
+    sched.spawn(ws.get(), Context());
+    sched.run();
+    EXPECT_FALSE(sched.isActive());
+}
+
+// AC#3 (task-004): error during condition evaluation doesn't leave stale state
+TEST(ConcurrencyTest, error_in_condition_after_resume) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+    g_post_yield_count = 0;
+
+    // countdown starts at 1: first condition eval succeeds (returns true),
+    // body yields, resume completes, second condition eval throws.
+    int countdown = 1;
+    auto condition = std::make_unique<CountdownConditionNode>(&countdown);
+
+    std::vector<ASTNodePtr> body_stmts;
+    body_stmts.push_back(std::make_unique<YieldNode>());
+    body_stmts.push_back(std::make_unique<PostYieldCounterNode>());
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(body));
+
+    Context context;
+    sched.spawn(while_stmt.get(), std::move(context));
+    sched.run();
+
+    // Yield happened once, then resume ran post-yield counter, then condition threw
+    EXPECT_EQ(g_yield_count, 1);
+    EXPECT_EQ(g_post_yield_count, 1);
+    ASSERT_NE(sched.getRootException(), nullptr);
+    EXPECT_FALSE(sched.isActive());
 }
