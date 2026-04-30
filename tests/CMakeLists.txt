@@ -55,6 +55,7 @@ set(TEST_SOURCES_LIST
     test_root_exception.cpp
     test_shared_state.cpp
     test_channel_edge_cases.cpp
+    test_io_thread_pool.cpp
     test_break_statement.cpp
     test_continue_statement.cpp
     test_main.cpp
