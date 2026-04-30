@@ -101,3 +101,120 @@ TEST(ConcurrencyTest, resume_logic) {
 
     std::cout << "Resumption tests passed!" << std::endl;
 }
+
+// AC#1: yield inside while(false) — coroutine completes without ever yielding
+TEST(ConcurrencyTest, yield_in_false_loop) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+
+    // while (false) { yield; }
+    SourceLocation loc;
+    auto condition = std::make_unique<LiteralNode>(Bool(false));
+
+    std::vector<ASTNodePtr> body_stmts;
+    body_stmts.push_back(std::make_unique<YieldNode>());
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(body));
+
+    Context context;
+    sched.spawn(while_stmt.get(), std::move(context));
+    sched.run();
+
+    EXPECT_EQ(g_yield_count, 0);
+}
+
+// AC#2: yield where condition becomes false on the resume iteration
+TEST(ConcurrencyTest, yield_single_iteration) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+
+    // var i: Int = 0;
+    // while (i < 1) { yield; i = i + 1; }
+    SourceLocation loc;
+    auto var_decl = std::make_unique<VariableDeclarationNode>(
+        "i", "Int", std::make_unique<LiteralNode>(Int(0)));
+
+    auto condition = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("i"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(1)), loc);
+
+    auto increment = std::make_unique<VariableAssignmentNode>(
+        "i", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("i"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+
+    std::vector<ASTNodePtr> body_stmts;
+    body_stmts.push_back(std::make_unique<YieldNode>());
+    body_stmts.push_back(std::move(increment));
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(body));
+
+    Context context;
+    var_decl->evaluate(context);
+    sched.spawn(while_stmt.get(), std::move(context));
+    sched.run();
+
+    // Yields once (i=0 < 1), resumes, increments i to 1, condition 1<1 false, done.
+    EXPECT_EQ(g_yield_count, 1);
+}
+
+// AC#3: yield in deeply nested blocks (3 levels of BlockNode)
+TEST(ConcurrencyTest, yield_deeply_nested) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+    g_yield_count = 0;
+
+    // var i: Int = 0;
+    // while (i < 1) {
+    //   {              // outer block
+    //     {            // middle block
+    //       {          // inner block
+    //         yield;
+    //         i = i + 1;
+    //       }
+    //     }
+    //   }
+    // }
+    SourceLocation loc;
+    auto var_decl = std::make_unique<VariableDeclarationNode>(
+        "i", "Int", std::make_unique<LiteralNode>(Int(0)));
+
+    auto condition = std::make_unique<ComparisonNode>(
+        std::make_unique<IdentifierNode>("i"), ComparisonOperator::LESS_THAN,
+        std::make_unique<LiteralNode>(Int(1)), loc);
+
+    auto increment = std::make_unique<VariableAssignmentNode>(
+        "i", std::make_unique<BinaryOpNode>(
+                 std::make_unique<IdentifierNode>("i"), BinaryOperator::PLUS,
+                 std::make_unique<LiteralNode>(Int(1)), loc));
+
+    // Inner block: { yield; i = i + 1; }
+    std::vector<ASTNodePtr> inner_stmts;
+    inner_stmts.push_back(std::make_unique<YieldNode>());
+    inner_stmts.push_back(std::move(increment));
+    auto inner_block = std::make_unique<BlockNode>(std::move(inner_stmts));
+
+    // Middle block: { inner_block }
+    std::vector<ASTNodePtr> middle_stmts;
+    middle_stmts.push_back(std::move(inner_block));
+    auto middle_block = std::make_unique<BlockNode>(std::move(middle_stmts));
+
+    // Outer block (while body): { middle_block }
+    std::vector<ASTNodePtr> outer_stmts;
+    outer_stmts.push_back(std::move(middle_block));
+    auto outer_block = std::make_unique<BlockNode>(std::move(outer_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(outer_block));
+
+    Context context;
+    var_decl->evaluate(context);
+    sched.spawn(while_stmt.get(), std::move(context));
+    sched.run();
+
+    // block_resume_stack should handle 3 levels of BlockNode + WhileStatementNode
+    EXPECT_EQ(g_yield_count, 1);
+}
