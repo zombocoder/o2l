@@ -2,20 +2,20 @@
 // Demonstrates green threads (spawn), channels, and async I/O
 
 Object Worker {
-    method workerRoutine(id: Int, ch: Channel) {
+    @external method workerRoutine(id: Int, ch: Channel): Unit {
         io.print("Worker %d starting...", id)
-        
+
         // Simulate work with async sleep
-        io.sleep(100)
-        
+        sleep(100)
+
         io.print("Worker %d finished work. Sending result...", id)
-        ch.send("Result from Worker " + id.toString())
+        ch.send(id)
     }
 }
 
 Object Main {
-    method main(): Text {
-        io.print("🚀 Concurrency Demo Starting")
+    method main(): Int {
+        io.print("Concurrency Demo Starting")
 
         // Create a buffered channel
         results: Channel = Channel.new(5)
@@ -28,15 +28,17 @@ Object Main {
 
         // Wait for results
         io.print("Waiting for results from workers...")
-        
+
+        total: Int = 0
         count: Int = 0
         while (count < 3) {
-            msg: Text = results.receive()
-            io.print("Received: %s", msg)
+            val: Int = results.receive()
+            io.print("Received from worker: %d", val)
+            total = total + val
             count = count + 1
         }
 
-        io.print("All workers finished!")
-        return "Demo Complete"
+        io.print("All workers finished! Total: %d", total)
+        return total
     }
 }
