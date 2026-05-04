@@ -15,6 +15,7 @@
  */
 
 #include "HttpClientLibrary.hpp"
+#include "Scheduler.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -331,8 +332,7 @@ Value HttpClientLibrary::nativeGet(const std::vector<Value>& args, Context& cont
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativePost(const std::vector<Value>& args, Context& context) {
@@ -373,8 +373,7 @@ Value HttpClientLibrary::nativePost(const std::vector<Value>& args, Context& con
         request.headers["Content-Type"] = "application/json";
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativePut(const std::vector<Value>& args, Context& context) {
@@ -399,8 +398,7 @@ Value HttpClientLibrary::nativePut(const std::vector<Value>& args, Context& cont
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativeDelete(const std::vector<Value>& args, Context& context) {
@@ -421,8 +419,7 @@ Value HttpClientLibrary::nativeDelete(const std::vector<Value>& args, Context& c
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativePatch(const std::vector<Value>& args, Context& context) {
@@ -447,8 +444,7 @@ Value HttpClientLibrary::nativePatch(const std::vector<Value>& args, Context& co
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativeHead(const std::vector<Value>& args, Context& context) {
@@ -469,8 +465,7 @@ Value HttpClientLibrary::nativeHead(const std::vector<Value>& args, Context& con
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativeOptions(const std::vector<Value>& args, Context& context) {
@@ -491,8 +486,7 @@ Value HttpClientLibrary::nativeOptions(const std::vector<Value>& args, Context& 
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 // Advanced Request Methods
@@ -519,8 +513,7 @@ Value HttpClientLibrary::nativeRequest(const std::vector<Value>& args, Context& 
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 Value HttpClientLibrary::nativeRequestWithConfig(const std::vector<Value>& args, Context& context) {
@@ -574,8 +567,7 @@ Value HttpClientLibrary::nativeRequestWithConfig(const std::vector<Value>& args,
         }
     }
 
-    HttpResponse response = executeHttpRequest(request);
-    return Value(createResponseObject(response));
+    return yieldForHttpRequest(request);
 }
 
 // Request Configuration Methods
@@ -1965,5 +1957,32 @@ bool HttpClientLibrary::validateUrl(const std::string& url) {
 bool HttpClientLibrary::validateTimeout(int timeout) {
     return timeout > 0 && timeout <= 300;  // Max 5 minutes
 }
+
+Value HttpClientLibrary::yieldForHttpRequest(const HttpRequest& request) {
+    auto& sched = Scheduler::instance();
+    if (sched.isActive() && sched.currentCoroutine()) {
+        auto* coro = sched.currentCoroutine();
+        if (coro->suspend_reason == "io" && sched.hasResumeValue()) {
+            // Resuming: return the pre-fetched result
+            Value result = sched.consumeResumeValue();
+            coro->suspend_reason = "";
+            return result;
+        }
+
+        // First call: dispatch and suspend
+        sched.suspendForIO([request]() -> Value {
+            HttpResponse resp = HttpClientLibrary::executeHttpRequest(request);
+            return Value(HttpClientLibrary::createResponseObject(resp));
+        });
+
+        // unreachable
+        return Value(Int(0));
+    }
+
+    // No scheduler: synchronous fallback
+    HttpResponse resp = HttpClientLibrary::executeHttpRequest(request);
+    return Value(HttpClientLibrary::createResponseObject(resp));
+}
+
 
 }  // namespace o2l

@@ -110,6 +110,7 @@ class HttpClientLibrary {
    private:
     // Core HTTP execution
     static HttpResponse executeHttpRequest(const HttpRequest& request);
+    static Value yieldForHttpRequest(const HttpRequest& request);
 
     // Helper methods
     static std::string buildQueryString(const std::map<std::string, std::string>& params);

@@ -278,6 +278,7 @@ TokenType Lexer::getKeywordType(const std::string& identifier) const {
     if (identifier == "Result") return TokenType::RESULT;
     if (identifier == "Error") return TokenType::ERROR;
     if (identifier == "null") return TokenType::NULL_TOKEN;
+    if (identifier == "spawn") return TokenType::SPAWN;
 #if O2L_ENABLE_NAMESPACES
     if (identifier == "namespace") return TokenType::NAMESPACE;
 #endif

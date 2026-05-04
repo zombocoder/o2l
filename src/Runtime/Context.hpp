@@ -117,6 +117,9 @@ class Context {
     void popThisObject();
     std::shared_ptr<ObjectInstance> getThisObject() const;
     bool hasThisObject() const;
+
+    // Concurrency support: clone context for new coroutine
+    Context clone() const;
 };
 
 }  // namespace o2l
