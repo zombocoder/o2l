@@ -337,10 +337,12 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("Map.getOrDefault() requires two arguments (key, default)", context);
                 }
                 return map_instance->getOrDefault(arg_values[0], arg_values[1]);
-            } else if (method_name_ == "contains") {
+            } else if (method_name_ == "contains" || method_name_ == "containsKey") {
+                // containsKey is an alias for contains (Java-style Map API; pairs
+                // with containsValue).
                 if (arg_values.size() != 1) {
-                    throw EvaluationError("Map.contains() requires exactly one argument (key)",
-                                          context);
+                    throw EvaluationError(
+                        "Map." + method_name_ + "() requires exactly one argument (key)", context);
                 }
                 return Bool(map_instance->contains(arg_values[0]));
             } else if (method_name_ == "containsValue") {

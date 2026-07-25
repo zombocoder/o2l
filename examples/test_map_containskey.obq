@@ -1,0 +1,54 @@
+import testing
+import system.io
+
+# Regression test: Map.containsKey(key) must resolve as an alias for
+# Map.contains(key). Before the fix, code written against the Java-style Map
+# API raised "Unknown method 'containsKey' on Map type" at runtime.
+Object MapContainsKeyTest {
+    @external method run(): Int {
+        testing.createSuite("MapContainsKeyTests")
+
+        m: Map<Text, Int> = {
+            "apple": 1,
+            "banana": 2
+        }
+
+        # containsKey is the alias under test
+        testing.runTest("containsKey_present")
+        testing.assertTrue(m.containsKey("apple"), "containsKey should find an existing key")
+
+        testing.runTest("containsKey_absent")
+        testing.assertFalse(m.containsKey("orange"), "containsKey should not find a missing key")
+
+        # contains (canonical) must keep working identically
+        testing.runTest("contains_present")
+        testing.assertTrue(m.contains("banana"), "contains should find an existing key")
+
+        testing.runTest("contains_absent")
+        testing.assertFalse(m.contains("orange"), "contains should not find a missing key")
+
+        # both spellings must agree for every probe
+        testing.runTest("alias_agreement_present")
+        testing.assertEqual(m.contains("apple"), m.containsKey("apple"), "contains and containsKey must agree (present)")
+
+        testing.runTest("alias_agreement_absent")
+        testing.assertEqual(m.contains("orange"), m.containsKey("orange"), "contains and containsKey must agree (absent)")
+
+        testing.printResults()
+
+        failed: Int = testing.getFailedCount()
+        if (failed > 0) {
+            io.print("FAILED: %d assertion(s) failed", failed)
+            return 1
+        }
+        io.print("OK: Map.containsKey alias verified")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        t: MapContainsKeyTest = new MapContainsKeyTest()
+        return t.run()
+    }
+}
