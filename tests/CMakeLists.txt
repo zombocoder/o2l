@@ -36,6 +36,7 @@ set(TEST_SOURCES_LIST
     test_json_library.cpp
     test_collection_extensions.cpp
     test_nested_generics.cpp
+    test_compound_assignment.cpp
     test_http_client_library.cpp
     test_http_server_library.cpp
     test_type_conversions.cpp

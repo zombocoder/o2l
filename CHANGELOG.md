@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Verified Stability**: Full test suite pass (478 tests) confirmed on all three major operating systems.
 
 ### Added
+- **Compound assignment operators**: Added `+=`, `-=`, `*=`, `/=`, and `%=` for local variables and `this.property` targets. `x op= expr` desugars to `x = x op (expr)`, preserving O2L's left-to-right evaluation.
 - **Windows CI Pipeline**: Added GitHub Actions workflow for `windows-latest` to ensure continuous cross-platform compatibility.
 - **MSVC Compatibility**: Resolved fundamental compilation barriers (socket handling, `ssize_t` definitions, and `popen` portability).
 - **toInt() conversion**: Added `toInt()` method to `Int` type to support uniform casting from `Long` on all platforms.

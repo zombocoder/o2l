@@ -347,6 +347,31 @@ Token Lexer::nextToken() {
         advance(); advance(); // Skip both characters
         return Token(TokenType::RSHIFT, ">>", current_line, current_column);
     }
+    if (ch == '+' && peekChar() == '=') {
+        advance();
+        advance();  // Skip both characters
+        return Token(TokenType::PLUS_ASSIGN, "+=", current_line, current_column);
+    }
+    if (ch == '-' && peekChar() == '=') {
+        advance();
+        advance();  // Skip both characters
+        return Token(TokenType::MINUS_ASSIGN, "-=", current_line, current_column);
+    }
+    if (ch == '*' && peekChar() == '=') {
+        advance();
+        advance();  // Skip both characters
+        return Token(TokenType::MULTIPLY_ASSIGN, "*=", current_line, current_column);
+    }
+    if (ch == '/' && peekChar() == '=') {
+        advance();
+        advance();  // Skip both characters
+        return Token(TokenType::DIVIDE_ASSIGN, "/=", current_line, current_column);
+    }
+    if (ch == '%' && peekChar() == '=') {
+        advance();
+        advance();  // Skip both characters
+        return Token(TokenType::MODULO_ASSIGN, "%=", current_line, current_column);
+    }
     if (ch == '&' && peekChar() == '&') {
         advance(); advance(); // Skip both '&' characters
         return Token(TokenType::LOGICAL_AND, "&&", current_line, current_column);

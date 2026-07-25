@@ -61,7 +61,48 @@
 
 namespace o2l {
 
-Parser::Parser(std::vector<Token> tokens, const std::string& filename) 
+namespace {
+
+// A compound-assignment token (`+=`, `-=`, `*=`, `/=`, `%=`) combines a binary
+// operator with assignment. `x op= expr` desugars to `x = x op (expr)`, reusing
+// the existing BinaryOpNode / assignment infrastructure. This keeps O2L's
+// left-to-right evaluation intact: the right-hand side is parsed as one complete
+// expression and used as-is as the right operand.
+bool isCompoundAssignToken(TokenType type) {
+    switch (type) {
+        case TokenType::PLUS_ASSIGN:
+        case TokenType::MINUS_ASSIGN:
+        case TokenType::MULTIPLY_ASSIGN:
+        case TokenType::DIVIDE_ASSIGN:
+        case TokenType::MODULO_ASSIGN:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// Map a compound-assignment token to the binary operator it applies.
+BinaryOperator compoundAssignOperator(TokenType type) {
+    switch (type) {
+        case TokenType::PLUS_ASSIGN:
+            return BinaryOperator::PLUS;
+        case TokenType::MINUS_ASSIGN:
+            return BinaryOperator::MINUS;
+        case TokenType::MULTIPLY_ASSIGN:
+            return BinaryOperator::MULTIPLY;
+        case TokenType::DIVIDE_ASSIGN:
+            return BinaryOperator::DIVIDE;
+        case TokenType::MODULO_ASSIGN:
+            return BinaryOperator::MODULO;
+        default:
+            // Unreachable: callers guard with isCompoundAssignToken().
+            return BinaryOperator::PLUS;
+    }
+}
+
+}  // namespace
+
+Parser::Parser(std::vector<Token> tokens, const std::string& filename)
     : tokens_(std::move(tokens)), current_token_(0), filename_(filename) {}
 
 const Token& Parser::currentToken() const {
@@ -1136,6 +1177,34 @@ ASTNodePtr Parser::parseThisAssignment() {
     return property_assignment;
 }
 
+ASTNodePtr Parser::parseCompoundThisAssignment() {
+    Token this_token = consume(TokenType::THIS, "Expected 'this'");
+    consume(TokenType::DOT, "Expected '.' after 'this'");
+
+    Token property_name_token =
+        consume(TokenType::IDENTIFIER, "Expected property name after 'this.'");
+    std::string property_name = property_name_token.value;
+
+    Token op_token = currentToken();
+    BinaryOperator op = compoundAssignOperator(op_token.type);
+    advance();  // consume the compound-assignment operator
+
+    ASTNodePtr rhs_expr = parseExpression();
+
+    SourceLocation location(filename_, this_token.line, this_token.column);
+
+    // Desugar `this.prop op= rhs` into `this.prop = this.prop op (rhs)`.
+    auto current_value =
+        std::make_unique<MemberAccessNode>(std::make_unique<ThisNode>(), property_name);
+    auto binary_expr =
+        std::make_unique<BinaryOpNode>(std::move(current_value), op, std::move(rhs_expr), location);
+
+    auto property_assignment =
+        std::make_unique<PropertyAssignmentNode>(property_name, std::move(binary_expr));
+    property_assignment->setSourceLocation(location);
+    return property_assignment;
+}
+
 ASTNodePtr Parser::parseReturnStatement() {
     Token return_token = consume(TokenType::RETURN, "Expected 'return'");
     
@@ -1218,6 +1287,11 @@ ASTNodePtr Parser::parseStatement() {
     if (token.type == TokenType::IDENTIFIER && peekToken().type == TokenType::ASSIGN) {
         return parseVariableAssignment();
     }
+
+    // Check for compound variable assignments (identifier followed by +=, -=, etc.)
+    if (token.type == TokenType::IDENTIFIER && isCompoundAssignToken(peekToken().type)) {
+        return parseCompoundVariableAssignment();
+    }
     
     // Check for this.property = value assignments
     if (token.type == TokenType::THIS) {
@@ -1232,6 +1306,11 @@ ASTNodePtr Parser::parseStatement() {
                     // This is a this.property = value assignment
                     current_token_ = saved_pos; // restore position
                     return parseThisAssignment();
+                }
+                if (isCompoundAssignToken(currentToken().type)) {
+                    // This is a this.property += value compound assignment
+                    current_token_ = saved_pos;  // restore position
+                    return parseCompoundThisAssignment();
                 }
             }
         }
@@ -1276,6 +1355,29 @@ ASTNodePtr Parser::parseVariableAssignment() {
     
     auto assignment_node = std::make_unique<VariableAssignmentNode>(variable_name, std::move(value_expr));
     SourceLocation location(filename_, variable_name_token.line, variable_name_token.column);
+    assignment_node->setSourceLocation(location);
+    return assignment_node;
+}
+
+ASTNodePtr Parser::parseCompoundVariableAssignment() {
+    Token variable_name_token = consume(TokenType::IDENTIFIER, "Expected variable name");
+    std::string variable_name = variable_name_token.value;
+
+    Token op_token = currentToken();
+    BinaryOperator op = compoundAssignOperator(op_token.type);
+    advance();  // consume the compound-assignment operator
+
+    ASTNodePtr rhs_expr = parseExpression();
+
+    SourceLocation location(filename_, variable_name_token.line, variable_name_token.column);
+
+    // Desugar `x op= rhs` into `x = x op (rhs)`.
+    auto current_value = std::make_unique<IdentifierNode>(variable_name);
+    auto binary_expr =
+        std::make_unique<BinaryOpNode>(std::move(current_value), op, std::move(rhs_expr), location);
+
+    auto assignment_node =
+        std::make_unique<VariableAssignmentNode>(variable_name, std::move(binary_expr));
     assignment_node->setSourceLocation(location);
     return assignment_node;
 }

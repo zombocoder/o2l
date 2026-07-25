@@ -1,0 +1,70 @@
+# Compound assignment operators: +=, -=, *=, /=, %=
+#
+# `x op= expr` desugars to `x = x op (expr)`. The right-hand side is the full
+# parsed expression, so O2L's left-to-right evaluation stays intact.
+
+import system.io
+
+Object Counter {
+    property total: Int
+
+    constructor() {
+        this.total = 0
+    }
+
+    @external method add(n: Int): Int {
+        this.total += n
+        return this.total
+    }
+
+    @external method get(): Int {
+        return this.total
+    }
+}
+
+Object Main {
+    method main(): Int {
+        # Each arithmetic operator on a local Int variable
+        p: Int = 10
+        p += 5
+        io.print("p (10 += 5)  = %d", p)
+
+        m: Int = 10
+        m -= 3
+        io.print("m (10 -= 3)  = %d", m)
+
+        t: Int = 4
+        t *= 5
+        io.print("t (4 *= 5)   = %d", t)
+
+        d: Int = 20
+        d /= 4
+        io.print("d (20 /= 4)  = %d", d)
+
+        r: Int = 17
+        r %= 5
+        io.print("r (17 %%= 5)  = %d", r)
+
+        # Right-hand side is the whole expression: a += 2 + 3  ==  a = a + (2 + 3)
+        a: Int = 100
+        a += 2 + 3
+        io.print("a (100 += 2 + 3) = %d", a)
+
+        # Accumulation in a loop
+        sum: Int = 0
+        i: Int = 1
+        while (i <= 5) {
+            sum += i
+            i += 1
+        }
+        io.print("sum 1..5     = %d", sum)
+
+        # Compound assignment on this.property
+        c: Counter = new Counter()
+        c.add(10)
+        c.add(32)
+        io.print("counter      = %d", c.get())
+
+        return 0
+    }
+}
