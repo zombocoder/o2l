@@ -131,9 +131,12 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("List.size() takes no arguments", context);
                 }
                 return Int(static_cast<Int>(list_instance->size()));
-            } else if (method_name_ == "isEmpty") {
+            } else if (method_name_ == "isEmpty" || method_name_ == "empty") {
+                // empty is an alias for isEmpty (Map/Set expose empty; keep the
+                // collection API consistent so either spelling works everywhere).
                 if (!arg_values.empty()) {
-                    throw EvaluationError("List.isEmpty() takes no arguments", context);
+                    throw EvaluationError("List." + method_name_ + "() takes no arguments",
+                                          context);
                 }
                 return Bool(list_instance->empty());
             } else if (method_name_ == "clear") {
@@ -360,9 +363,11 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("Map.size() takes no arguments", context);
                 }
                 return Int(static_cast<Int>(map_instance->size()));
-            } else if (method_name_ == "empty") {
+            } else if (method_name_ == "empty" || method_name_ == "isEmpty") {
+                // isEmpty is an alias for empty (List exposes isEmpty; keep the
+                // collection API consistent so either spelling works everywhere).
                 if (!arg_values.empty()) {
-                    throw EvaluationError("Map.empty() takes no arguments", context);
+                    throw EvaluationError("Map." + method_name_ + "() takes no arguments", context);
                 }
                 return Bool(map_instance->empty());
             } else if (method_name_ == "clear") {
@@ -529,9 +534,11 @@ Value MethodCallNode::evaluate(Context& context) {
                     throw EvaluationError("Set.size() takes no arguments", context);
                 }
                 return Int(static_cast<Int>(set_instance->size()));
-            } else if (method_name_ == "empty") {
+            } else if (method_name_ == "empty" || method_name_ == "isEmpty") {
+                // isEmpty is an alias for empty (List exposes isEmpty; keep the
+                // collection API consistent so either spelling works everywhere).
                 if (!arg_values.empty()) {
-                    throw EvaluationError("Set.empty() takes no arguments", context);
+                    throw EvaluationError("Set." + method_name_ + "() takes no arguments", context);
                 }
                 return Bool(set_instance->empty());
             } else if (method_name_ == "clear") {
