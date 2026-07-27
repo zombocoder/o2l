@@ -16,11 +16,25 @@
 
 #include "WhileStatementNode.hpp"
 
+#include <cstddef>
+
 #include "../Common/Exceptions.hpp"
 #include "../Runtime/Scheduler.hpp"
 #include "../Runtime/Coroutine.hpp"
 
 namespace o2l {
+
+namespace {
+// Resume markers pushed onto Coroutine::block_resume_stack when a coroutine
+// suspends inside a while-loop. The while node is treated as a two-position
+// sequence: position 0 re-evaluates the loop condition, position 1 resumes
+// directly into the loop body (skipping the condition re-check). Only a
+// body-suspend is ever recorded today, so the value acts as a flag, but naming
+// both positions documents how the marker is interpreted on resume and removes
+// the bare magic number.
+constexpr std::size_t kResumeAtCondition = 0;
+constexpr std::size_t kResumeInBody = 1;
+}  // namespace
 
 WhileStatementNode::WhileStatementNode(ASTNodePtr condition, ASTNodePtr body)
     : condition_(std::move(condition)), body_(std::move(body)) {}
@@ -32,11 +46,12 @@ Value WhileStatementNode::evaluate(Context& context) {
     auto current_coro = scheduler.currentCoroutine();
 
     while (true) {
-        // If we have a non-zero index, it means we suspended INSIDE the body.
-        // So we skip the condition check for this first "resume" iteration.
+        // A recorded marker other than kResumeAtCondition means we suspended
+        // INSIDE the body, so we skip the condition check for this first
+        // "resume" iteration and re-enter the body directly.
         bool skip_condition = false;
         if (current_coro && !current_coro->block_resume_stack.empty()) {
-            skip_condition = current_coro->block_resume_stack.back() != 0;
+            skip_condition = current_coro->block_resume_stack.back() != kResumeAtCondition;
             current_coro->block_resume_stack.pop_back();
         }
 
@@ -67,7 +82,9 @@ Value WhileStatementNode::evaluate(Context& context) {
             continue;
         } catch (const SuspendException&) {
             if (current_coro) {
-                current_coro->block_resume_stack.push_back(1); // 1 means resuming body
+                // Suspended inside the body: on resume, re-enter the body and
+                // skip the condition re-check.
+                current_coro->block_resume_stack.push_back(kResumeInBody);
             }
             throw;
         }

@@ -501,3 +501,91 @@ TEST(ConcurrencyTest, yield_nested_outer_body) {
     EXPECT_EQ(g_yield_count, 2);
     EXPECT_EQ(sched.getRootException(), nullptr);
 }
+
+// Regression guard for the while-loop resume marker (WhileStatementNode's
+// block_resume_stack marker). A body with statements both BEFORE and AFTER the
+// suspension point verifies that, on resume, the loop skips the condition
+// re-check and re-enters the body at the saved statement (running each
+// pre-suspend statement exactly once per iteration and each post-suspend
+// statement exactly once per resume). If the marker were mishandled the counts
+// below would drift.
+
+namespace {
+
+static int g_pre_count = 0;
+static int g_post_count = 0;
+
+class IncPreNode : public ASTNode {
+   public:
+    Value evaluate(Context& /*context*/) override {
+        g_pre_count++;
+        return Int(0);
+    }
+    std::string toString() const override {
+        return "inc_pre";
+    }
+};
+
+class IncPostNode : public ASTNode {
+   public:
+    Value evaluate(Context& /*context*/) override {
+        g_post_count++;
+        return Int(0);
+    }
+    std::string toString() const override {
+        return "inc_post";
+    }
+};
+
+}  // anonymous namespace
+
+TEST(ConcurrencyTest, resume_logic_multi_statement_body) {
+    o2l::Scheduler::instance().reset();
+    g_yield_count = 0;
+    g_pre_count = 0;
+    g_post_count = 0;
+
+    auto& sched = Scheduler::instance();
+    Context context;
+
+    /*
+     * var i: Int = 0;
+     * while (i < 3) {
+     *   inc_pre;    // block index 0 (runs once per fresh iteration)
+     *   yield;      // block index 1 (suspension point)
+     *   inc_post;   // block index 2 (runs once per resume)
+     *   i = i + 1;  // block index 3
+     * }
+     */
+
+    SourceLocation loc;
+    auto var_decl = std::make_unique<VariableDeclarationNode>(
+        "i", "Int", std::make_unique<LiteralNode>(Int(0)));
+
+    auto condition = std::make_unique<ComparisonNode>(std::make_unique<IdentifierNode>("i"),
+                                                      ComparisonOperator::LESS_THAN,
+                                                      std::make_unique<LiteralNode>(Int(3)), loc);
+
+    std::vector<ASTNodePtr> body_stmts;
+    body_stmts.push_back(std::make_unique<IncPreNode>());
+    body_stmts.push_back(std::make_unique<YieldNode>());
+    body_stmts.push_back(std::make_unique<IncPostNode>());
+    body_stmts.push_back(std::make_unique<VariableAssignmentNode>(
+        "i",
+        std::make_unique<BinaryOpNode>(std::make_unique<IdentifierNode>("i"), BinaryOperator::PLUS,
+                                       std::make_unique<LiteralNode>(Int(1)), loc)));
+    auto body = std::make_unique<BlockNode>(std::move(body_stmts));
+
+    auto while_stmt = std::make_unique<WhileStatementNode>(std::move(condition), std::move(body));
+
+    var_decl->evaluate(context);
+    sched.spawn(while_stmt.get(), std::move(context));
+    sched.run();
+
+    // 3 iterations, each suspending exactly once inside the body.
+    ASSERT_EQ(g_yield_count, 3);
+    // Pre-suspend statement runs once per iteration (not re-run on resume).
+    ASSERT_EQ(g_pre_count, 3);
+    // Post-suspend statement runs once per resume.
+    ASSERT_EQ(g_post_count, 3);
+}
