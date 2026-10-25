@@ -75,3 +75,37 @@ TEST(ConcurrencyTest, root_exception_null_on_success) {
     EXPECT_EQ(sched.getRootException(), nullptr);
     EXPECT_EQ(std::get<Int>(sched.getRootResult()), 42);
 }
+
+// AC#4: a root coroutine error is reported once, by the caller that re-throws
+// it, not also by the scheduler
+TEST(ConcurrencyTest, root_exception_not_printed_by_scheduler) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+
+    auto error_node = std::make_unique<ErrorNode>();
+    sched.spawn(error_node.get(), Context());  // id=0 (root)
+
+    testing::internal::CaptureStderr();
+    sched.run();
+    const std::string err = testing::internal::GetCapturedStderr();
+
+    ASSERT_NE(sched.getRootException(), nullptr);
+    EXPECT_EQ(err.find("Error in coroutine #0"), std::string::npos) << err;
+}
+
+// AC#5: non-root coroutine errors are still reported by the scheduler
+TEST(ConcurrencyTest, non_root_exception_still_printed) {
+    auto& sched = Scheduler::instance();
+    sched.reset();
+
+    auto success_node = std::make_unique<SuccessNode>();
+    auto error_node = std::make_unique<ErrorNode>();
+    sched.spawn(success_node.get(), Context());  // id=0 (root)
+    sched.spawn(error_node.get(), Context());    // id=1
+
+    testing::internal::CaptureStderr();
+    sched.run();
+    const std::string err = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(err.find("Error in coroutine #1: coroutine error"), std::string::npos) << err;
+}
