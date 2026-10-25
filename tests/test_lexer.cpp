@@ -351,15 +351,17 @@ TEST_F(LexerTest, NestedComments) {
 TEST_F(LexerTest, ConsecutiveOperators) {
     auto tokens = tokenize("++--**==!=<=>=");
 
-    // == != <= >= are multi-character operators, so expecting 11 tokens
+    // Multi-character operators lex by longest match: the second '*' takes the
+    // following '=' as '*=', which leaves a single '=' before '!='.
+    // So "**==" is '*', '*=', '=' and the total stays at 11 tokens.
     ASSERT_EQ(tokens.size(), 11);
     EXPECT_EQ(tokens[0].type, TokenType::PLUS);
     EXPECT_EQ(tokens[1].type, TokenType::PLUS);
     EXPECT_EQ(tokens[2].type, TokenType::MINUS);
     EXPECT_EQ(tokens[3].type, TokenType::MINUS);
     EXPECT_EQ(tokens[4].type, TokenType::MULTIPLY);
-    EXPECT_EQ(tokens[5].type, TokenType::MULTIPLY);
-    EXPECT_EQ(tokens[6].type, TokenType::EQUAL);           // ==
+    EXPECT_EQ(tokens[5].type, TokenType::MULTIPLY_ASSIGN);  // *=
+    EXPECT_EQ(tokens[6].type, TokenType::ASSIGN);           // =
     EXPECT_EQ(tokens[7].type, TokenType::NOT_EQUAL);       // !=
     EXPECT_EQ(tokens[8].type, TokenType::LESS_EQUAL);     // <=
     EXPECT_EQ(tokens[9].type, TokenType::GREATER_EQUAL);  // >=
