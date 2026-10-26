@@ -17,6 +17,7 @@
 #include "BinaryOpNode.hpp"
 
 #include <cmath>
+#include <limits>
 
 #include "../Common/Exceptions.hpp"
 #include "../Common/StackFrameGuard.hpp"
@@ -51,10 +52,23 @@ Value BinaryOpNode::evaluate(Context& context) {
                 if (right_int == 0) {
                     throw EvaluationError("Division by zero", context);
                 }
+                // INT_MIN / -1 overflows the signed range (result is not
+                // representable) and is undefined behavior in C++ (raises SIGFPE
+                // on x86). Report it as a catchable error instead of crashing.
+                if (right_int == -1 && left_int == std::numeric_limits<Int>::min()) {
+                    throw EvaluationError(
+                        "Integer overflow in division: minimum value divided by -1", context);
+                }
                 return Int(left_int / right_int);
             case BinaryOperator::MODULO:
                 if (right_int == 0) {
                     throw EvaluationError("Modulo by zero", context);
+                }
+                // x % -1 is mathematically 0 for every x, but computing it
+                // directly is undefined behavior when x is INT_MIN (the implied
+                // INT_MIN / -1 division overflows). Return the defined result.
+                if (right_int == -1) {
+                    return Int(0);
                 }
                 return Int(left_int % right_int);
             case BinaryOperator::BITWISE_AND:
@@ -86,10 +100,20 @@ Value BinaryOpNode::evaluate(Context& context) {
                 if (right_long == 0) {
                     throw EvaluationError("Division by zero", context);
                 }
+                // LONG_MIN / -1 overflows the signed range (undefined behavior).
+                if (right_long == -1 && left_long == std::numeric_limits<Long>::min()) {
+                    throw EvaluationError(
+                        "Integer overflow in division: minimum value divided by -1", context);
+                }
                 return Long(left_long / right_long);
             case BinaryOperator::MODULO:
                 if (right_long == 0) {
                     throw EvaluationError("Modulo by zero", context);
+                }
+                // x % -1 == 0 for every x; direct computation is undefined
+                // behavior when x is LONG_MIN.
+                if (right_long == -1) {
+                    return Long(0);
                 }
                 return Long(left_long % right_long);
             case BinaryOperator::BITWISE_AND:

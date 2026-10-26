@@ -154,6 +154,65 @@ TEST_F(IntegrationTest, IntegrationFrameworkValidation) {
     EXPECT_FALSE(error_result.error.empty());
 }
 
+// Regression: INT_MIN / -1 overflows the signed range and is undefined
+// behavior in C++ (raises SIGFPE on x86). It must surface as a catchable
+// evaluation error, not crash the interpreter. Before the guard in
+// BinaryOpNode this program aborted the whole process with SIGFPE.
+TEST_F(IntegrationTest, IntMinDivideByNegativeOneIsCaught) {
+    auto result = runO2LCode(R"(
+        Object Main {
+            method main(): Int {
+                min: Int = -9223372036854775807 - 1
+                q: Int = min / -1
+                return q
+            }
+        }
+    )");
+    EXPECT_FALSE(result.success) << "INT_MIN / -1 should raise a catchable error";
+    EXPECT_NE(result.error.find("overflow"), std::string::npos)
+        << "Expected an overflow error, got: " << result.error;
+}
+
+// INT_MIN % -1 is mathematically 0. Computing it directly is undefined
+// behavior (the implied INT_MIN / -1 division overflows), so the interpreter
+// must return the defined result 0 rather than crash.
+TEST_F(IntegrationTest, IntMinModuloNegativeOneIsZero) {
+    auto result = runO2LCode(R"(
+        Object Main {
+            method main(): Int {
+                min: Int = -9223372036854775807 - 1
+                r: Int = min % -1
+                return r
+            }
+        }
+    )");
+    EXPECT_TRUE(result.success) << "INT_MIN % -1 should not crash. Error: " << result.error;
+    EXPECT_EQ(result.exit_code, 0);
+}
+
+// Sanity: ordinary division/modulo by -1 keep working after the guard.
+TEST_F(IntegrationTest, DivideAndModuloByNegativeOneStillWork) {
+    auto div = runO2LCode(R"(
+        Object Main {
+            method main(): Int {
+                return 42 / -1
+            }
+        }
+    )");
+    EXPECT_TRUE(div.success) << div.error;
+    EXPECT_EQ(div.exit_code, -42);
+
+    auto mod = runO2LCode(R"(
+        Object Main {
+            method main(): Int {
+                return 42 % -1
+            }
+        }
+    )");
+    EXPECT_TRUE(mod.success) << mod.error;
+    EXPECT_EQ(mod.exit_code, 0);
+}
+
 // Test syntax compatibility issues (should fail with specific errors)
 TEST_F(IntegrationTest, SimpleProtocolTestSyntaxError) {
     expectFailure("simple_protocol_test.obq", "Unknown method 'greet' on Text type");

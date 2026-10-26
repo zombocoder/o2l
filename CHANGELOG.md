@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Type Promotion**: Improved `Text` to `Long` conversion using `std::stoll` for safer 64-bit conversion on Windows.
 - **Documentation**: Updated README and guides with Windows build and installation instructions.
 
+### Fixed
+- **Integer division overflow crash**: `INT_MIN / -1` (and the 128-bit `LONG_MIN / -1`) previously aborted the interpreter with `SIGFPE`, because the signed-overflow case was unguarded next to the existing divide-by-zero check. It now raises a catchable evaluation error. `x % -1`, mathematically `0` for every `x` but undefined behavior at the type minimum, now returns `0` instead of triggering the same faulting division.
+
 ### 📦 Collection Extensions
 - **List/Map/Set Enhancements**: Added sorting, slicing, and bulk operations (`addAll`, `removeAll`) to all major collection types.
 - **Performance**: Optimized internal collection traversal and type-safe access.

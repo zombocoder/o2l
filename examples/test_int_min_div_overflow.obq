@@ -1,0 +1,58 @@
+import testing
+import system.io
+
+# Regression test: INT_MIN / -1 overflows the signed integer range and is
+# undefined behavior in C++ (it raises SIGFPE on x86). Before the guard added
+# to BinaryOpNode the interpreter crashed with a core dump on this expression.
+# It must now raise a catchable evaluation error. INT_MIN % -1 is mathematically
+# 0 and must be returned as 0 rather than triggering the same undefined division.
+Object IntMinDivOverflowTest {
+    @external method run(): Int {
+        testing.createSuite("IntMinDivOverflowTests")
+
+        # -9223372036854775808 is INT_MIN; the literal is built as
+        # (-9223372036854775807 - 1) because the bare positive magnitude 2^63
+        # does not fit in a signed 64-bit literal.
+        min: Int = -9223372036854775807 - 1
+
+        # INT_MIN / -1 must be caught, not crash the process.
+        testing.runTest("int_min_div_neg1_is_caught")
+        caught: Int = 0
+        try {
+            bad: Int = min / -1
+            io.print("unexpected result: %d", bad)
+        } catch (error) {
+            caught = 1
+        }
+        testing.assertEqual(caught, 1, "INT_MIN / -1 should raise a catchable error")
+
+        # INT_MIN % -1 == 0 (defined result, no crash).
+        testing.runTest("int_min_mod_neg1_is_zero")
+        r: Int = min % -1
+        testing.assertEqual(r, 0, "INT_MIN % -1 must be 0")
+
+        # Ordinary division / modulo by -1 keep working after the guard.
+        testing.runTest("normal_div_neg1")
+        testing.assertEqual(42 / -1, -42, "42 / -1 should be -42")
+
+        testing.runTest("normal_mod_neg1")
+        testing.assertEqual(42 % -1, 0, "42 % -1 should be 0")
+
+        testing.printResults()
+
+        failed: Int = testing.getFailedCount()
+        if (failed > 0) {
+            io.print("FAILED: %d assertion(s) failed", failed)
+            return 1
+        }
+        io.print("OK: INT_MIN / -1 guarded, INT_MIN % -1 == 0")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        t: IntMinDivOverflowTest = new IntMinDivOverflowTest()
+        return t.run()
+    }
+}
