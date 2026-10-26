@@ -16,6 +16,7 @@
 
 #include <gtest/gtest.h>
 
+#include "AST/BlockNode.hpp"
 #include "AST/EnumDeclarationNode.hpp"
 #include "AST/ImportNode.hpp"
 #include "AST/LiteralNode.hpp"
@@ -23,6 +24,7 @@
 #include "AST/ObjectNode.hpp"
 #include "AST/ProtocolDeclarationNode.hpp"
 #include "AST/RecordDeclarationNode.hpp"
+#include "AST/VariableDeclarationNode.hpp"
 #include "Lexer.hpp"
 #include "Parser.hpp"
 
@@ -529,4 +531,72 @@ TEST_F(ParserTest, VariableAssignmentEdgeCases) {
     ASSERT_EQ(nodes.size(), 1);
     auto object_node = dynamic_cast<ObjectNode*>(nodes[0].get());
     ASSERT_NE(object_node, nullptr);
+}
+
+// The first statement of the first method of the only object, as a variable declaration
+static const VariableDeclarationNode* firstVariableDeclaration(
+    const std::vector<ASTNodePtr>& nodes) {
+    if (nodes.size() != 1) return nullptr;
+    auto object_node = dynamic_cast<ObjectNode*>(nodes[0].get());
+    if (object_node == nullptr || object_node->getMethods().empty()) return nullptr;
+    auto method = dynamic_cast<MethodDeclarationNode*>(object_node->getMethods()[0].get());
+    if (method == nullptr) return nullptr;
+    auto body = dynamic_cast<BlockNode*>(method->getBody().get());
+    if (body == nullptr || body->getStatements().empty()) return nullptr;
+    return dynamic_cast<VariableDeclarationNode*>(body->getStatements()[0].get());
+}
+
+// Test a line break between ':' and the type name
+TEST_F(ParserTest, TypeAnnotationLineBreakAfterColon) {
+    auto nodes = parse(R"(
+        Object TestObject {
+            method test(): Int {
+                xs:
+                    List<Int> = [1, 2, 3]
+                return xs.size()
+            }
+        }
+    )");
+
+    auto declaration = firstVariableDeclaration(nodes);
+    ASSERT_NE(declaration, nullptr);
+    EXPECT_EQ(declaration->getVariableName(), "xs");
+    EXPECT_EQ(declaration->getTypeName(), "List<Int>");
+}
+
+// Test a line break between the type name and its type arguments
+TEST_F(ParserTest, TypeAnnotationLineBreakBeforeTypeArguments) {
+    auto nodes = parse(R"(
+        Object TestObject {
+            method test(): Int {
+                xs: List
+                    <Int> = [1, 2, 3]
+                return xs.size()
+            }
+        }
+    )");
+
+    auto declaration = firstVariableDeclaration(nodes);
+    ASSERT_NE(declaration, nullptr);
+    EXPECT_EQ(declaration->getVariableName(), "xs");
+    EXPECT_EQ(declaration->getTypeName(), "List<Int>");
+}
+
+// Test that a type at the end of a line still ends its declaration
+TEST_F(ParserTest, TypeAtEndOfLineEndsDeclaration) {
+    auto nodes = parse(R"(
+        Object TestObject {
+            property count: Int
+            property name: Text
+            method test(): Int {
+                return 1
+            }
+        }
+    )");
+
+    ASSERT_EQ(nodes.size(), 1);
+    auto object_node = dynamic_cast<ObjectNode*>(nodes[0].get());
+    ASSERT_NE(object_node, nullptr);
+    EXPECT_EQ(object_node->getProperties().size(), 2);
+    EXPECT_EQ(object_node->getMethods().size(), 1);
 }
