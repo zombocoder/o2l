@@ -1,6 +1,6 @@
 # 🌟 O²L Programming Language
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-478%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-54-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![C++ Version](https://img.shields.io/badge/C++-23-blue.svg)](https://en.cppreference.com/w/cpp/23) [![Tests](https://img.shields.io/badge/tests-532%20passing-brightgreen.svg)](https://github.com/zombocoder/o2l) [![FFI System](https://img.shields.io/badge/FFI-SQLite%20integrated-brightgreen.svg)](https://github.com/zombocoder/o2l) [![Text Methods](https://img.shields.io/badge/text%20methods-54-blue.svg)](https://github.com/zombocoder/o2l) [![HTTP Client](https://img.shields.io/badge/http%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![JSON Library](https://img.shields.io/badge/json%20methods-30+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![URL Library](https://img.shields.io/badge/url%20methods-26-blue.svg)](https://github.com/zombocoder/o2l) [![Regexp Library](https://img.shields.io/badge/regexp%20methods-12-blue.svg)](https://github.com/zombocoder/o2l) [![Math Library](https://img.shields.io/badge/math%20functions-40+-brightgreen.svg)](https://github.com/zombocoder/o2l) [![DateTime Library](https://img.shields.io/badge/datetime%20functions-65+-blue.svg)](https://github.com/zombocoder/o2l)
 
 **O²L** is a modern object-oriented programming language that balances pure object-oriented design with practical programming constructs. Built with C++23, O²L eliminates primitives and null values while providing essential control flow like while loops, comprehensive arithmetic operations, and extensive string manipulation capabilities for real-world programming needs.
 
@@ -25,7 +25,7 @@
 - **🧠 Logical Operators**: Full `&&`, `||`, `!` support with proper precedence and short-circuit evaluation
 - **📁 Filesystem Operations**: Complete `system.fs` module for file/directory management
 - **🔗 Expression Enhancements**: Parentheses support for complex expression grouping
-- **🧪 Complete Test Suite**: 478 comprehensive tests covering all language features with Google Test framework
+- **🧪 Complete Test Suite**: 532 comprehensive tests covering all language features with Google Test framework
 
 ---
 
@@ -420,11 +420,11 @@ make
 ### **Running Tests**
 
 ```bash
-# Run all 478 tests (Linux/macOS)
+# Run all 532 tests (Linux/macOS)
 cd build
 make test
 
-# Run all 478 tests (Windows)
+# Run all 532 tests (Windows)
 cd build
 ctest -C Release
 ```
@@ -447,21 +447,29 @@ cd build/tests
 ./o2l_tests --gtest_filter="ElseIfAndLengthTest.*" # else if and Text.length() tests
 
 # Test coverage summary:
-# ✅ 478 total tests - All passing (including 23 FFI tests)
+# ✅ 532 total tests in 29 suites - All passing
 # 📝 27 Lexer tests - Token parsing, keywords, operators
-# 🌲 29 Parser tests - AST generation, syntax validation
+# 🌲 32 Parser tests - AST generation, syntax validation
 # ⚡ 44 Runtime tests - Value types, collections, iterators
 # 🔌 20 Protocol tests - Interface compliance and signature validation
-# 🚀 35 Integration tests - End-to-end execution
-# ✨ 12 Text method tests - All 54 string methods including length()
+# 🚀 38 Integration tests - End-to-end execution
+# ✨ 13 Text method tests - All 54 string methods including length()
 # 📏 12 Math library tests - All mathematical functions and constants
 # 🔄 JSON Library - 16 comprehensive tests covering parsing, path navigation, validation, and native collection integration
 # 🌐 HTTP Client - 24 extensive tests covering all HTTP methods, authentication, file operations, and error handling
-# 🔄 65 Regular expression tests - Complete regexp library functionality
+# 🖥️ 29 HTTP server tests - HTTP server library
+# 🔄 14 Regular expression tests - Complete regexp library functionality
 # 🌐 43 URL library tests - Complete URL manipulation and validation
 # 🔀 14 Control flow tests - else if syntax and Text.length() method
+# 🛑 16 Loop control tests - break and continue
 # 🔄 42 Type conversion tests - Comprehensive conversion methods with error handling
-# 📊 20 Extended system tests - DateTime, filesystem, and OS integration
+# 📊 33 Extended system tests - DateTime, filesystem paths, and OS integration
+# 🔗 17 FFI tests - Basic types, library calls, and CArray.fromList()
+# 📚 16 Collection tests - List/Map/Set extensions and nested generics
+# ➕ 14 Compound assignment tests - +=, -=, *=, /= and %=
+# 🧵 31 Concurrency tests - Scheduler, spawn, channels, sleep, and resume logic
+# 🧪 18 Testing library tests - The `import testing` assertions
+# 🧹 19 Formatter tests - o2l-fmt
 ```
 
 ### **Code Style**
