@@ -361,7 +361,7 @@ Immutable objects eliminate entire categories of bugs:
 
 _Last updated: 2026-10-27._
 
-### **Current Version (0.0.1)**
+### **Current Version (0.1.0)**
 
 - ✅ Full object-oriented language
 - ✅ Enums, Records, Protocols
@@ -383,7 +383,7 @@ _Last updated: 2026-10-27._
 - ✅ Comprehensive test suite with full coverage
 - ✅ Debug mode and error reporting
 
-### **Done since 0.0.1 (on `main`, not yet released)**
+### **New in 0.1.0 (2026-10-27)**
 
 - ✅ **Collections** (2026-04, [#8](https://github.com/zombocoder/o2l/pull/8)): 30+ new `List`, `Map` and `Set` methods (sorting, slicing, bulk and set operations), recursive nested generics such as `Map<Text, List<Int>>`, and a `MapIterator` fix
 - ✅ **Text API** (2026-04, [#11](https://github.com/zombocoder/o2l/pull/11)): `substring()` with Python-style slices, `charAt()` with negative indexes, `contains()`, `trimStart()` and `trimEnd()`
