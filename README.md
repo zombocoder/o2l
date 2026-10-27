@@ -416,6 +416,8 @@ make test
 cd build
 ctest -C Release
 ```
+
+```bash
 # Run specific test suites
 cd build/tests
 ./o2l_tests --gtest_filter="TextMethodTest.*"      # Text method tests
