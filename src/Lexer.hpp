@@ -71,6 +71,13 @@ enum class TokenType {
     ASSIGN,
     DOT,
     DOLLAR,
+
+    // Compound assignment operators
+    PLUS_ASSIGN,      // +=
+    MINUS_ASSIGN,     // -=
+    MULTIPLY_ASSIGN,  // *=
+    DIVIDE_ASSIGN,    // /=
+    MODULO_ASSIGN,    // %=
     
     // Bitwise operators
     BITWISE_AND,    // &

@@ -66,10 +66,12 @@ class Parser {
     ASTNodePtr parseNewExpression();
     ASTNodePtr parseThisExpression();
     ASTNodePtr parseThisAssignment();
+    ASTNodePtr parseCompoundThisAssignment();
     ASTNodePtr parseReturnStatement();
     ASTNodePtr parseStatement();
     ASTNodePtr parseVariableDeclaration();
     ASTNodePtr parseVariableAssignment();
+    ASTNodePtr parseCompoundVariableAssignment();
     ASTNodePtr parsePropertyDeclaration();
     ASTNodePtr parseConstDeclaration();
     ASTNodePtr parseIfStatement();
