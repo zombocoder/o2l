@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(o2l-pkg VERSION 0.0.1)
+project(o2l-pkg VERSION 0.1.0)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 23)

@@ -7,13 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-27
+
 ### 🌟 Major Milestone: Full Cross-OS Support
 - **Official Windows Support**: The O²L interpreter, tools, and LSP server now fully build and run on Windows using **Visual C++ (MSVC) 2022** and **Clang (LLVM)**.
 - **Improved Path Consistency**: All filesystem and path operations now return consistent `/` separators across Windows, Linux, and macOS using `std::filesystem::path::generic_string()`.
 - **Hardware-Agnostic Numeric Types**: Introduced `O2L_HAS_INT128` and `is_long_` value tagging to ensure 128-bit `Long` support on compatible hardware while maintaining full 64-bit fallback and type distinction on platforms like Windows (MSVC).
-- **Verified Stability**: Full test suite pass (478 tests) confirmed on all three major operating systems.
+- **Verified Stability**: Full test suite pass (532 tests) confirmed on all three major operating systems.
+
+### 🧵 Green Threads (Cooperative Concurrency)
+- **`spawn`**: `spawn { ... }` starts a coroutine that runs cooperatively on the same OS thread, with its own copy of the spawning context.
+- **`Channel`**: `Channel.new(capacity)` creates a channel with `send`, `receive` and `close`; a sender suspends while the channel is full and a receiver while it is empty.
+- **`sleep(ms)`**: built-in that suspends only the calling coroutine (also `concurrency.sleep()` after `import concurrency`).
+- **Background I/O**: HTTP client calls run on a background thread pool while the calling coroutine is suspended.
 
 ### Added
+- **Recursive nested generics**: types such as `Map<Text, List<Int>>` in variable, constant, property, record and protocol declarations.
+- **Aegis foundation**: `compiler` (AST reflection), `binary` (`ByteBuffer` binary I/O) and `bit` (bit intrinsics) objects, hexadecimal integer literals (`0xFF`), and a `null` literal.
 - **Compound assignment operators**: Added `+=`, `-=`, `*=`, `/=`, and `%=` for local variables and `this.property` targets. `x op= expr` desugars to `x = x op (expr)`, preserving O2L's left-to-right evaluation.
 - **Windows CI Pipeline**: Added GitHub Actions workflow for `windows-latest` to ensure continuous cross-platform compatibility.
 - **MSVC Compatibility**: Resolved fundamental compilation barriers (socket handling, `ssize_t` definitions, and `popen` portability).
@@ -27,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Integer division overflow crash**: `INT_MIN / -1` (and the 128-bit `LONG_MIN / -1`) previously aborted the interpreter with `SIGFPE`, because the signed-overflow case was unguarded next to the existing divide-by-zero check. It now raises a catchable evaluation error. `x % -1`, mathematically `0` for every `x` but undefined behavior at the type minimum, now returns `0` instead of triggering the same faulting division.
 - **Line breaks in type annotations**: a type annotation may now continue on the next line after the `:` (`xs:` followed by `List<Int> = ...` on the next line) and between the type name and its type arguments (`List` followed by `<Int>`). Both previously failed with a syntax error (`Expected type name`, `Expected '=' after type`). Line breaks inside the type arguments already worked.
+- **`isEmpty()` and `empty()` on every collection**: `List` accepted only `isEmpty()` and `Map` and `Set` only `empty()`; the other spelling failed with `Unknown method`. All three now accept both.
+- **`Map.containsKey()`**: now an alias for `contains()`, next to the existing `containsValue()`, instead of failing with `Unknown method 'containsKey' on Map type`.
+- **Root coroutine errors printed twice**: a runtime error in `Main.main()` was printed by the scheduler (`Error in coroutine #0: ...`) and again by the interpreter (`Error: ...`). It is now printed once; errors in spawned coroutines are still reported by the scheduler.
 
 ### 📦 Collection Extensions
 - **List/Map/Set Enhancements**: Added sorting, slicing, and bulk operations (`addAll`, `removeAll`) to all major collection types.
@@ -205,6 +218,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History Summary
 
+- **v0.1.0** (2026-10-27): Windows support, green threads, collection and Text API extensions, compound assignment, and fixes
 - **v0.0.1**: Initial release with full object-oriented language implementation
 - **v0.x.x**: Development versions (not released)
 
