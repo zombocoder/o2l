@@ -29,7 +29,7 @@
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cout << "O²L Programming Language Interpreter v0.0.1\n\n";
+        std::cout << "O²L Programming Language Interpreter v0.1.0\n\n";
         std::cout << "Usage:\n";
         std::cout << "  o2l run [file.obq]       Run an O²L program (uses o2l.toml entrypoint "
                      "if no file)\n";
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (command == "--version") {
-        std::cout << "O²L v0.0.1\n";
+        std::cout << "O²L v0.1.0\n";
         std::cout << "Built with C++23\n";
         std::cout << "Apache License 2.0\n";
         return 0;
@@ -408,7 +408,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (command == "repl") {
-        std::cout << "O²L REPL v0.0.1\n";
+        std::cout << "O²L REPL v0.1.0\n";
         std::cout << "Type 'exit' to quit\n\n";
 
         std::string input;
