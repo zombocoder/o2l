@@ -359,6 +359,8 @@ Immutable objects eliminate entire categories of bugs:
 
 ## 🛤️ Roadmap
 
+_Last updated: 2026-10-27._
+
 ### **Current Version (0.0.1)**
 
 - ✅ Full object-oriented language
@@ -376,18 +378,28 @@ Immutable objects eliminate entire categories of bugs:
 - ✅ **Modulo Operator**: Full arithmetic completeness with `%` operator for all numeric types
 - ✅ **System Utilities**: `system.utils` module with RepeatIterator for controlled repetition
 - ✅ **Error Handling System**: Complete `throw`/`try`/`catch`/`finally` with `Result<T,E>` and `Error` types
+- ✅ **FFI System**: Foreign Function Interface with libffi integration, advanced type support, and SQLite integration
+- ✅ **Built-in Testing**: `import testing` assertion library, used by the tests that `o2l-pkg init` generates
 - ✅ Comprehensive test suite with full coverage
 - ✅ Debug mode and error reporting
+
+### **Done since 0.0.1 (on `main`, not yet released)**
+
+- ✅ **Collections** (2026-04, [#8](https://github.com/zombocoder/o2l/pull/8)): 30+ new `List`, `Map` and `Set` methods (sorting, slicing, bulk and set operations), recursive nested generics such as `Map<Text, List<Int>>`, and a `MapIterator` fix
+- ✅ **Text API** (2026-04, [#11](https://github.com/zombocoder/o2l/pull/11)): `substring()` with Python-style slices, `charAt()` with negative indexes, `contains()`, `trimStart()` and `trimEnd()`
+- ✅ **Windows Support** (2026-04, [#13](https://github.com/zombocoder/o2l/pull/13)): builds and runs with MSVC 2022 and Clang, with a Windows CI job
+- ✅ **Aegis Foundation** (2026-04, [#14](https://github.com/zombocoder/o2l/pull/14)): `compiler` (AST reflection), `binary` (`ByteBuffer` binary I/O) and `bit` (bit intrinsics) objects, and hex literals
+- ✅ **Green Threads** (2026-05, [#10](https://github.com/zombocoder/o2l/pull/10), [#15](https://github.com/zombocoder/o2l/pull/15)): `spawn`, `Channel`, a built-in `sleep(ms)` that suspends only the calling coroutine, and a background I/O thread pool
+- ✅ **Compound Assignment** (2026-10, [#18](https://github.com/zombocoder/o2l/pull/18)): `+=`, `-=`, `*=`, `/=` and `%=`
+- ✅ **Fixes** (2026-10): `INT_MIN / -1` raises an error instead of crashing ([#16](https://github.com/zombocoder/o2l/pull/16)); `isEmpty()` and `empty()` work on every collection ([#19](https://github.com/zombocoder/o2l/pull/19)); `Map.containsKey()` resolves ([#20](https://github.com/zombocoder/o2l/pull/20)); type annotations may continue on the next line ([#21](https://github.com/zombocoder/o2l/pull/21)); a failing `main()` reports its error once ([#22](https://github.com/zombocoder/o2l/pull/22)); regression test for suspending inside a `while` body ([#23](https://github.com/zombocoder/o2l/pull/23))
 
 ### **Planned Features**
 
 - 📦 **Module System**: Package management and namespaces
-- ✅ **Enhanced FFI System**: Complete Foreign Function Interface with libffi integration, advanced type support, and SQLite integration
-- 🧪 **Built-in Testing**: Integrated test framework
 - ⚡ **Bytecode Compiler**: Improve performance
 - 🌐 **WebAssembly**: Run O²L in browsers
-- 📊 **Advanced Generic Types**: Advanced parameterized types and Optional<T>
-- 🔄 **Async/Await**: Asynchronous programming model
+- 📊 **Advanced Generic Types**: `Optional<T>` and further parameterized types (recursive nested generics shipped in 2026-04)
+- 🔄 **Async/Await**: `async`/`await` syntax (cooperative concurrency with `spawn` and `Channel` shipped in 2026-05)
 
 ---
 
