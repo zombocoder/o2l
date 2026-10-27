@@ -1,0 +1,87 @@
+import testing
+import system.io
+
+# Regression test: isEmpty and empty must both resolve on every built-in
+# collection. Before the fix the interpreter dispatched only List.isEmpty and
+# only Map.empty / Set.empty, so list.empty(), map.isEmpty() and set.isEmpty()
+# each raised "Unknown method '...' on <T> type". Both spellings are now aliases
+# on List, Map and Set, so the emptiness API is consistent across collections.
+Object CollectionEmptyAliasTest {
+    @external method run(): Int {
+        testing.createSuite("CollectionEmptyAliasTests")
+
+        # --- List ---
+        empty_list: List<Int> = []
+        full_list: List<Int> = [1, 2, 3]
+
+        testing.runTest("list_isEmpty_true")
+        testing.assertTrue(empty_list.isEmpty(), "empty List.isEmpty() should be true")
+
+        testing.runTest("list_empty_true")
+        testing.assertTrue(empty_list.empty(), "empty List.empty() alias should be true")
+
+        testing.runTest("list_isEmpty_false")
+        testing.assertFalse(full_list.isEmpty(), "non-empty List.isEmpty() should be false")
+
+        testing.runTest("list_empty_false")
+        testing.assertFalse(full_list.empty(), "non-empty List.empty() alias should be false")
+
+        testing.runTest("list_alias_agreement")
+        testing.assertEqual(full_list.isEmpty(), full_list.empty(), "List isEmpty and empty must agree")
+
+        # --- Map ---
+        empty_map: Map<Text, Int> = {}
+        full_map: Map<Text, Int> = { "a": 1 }
+
+        testing.runTest("map_empty_true")
+        testing.assertTrue(empty_map.empty(), "empty Map.empty() should be true")
+
+        testing.runTest("map_isEmpty_true")
+        testing.assertTrue(empty_map.isEmpty(), "empty Map.isEmpty() alias should be true")
+
+        testing.runTest("map_empty_false")
+        testing.assertFalse(full_map.empty(), "non-empty Map.empty() should be false")
+
+        testing.runTest("map_isEmpty_false")
+        testing.assertFalse(full_map.isEmpty(), "non-empty Map.isEmpty() alias should be false")
+
+        testing.runTest("map_alias_agreement")
+        testing.assertEqual(full_map.empty(), full_map.isEmpty(), "Map empty and isEmpty must agree")
+
+        # --- Set ---
+        empty_set: Set<Int> = ()
+        full_set: Set<Int> = (1, 2, 3)
+
+        testing.runTest("set_empty_true")
+        testing.assertTrue(empty_set.empty(), "empty Set.empty() should be true")
+
+        testing.runTest("set_isEmpty_true")
+        testing.assertTrue(empty_set.isEmpty(), "empty Set.isEmpty() alias should be true")
+
+        testing.runTest("set_empty_false")
+        testing.assertFalse(full_set.empty(), "non-empty Set.empty() should be false")
+
+        testing.runTest("set_isEmpty_false")
+        testing.assertFalse(full_set.isEmpty(), "non-empty Set.isEmpty() alias should be false")
+
+        testing.runTest("set_alias_agreement")
+        testing.assertEqual(full_set.empty(), full_set.isEmpty(), "Set empty and isEmpty must agree")
+
+        testing.printResults()
+
+        failed: Int = testing.getFailedCount()
+        if (failed > 0) {
+            io.print("FAILED: %d assertion(s) failed", failed)
+            return 1
+        }
+        io.print("OK: List/Map/Set isEmpty<->empty aliases verified")
+        return 0
+    }
+}
+
+Object Main {
+    method main(): Int {
+        t: CollectionEmptyAliasTest = new CollectionEmptyAliasTest()
+        return t.run()
+    }
+}
