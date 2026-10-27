@@ -87,9 +87,13 @@ void Scheduler::run() {
             current_->state = Coroutine::State::Failed;
             current_->error_message = e.what();
             if (current_->id == 0) {
+                // Root coroutine (Main.main()): the caller re-throws root_exception_
+                // and reports it, so printing it here too would show the error twice.
                 root_exception_ = std::current_exception();
+            } else {
+                std::cerr << "Error in coroutine #" << current_->id << ": " << e.what()
+                          << std::endl;
             }
-            std::cerr << "Error in coroutine #" << current_->id << ": " << e.what() << std::endl;
             running_coro_.reset();
             current_ = nullptr;
         }
