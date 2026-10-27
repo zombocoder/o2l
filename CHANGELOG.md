@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Integer division overflow crash**: `INT_MIN / -1` (and the 128-bit `LONG_MIN / -1`) previously aborted the interpreter with `SIGFPE`, because the signed-overflow case was unguarded next to the existing divide-by-zero check. It now raises a catchable evaluation error. `x % -1`, mathematically `0` for every `x` but undefined behavior at the type minimum, now returns `0` instead of triggering the same faulting division.
+- **Line breaks in type annotations**: a type annotation may now continue on the next line after the `:` (`xs:` followed by `List<Int> = ...` on the next line) and between the type name and its type arguments (`List` followed by `<Int>`). Both previously failed with a syntax error (`Expected type name`, `Expected '=' after type`). Line breaks inside the type arguments already worked.
 
 ### 📦 Collection Extensions
 - **List/Map/Set Enhancements**: Added sorting, slicing, and bulk operations (`addAll`, `removeAll`) to all major collection types.

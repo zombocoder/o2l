@@ -1946,6 +1946,9 @@ ASTNodePtr Parser::parseContinueStatement() {
 }
 
 std::string Parser::parseTypeName() {
+    // Allow the type name to start on the next line, e.g. after ':' in `xs:\n    List<Int> = ...`
+    while (match(TokenType::NEWLINE)) {}
+
     std::string type_name;
     
     // Accept both identifiers and specific type keywords
@@ -1961,7 +1964,17 @@ std::string Parser::parseTypeName() {
     } else {
         throw SyntaxError("Expected type name at line " + std::to_string(currentToken().line));
     }
-    
+
+    // Allow line breaks between the type name and '<', e.g. `List\n    <Int>`. Skip them only
+    // when a '<' follows, so the newline that ends a declaration like `property x: Int` stays.
+    size_t newlines = 0;
+    while (peekToken(newlines).type == TokenType::NEWLINE) {
+        newlines++;
+    }
+    if (newlines > 0 && peekToken(newlines).type == TokenType::LESS_THAN) {
+        while (match(TokenType::NEWLINE)) {}
+    }
+
     // Handle generic types like List<Int> and Map<Key, Value>
     if (currentToken().type == TokenType::LESS_THAN) {
         std::string base_type = type_name;
